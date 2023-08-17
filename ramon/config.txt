@@ -1,4 +1,4 @@
-auto_update=False
+auto_update=True
 fullscreen=False
 username=smiker
 root=.

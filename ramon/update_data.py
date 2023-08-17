@@ -9,7 +9,7 @@ except ImportError:
 
 
 class Cheevo:
-    
+    max             = 128    
     min_width       = 0
     global_index    = 0
     active_index    = 1
@@ -71,25 +71,69 @@ class Data:
     @staticmethod
     def query():
         if Data.username == '': return
-        from datetime import datetime, timedelta
-        payload             = requests.get(f'https://www.retroachievements.org/user/{Data.username}').text
-        parsed_html         = BeautifulSoup( payload, features='html.parser' )
-        usersummary         = parsed_html.body.find('div', attrs={'class':'usersummary'}).text
-        Data.score          = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
-        Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
-        Data.last_seen      = usersummary.split('Last seen  in  ')[1].split('(')[0]
-        Data.last_activity  = usersummary.split('Last Activity: ')[1].split('Account')[0]
-        Data.last_activity  = (datetime.strptime(Data.last_activity, "%d %b %Y, %H:%M")+timedelta(hours=2)).strftime("%d %B %Y, %H:%M")
-        stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
-        Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
-        Data.progress_html  = f'<div class="progressbar grow">{Data.progress_html}</div>'
-        Data.progress       = Data.progress_html.split('width:')[1].split('"')[0]
-        Data.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
-        Data.cheevos_raw    = Data.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
-        Data.cheevos        = Data.parseCheevos()
-        for d in Data.cheevos:
-            if d.index == Cheevo.active_index:
-                Data.cheevo = d.name + "\n" + d.description
+        try:
+            from datetime import datetime, timedelta
+            payload             = requests.get(f'https://www.retroachievements.org/user/{Data.username}').text
+            parsed_html         = BeautifulSoup( payload, features='html.parser' )
+            usersummary         = parsed_html.body.find('div', attrs={'class':'usersummary'}).text
+        
+            Data.score          = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
+            Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
+            Data.last_seen      = usersummary.split('Last seen  in  ')[1].split('(')[0]
+            Data.last_activity  = usersummary.split('Last Activity: ')[1].split('Account')[0]
+            Data.last_activity  = (datetime.strptime(Data.last_activity, "%d %b %Y, %H:%M")+timedelta(hours=2)).strftime("%d %b %Y, %H:%M")
+            stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
+            Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
+            Data.progress_html  = f'<div class="progressbar grow">{Data.progress_html}</div>'
+            Data.progress       = Data.progress_html.split('width:')[1].split('"')[0]
+            Data.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
+            Data.cheevos_raw    = Data.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
+            Data.cheevos        = Data.parseCheevos()
+            for d in Data.cheevos:
+                if d.index == Cheevo.active_index:
+                    Data.cheevo = d.name + "\n" + d.description
+            return True
+        except:
+            return False
+        
+    @staticmethod
+    def updatePictures():
+        try:   
+            width, height, depth, data = dpg.load_image(f'{Data.root}/data/current_cheevo.png')                
+        except Exception as E:
+            print("ERROR: Cannot load current_cheevo.png\n\n")
+        
+        with dpg.texture_registry(show=False):
+            try:
+                dpg.delete_item('current_cheevo_img')
+                #print("INFO: deleted static_texture 'current_cheevo_img'.")
+                dpg.delete_item('current_cheevo_image')
+                #print("INFO: deleted image 'current_cheevo_image'.")
+
+            except:
+                #print("INFO: static_texture 'current_cheevo_img' does not exist. Nothing deleted.")
+                pass
+            try:
+                dpg.add_static_texture(
+                    width=width, 
+                    height=height, 
+                    default_value=data, 
+                    tag="current_cheevo_img",
+                )
+                #print("INFO: Added static texture 'current_cheevo_img'.")
+                dpg.add_image(
+                    parent='main',
+                    tag='current_cheevo_image', 
+                    texture_tag="current_cheevo_img",
+                    pos=(Ramon.width-width,69),
+                    width=40,
+                    height=40,
+                )
+                #print("INFO: Added image 'current_cheevo_image'.")
+            except Exception as E:
+                #print("ERROR: Cannot create static texture 'current_cheevo_img'.")
+                #print("       "+str(E))
+                pass
         
     @staticmethod
     def writeCheevo():
@@ -105,6 +149,7 @@ class Data:
                     data = requests.get(d.picture)
                     with open(f"{Data.root}/data/current_cheevo.png", 'wb') as picture:
                         picture.write(data.content)
+                    Data.updatePictures()
                 
     @staticmethod
     def write():
@@ -205,7 +250,7 @@ class Ramon:
     @staticmethod
     def updateCheevo(sender=None, args=None, user_data=None):
         Cheevo.active_index = user_data
-        for i in range(0,64):
+        for i in range(0,Cheevo.max):
             dpg.set_value(f'cheevo[{i+1}]', False)
         dpg.set_value(f'cheevo[{user_data}]', True)
         Data.writeCheevo()
@@ -237,6 +282,7 @@ class Ramon:
         dpg.create_viewport(title="RAMon", width=Ramon.width, height=Ramon.height)
         dpg.setup_dearpygui()
         with dpg.window(
+            tag='main',
             label="RAMon", 
             width=Ramon.width, 
             height=Ramon.height, 
@@ -325,17 +371,44 @@ class Ramon:
                 callback=Ramon.updateCheevoManually
             )            
             row+=row_height*2
-            dpg.add_input_text(
-                tag='stdout', 
-                width=(Ramon.width-31), 
-                height=(Ramon.height - row)-46,
-                multiline=True,
-                readonly=True,
-                pos=(32,row),
-            )            
-            for i in range(0,64):
-                dpg.add_checkbox(default_value=True if (i+1) == Cheevo.active_index else False, tag=f'cheevo[{i+1}]', pos=(8, row+(i*26)), show=False, user_data=i+1, callback=Ramon.updateCheevo )
+            with dpg.window(
+                tag='frame',
+                width=(Ramon.width-12), 
+                height=(Ramon.height - row)-46,                
+                pos=(8,row),
+                no_move=True,
+                no_close=True,
+                no_collapse=True,
+                no_resize=True,                
+                no_title_bar=True,
+                horizontal_scrollbar=False,
+            ):
+                dpg.add_text(
+                    tag='stdout',
+                    pos=(31,0),
+                    color=(0,255,255),
+                )            
+                for i in range(0,Cheevo.max):
+                    dpg.add_checkbox(
+                        default_value=True if (i+1) == Cheevo.active_index else False, 
+                        tag=f'cheevo[{i+1}]', 
+                        pos=(8, (i*26)), 
+                        show=False, 
+                        user_data=i+1, 
+                        callback=Ramon.updateCheevo,
+                        label=f'Cheevo Title',
+                    )
+                dpg.add_text(
+                    tag='unlocked',
+                    color=(80,200,0),
+                    pos=(31,row_height*Cheevo.global_index)
+                )
+            Data.updatePictures()
+           
         #keyboard.Listener( on_release=Ramon.on_release).start()
+        dpg.set_viewport_small_icon(f"{Ramon.settings['root']}/icon.ico")
+        dpg.set_viewport_large_icon(f"{Ramon.settings['root']}/icon.ico")
+        
         return Ramon.render()
         
     @staticmethod
@@ -358,28 +431,44 @@ class Ramon:
 
     @staticmethod
     def redraw():
-        for i in range(0,64):
-            dpg.hide_item(f'cheevo[{i+1}]')
+        Ramon.clear()
         dpg.set_value('game'  , Data.last_seen      )
         dpg.set_value('rank'  , Data.site_rank      )
         dpg.set_value('score' , Data.score          )
         dpg.set_value('date'  , Data.last_activity  )
         dpg.set_value('cheevo', Data.cheevo         )
-        payload = ''
+        payload  = ''
+        unlocked = ''
         for d in Data.cheevos:
             if d.locked: 
                 payload += d.menu() + "\n"
                 dpg.show_item(f'cheevo[{d.index}]')
-        dpg.set_value('stdout', payload)
+                dpg.set_item_label(f'cheevo[{d.index}]', d.name)
+            else:
+                unlocked += '* '+ d.menu() + "\n"
+                
+        dpg.set_value('stdout'  , payload)
+        dpg.set_value('unlocked', unlocked)
+        dpg.set_item_pos('unlocked', (31,108+(23*Cheevo.global_index)))
+
+    @staticmethod
+    def clear():
+        dpg.set_value('stdout', '')
+        for i in range(0,Cheevo.max):
+            dpg.hide_item(f'cheevo[{i+1}]')
+        dpg.set_value('unlocked', '')
 
     @staticmethod
     def refresh(sender=None, user_data=None, args=None):
-        dpg.set_value('stdout','Reloading...')
+        Ramon.clear()
+        dpg.set_value('stdout','Requesting Data...')
         Cheevo.global_index = 0
-        Data.query()
-        Ramon.redraw()
-        Data.write()
-
+        if Data.query():
+            Ramon.redraw()
+            Data.write()
+        else:
+            dpg.set_value('stdout','Wrong Username Specified')
+        
     @staticmethod
     def message(text):
         dpg.set_value('stdout', dpg.get_value('stdout')+'\n'+text)
