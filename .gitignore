@@ -1,3 +1,12 @@
 
 *.pyc
 *.bak
+*.toc
+*.pkg
+*.manifest
+*.pyz
+ramon/build/update_data/base_library.zip
+ramon/build/update_data/update_data.exe
+ramon/build/update_data/warn-update_data.txt
+ramon/build/update_data/xref-update_data.html
+ramon/update_data.spec
