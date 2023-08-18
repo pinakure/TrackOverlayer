@@ -1,8 +1,5 @@
 """
         TODO
-- Variable GMT Option
-- Horizontal interface
-- Last x cheevos obtained
 """
 
 import os, time
@@ -10,6 +7,7 @@ try:
     import requests
     from bs4 import BeautifulSoup    
     from dearpygui import dearpygui as dpg
+    from datetime import datetime, timedelta        
 except ImportError:
     os.system('pip install requests beautifulsoup4 dearpygui')
     exit()
@@ -44,7 +42,7 @@ class Cheevo:
             with open(f'{Data.root}/data/cache/{self.picture}', 'wb') as file:
                 file.write(data)
             print("OK")
-        return f'<img class="{"active" if self.index == Cheevo.active_index else ""}" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
+        return f'<img class="{"active" if self.index == Cheevo.active_index else ""} round" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
 
     @staticmethod
     def parse( payload ):
@@ -56,11 +54,14 @@ class Cheevo:
 
 class Data:
     root            = '/'
+    css             = ''
     echo            = False
     score           = ''
+    gmt             = 2
     site_rank       = ''
     last_seen       = ''
-    last_activity   = ''
+    last_activityr  = ''
+    last_activity   = None
     progress_html   = ''
     progress        = ''
     stats           = ''
@@ -70,6 +71,7 @@ class Data:
     mine            = True
     username        = ''
     theme           = 'default'
+    recent          = []
 
     @staticmethod
     def setUsername():
@@ -86,7 +88,6 @@ class Data:
     def query():
         if Data.username == '': return
         try:
-            from datetime import datetime, timedelta
             payload             = requests.get(f'https://www.retroachievements.org/user/{Data.username}').text
             parsed_html         = BeautifulSoup( payload, features='html.parser' )
             usersummary         = parsed_html.body.find('div', attrs={'class':'usersummary'}).text
@@ -94,8 +95,8 @@ class Data:
             Data.score          = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
             Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
             Data.last_seen      = usersummary.split('Last seen  in  ')[1].split('(')[0]
-            Data.last_activity  = usersummary.split('Last Activity: ')[1].split('Account')[0]
-            Data.last_activity  = (datetime.strptime(Data.last_activity, "%d %b %Y, %H:%M")+timedelta(hours=2)).strftime("%d %b %Y, %H:%M")
+            Data.last_activityr= usersummary.split('Last Activity: ')[1].split('Account')[0]
+            Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Data.gmt))
             stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
             Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
             Data.progress_html  = f'<div class="progressbar grow">{Data.progress_html}</div>'
@@ -209,8 +210,10 @@ html, img, body {
     padding:           0px 0px 0px 0px;
     line-height:        16px;
 }
-img {
+img.round {
     border-radius: 24px 24px 24px 24px;
+}
+img {
     box-shadow: 2px 2px 0px #0008;
     border: 2px solid #0000;
 }
@@ -231,6 +234,7 @@ img.active {
     @staticmethod
     def writeCheevos():
         css = Data.getCSS()
+        Data.css = Data.getCSS()
         with open(f'{Data.root}/data/cheevos.html'         , 'w') as file:   
             with open(f'{Data.root}/data/cheevos_locked.html'  , 'w') as locked:   
                 with open(f'{Data.root}/data/cheevos_unlocked.html'  , 'w') as unlocked:   
@@ -249,16 +253,36 @@ img.active {
                     Ramon.setProgress(1.0)
         
     @staticmethod
+    def writeRecent():
+        with open(f'{Data.root}/data/recent.html'        , 'w') as file:   
+            file.write(f'''<style>{Data.css}</style><table><tbody>''')
+            for r in Data.recent:
+                file.write(f'''
+                            <tr><td colspan="2"><hr/></td></tr>
+                            <tr>
+                                <td rowspan="2">
+                                    <img style="border-radius: none !important" src="cache/{r.picture}">
+                                </td>
+                                <td><b>{r.name}</b></td>
+                            </tr>
+                            <tr>
+                                <td>{r.description}</td>
+                            </tr>
+                ''')                
+            file.write('''</tbody><table>''')
+
+    @staticmethod
     def write():
         if Data.username == '': return
         with open(f'{Data.root}/data/progress.html'      , 'w') as file:   file.write(Data.progress_html )
         with open(f'{Data.root}/data/progress.txt'       , 'w') as file:   file.write(Data.progress      )
-        with open(f'{Data.root}/data/last_activity.txt'  , 'w') as file:   file.write(Data.last_activity.upper() )
+        with open(f'{Data.root}/data/last_activity.txt'  , 'w') as file:   file.write(Data.last_activity.strftime("%d %b %Y, %H:%M").upper() )
         with open(f'{Data.root}/data/last_seen.txt'      , 'w') as file:   file.write(Data.last_seen     )
         with open(f'{Data.root}/data/site_rank.txt'      , 'w') as file:   file.write(Data.site_rank     )
-        with open(f'{Data.root}/data/score.txt'          , 'w') as file:   file.write(Data.score         )
+        with open(f'{Data.root}/data/score.txt'          , 'w') as file:   file.write(Data.score         )        
         Data.writeCheevo()
         Data.writeCheevos()
+        Data.writeRecent()
         
 
 
@@ -284,6 +308,7 @@ class Ramon:
             'horizontal'    : True,
             'username'      : '',
             'root'          : '.',
+            'gmt'           : 2,
         }
         Data.root     = Ramon.settings['root']
         Data.username = Ramon.settings['username']#workaround a design flaw
@@ -297,11 +322,20 @@ class Ramon:
                     Ramon.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]
             Data.username = Ramon.settings['username']#workaround a design flaw
             Data.root     = Ramon.settings['root']
+            Data.gmt      = int(Ramon.settings['gmt'])
             Ramon.width   = int(Ramon.settings['width']) - (4 if Ramon.settings['fullscreen'] else 0)
             Ramon.height  = int(Ramon.settings['height'])
         except Exception as E:
             return 
-        
+
+    @staticmethod
+    def updateSettingsGMT(sender=None, user_data=None, args=None):
+        Data.gmt = int(dpg.get_value('gmt'))
+        Ramon.settings['gmt'] = Data.gmt
+        Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Data.gmt))
+        with open(f'{Data.root}/data/last_activity.txt'  , 'w') as file:   file.write(Data.last_activity.strftime("%d %b %Y, %H:%M").upper() )
+        dpg.set_value('date'  , Data.last_activity.strftime("%d %b %Y, %H:%M")  )        
+
     @staticmethod
     def updateSettingsWhichRequireRestart(sender=None, user_data=None, args=None):
         Ramon.settings['horizontal' ] = not dpg.get_value('vertical')
@@ -311,6 +345,7 @@ class Ramon:
     
     @staticmethod
     def updateSettings(sender=None, user_data=None, args=None):
+        Ramon.settings['gmt']         = int(dpg.get_value('gmt'))
         Ramon.settings['auto_update'] = dpg.get_value('auto_update')
         Ramon.settings['username'   ] = dpg.get_value('username')
         Ramon.settings['root'       ] = '.'
@@ -350,6 +385,7 @@ class Ramon:
                 dpg.add_checkbox(label="Auto Update"    , tag="auto_update" , default_value=Ramon.settings['auto_update']   , callback=Ramon.updateSettings)
                 dpg.add_checkbox(label="Fullscreen"     , tag="fullscreen"  , default_value=Ramon.settings['fullscreen']    , callback=Ramon.updateSettingsWhichRequireRestart)
                 dpg.add_checkbox(label="Vertical Layout", tag="vertical"    , default_value=not Ramon.settings['horizontal'], callback=Ramon.updateSettingsWhichRequireRestart)
+                dpg.add_slider_int(label="GMT"          , tag="gmt"         , default_value=int(Ramon.settings['gmt'])      , callback=Ramon.updateSettingsGMT, min_value=-12, max_value=+12)
 
     @staticmethod
     def mkdir(dirname):
@@ -558,16 +594,19 @@ class Ramon:
         dpg.set_value('game'  , Data.last_seen      )
         dpg.set_value('rank'  , Data.site_rank      )
         dpg.set_value('score' , Data.score          )
-        dpg.set_value('date'  , Data.last_activity  )
+        dpg.set_value('date'  , Data.last_activity.strftime("%d %b %Y, %H:%M")  )
         dpg.set_value('cheevo', Data.cheevo         )
         payload  = ''
         unlocked = ''
+        Data.recent = []
         for d in Data.cheevos:
             if d.locked: 
                 payload += d.menu() + "\n"
                 dpg.show_item(f'cheevo[{d.index}]')
                 dpg.set_item_label(f'cheevo[{d.index}]', d.name)
             else:
+                if len(Data.recent) < 5: 
+                    Data.recent.append(d)
                 unlocked += '* '+ d.menu() + "\n"
                 
         dpg.set_value('stdout'  , payload)
