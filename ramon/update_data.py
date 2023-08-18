@@ -249,7 +249,7 @@ img.active {
                         else:
                             unlocked.write( str(d) + '\n' )
                         count+=1
-                    Ramon.setProgress( 1.0 )
+                    Ramon.setProgress(1.0)
         
     @staticmethod
     def write():
@@ -498,13 +498,15 @@ class Ramon:
                 no_resize=True, 
                 pos=[(Ramon.width / 2)-100, 
                 (Ramon.height / 2)-32], 
-                show=True
+                show=False
                 ):
                 dpg.add_progress_bar(tag="progress", width=200, pos=[0, 22])
         #keyboard.Listener( on_release=Ramon.on_release).start()
         dpg.set_viewport_small_icon(f"{Ramon.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon(f"{Ramon.settings['root']}/icon.ico")
         
+        if not Data.username or len(Data.cheevos) == 0:
+            Ramon.setProgress(1.0)
         return Ramon.render()
         
     @staticmethod

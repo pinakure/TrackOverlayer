@@ -1,4 +1,0 @@
-auto_update=True
-fullscreen=False
-username=smiker
-root=.
