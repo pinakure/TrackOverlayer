@@ -1,7 +1,0 @@
-width=1440
-height=900
-auto_update=True
-fullscreen=False
-horizontal=True
-username=
-root=.
