@@ -1,3 +1,10 @@
+"""
+        TODO
+- Variable GMT Option
+- Horizontal interface
+- Last x cheevos obtained
+"""
+
 import os, time
 try: 
     import requests
@@ -16,7 +23,7 @@ class Cheevo:
     
     def __init__(self, name, description, picture):
          self.name = name.replace('"', "´")
-         self.picture = picture
+         self.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'
          self.locked  = picture.find('lock')>-1
          self.description = description.replace('"', "´")
          self.index = 0
@@ -31,7 +38,13 @@ class Cheevo:
         #return f'{"->" if Cheevo.active_index == self.index else "  " }[{str(self.index).rjust(3)} ] {self.name.ljust(Cheevo.min_width, " ")}'+"\n"+(" "*9)+f'{self.description}'
 
     def __str__(self):
-        return f'<img class="{"active" if self.index == Cheevo.active_index else ""}" width="48" height="48" src="{self.picture}" title="{self.description}" name="{self.name}">'
+        if not os.path.exists(f'{Data.root}/data/cache/{self.picture}'):
+            print(f"INFO: Caching cheevo picture {self.picture}...", end="")
+            data = requests.get( f'https://media.retroachievements.org/Badge/{self.picture}' ).content
+            with open(f'{Data.root}/data/cache/{self.picture}', 'wb') as file:
+                file.write(data)
+            print("OK")
+        return f'<img class="{"active" if self.index == Cheevo.active_index else ""}" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
 
     @staticmethod
     def parse( payload ):
@@ -56,6 +69,7 @@ class Data:
     cheevos         = []
     mine            = True
     username        = ''
+    theme           = 'default'
 
     @staticmethod
     def setUsername():
@@ -136,6 +150,33 @@ class Data:
                 pass
         
     @staticmethod
+    def getCurrentCheevo( picture ):
+        # try first if image is in cache
+        if os.path.exists(f'{Data.root}/data/cache/{picture}'):
+            with open(f'{Data.root}/data/cache/{picture}', 'rb') as file:
+                #print(f'INFO: Using cached image {picture}')
+                return file.read()
+        else:
+            url = f'https://media.retroachievements.org/Badge/{picture}'
+            try:
+                #print(f'INFO: Requesting cheevo image "{picture}"')
+                data = requests.get( url ).content
+            except:
+                print(f"ERROR: Failed to retrieve 'https://media.retroachievements.org/Badge/{picture}'!")
+                return None                
+            try:
+                with open(f'{Data.root}/data/cache/{picture}', 'wb') as file:
+                    #print(f'INFO: Storing cached image "{picture}"')
+                    file.write(data)
+            except:
+                print(f"ERROR: Failed to store cache for 'https://media.retroachievements.org/Badge/{picture}'!")
+                pass
+                
+            return data
+        
+                    
+
+    @staticmethod
     def writeCheevo():
         if Data.username == '': return
         with open(f'{Data.root}/data/current_cheevo.txt' , 'w') as file:   
@@ -146,11 +187,70 @@ class Data:
                     file.write(d.description)
                     Data.cheevo = d.name + "\n" + d.description
                     # get achievement picture
-                    data = requests.get(d.picture)
-                    with open(f"{Data.root}/data/current_cheevo.png", 'wb') as picture:
-                        picture.write(data.content)
-                    Data.updatePictures()
+                    data = Data.getCurrentCheevo( d.picture )
+                    if data:
+                        with open(f"{Data.root}/data/current_cheevo.png", 'wb') as picture:
+                            picture.write(data )
+                        Data.updatePictures()
                 
+    @staticmethod
+    def getCSS():
+        # get custom css
+        if os.path.exists(f'{Data.root}/themes/{Data.theme}/style.css'):
+            with open(f'{Data.root}/themes/{Data.theme}/style.css', 'r') as file:
+                css = file.read()
+                print(f"INFO: Using '{Data.root}/themes/{Data.theme}/style.css'")
+
+        else:
+            css = """html, body {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+html, img, body {
+    background-color: rgba(0,0,0,0);
+    padding:           0px 0px 0px 0px;
+    line-height:        16px;
+}
+img {
+    border-radius: 24px 24px 24px 24px;
+    box-shadow: 2px 2px 0px #0008;
+    border: 2px solid #0000;
+}
+img.active {
+    filter: brightness(1.5) hue-rotate(270deg);
+    animation: flash 2s linear 0s infinite alternate;
+}
+        
+@keyframes flash {
+    from {border: 2px solid #FF0;}
+    to   {border: 2px solid #F00;}
+}"""
+            with open(f'{Data.root}/themes/{Data.theme}/style.css', 'w') as file:
+                file.write(css)
+            print(f"INFO: Created '{Data.root}/themes/{Data.theme}/style.css'")
+        return css
+
+    @staticmethod
+    def writeCheevos():
+        css = Data.getCSS()
+        with open(f'{Data.root}/data/cheevos.html'         , 'w') as file:   
+            with open(f'{Data.root}/data/cheevos_locked.html'  , 'w') as locked:   
+                with open(f'{Data.root}/data/cheevos_unlocked.html'  , 'w') as unlocked:   
+                    file.write     ( f"<style>{css}</style>")
+                    locked.write   ( f"<style>{css}</style>")
+                    unlocked.write ( f"<style>{css}</style>")
+                    count = 0
+                    for d in Data.cheevos:
+                        Ramon.setProgress( count / len(Data.cheevos) )
+                        file.write( str(d) + '\n' )
+                        if d.locked:
+                            locked.write( str(d) + '\n' )
+                        else:
+                            unlocked.write( str(d) + '\n' )
+                        count+=1
+                    Ramon.setProgress( 1.0 )
+        
     @staticmethod
     def write():
         if Data.username == '': return
@@ -161,37 +261,8 @@ class Data:
         with open(f'{Data.root}/data/site_rank.txt'      , 'w') as file:   file.write(Data.site_rank     )
         with open(f'{Data.root}/data/score.txt'          , 'w') as file:   file.write(Data.score         )
         Data.writeCheevo()
-        with open(f'{Data.root}/data/cheevos.html'       , 'w') as file:   
-            file.write( """<style>
-                html, body {
-                    height: 100%;
-                    overflow-x: hidden;
-                    overflow-y: hidden;
-                }
-                html, img, body {
-                    background-color: rgba(0,0,0,0);
-                    padding:           0px 0px 0px 0px;
-                    line-height:        16px;
-                }
-                img {
-                    border-radius: 24px 24px 24px 24px;
-                    box-shadow: 2px 2px 0px #0008;
-                    border: 2px solid #0000;
-                }
-                img.active {
-                   filter: brightness(1.5) hue-rotate(270deg);
-                    animation: flash 2s linear 0s infinite alternate;
-                }
-                       
-                @keyframes flash {
-                    from {border: 2px solid #FF0;}
-                    to   {border: 2px solid #F00;}
-                }
-            </style>""")
-            for d in Data.cheevos:
-                file.write( str(d) )            
-                file.write( '\n' )            
-
+        Data.writeCheevos()
+        
 
 
 class Ramon:
@@ -272,12 +343,22 @@ class Ramon:
                 dpg.add_checkbox(label="Fullscreen" , tag="fullscreen"  , default_value=Ramon.settings['fullscreen']    , callback=Ramon.updateSettings)
 
     @staticmethod
+    def mkdir(dirname):
+        try:
+            os.mkdir(f'{Data.root}/{dirname}')
+            print(f"INFO: Created directory '{dirname}'")
+        except:
+            print(f"INFO: Using directory '{dirname}'")
+            pass
+        
+
+    @staticmethod
     def start():
         Ramon.loadcfg()
-        try:
-            os.mkdir(f'{Data.root}/data')
-        except:
-            pass
+        Ramon.mkdir('data')
+        Ramon.mkdir('data/cache')
+        Ramon.mkdir('themes')
+        Ramon.mkdir('themes/default')
         dpg.create_context()
         dpg.create_viewport(title="RAMon", width=Ramon.width, height=Ramon.height)
         dpg.setup_dearpygui()
@@ -404,13 +485,36 @@ class Ramon:
                     pos=(31,row_height*Cheevo.global_index)
                 )
             Data.updatePictures()
-           
+            with dpg.window(
+                modal=True, 
+                label="Caching pictures...",
+                tag="progress_overlay", 
+                width=200, 
+                height=45, 
+                min_size=[200, 45], 
+                no_scrollbar=True, 
+                max_size=[200, 45], 
+                no_collapse=True, 
+                no_resize=True, 
+                pos=[(Ramon.width / 2)-100, 
+                (Ramon.height / 2)-32], 
+                show=True
+                ):
+                dpg.add_progress_bar(tag="progress", width=200, pos=[0, 22])
         #keyboard.Listener( on_release=Ramon.on_release).start()
         dpg.set_viewport_small_icon(f"{Ramon.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon(f"{Ramon.settings['root']}/icon.ico")
         
         return Ramon.render()
         
+    @staticmethod
+    def setProgress(value):
+        if value >= 1.0:
+            dpg.hide_item('progress_overlay')
+        else:
+            dpg.set_value('progress', value)
+            dpg.show_item('progress_overlay')
+                
     @staticmethod
     def render():
         import time
@@ -420,7 +524,7 @@ class Ramon:
         Ramon.refresh()
         last_update = time.time()
         while dpg.is_dearpygui_running() and Data.mine:
-            dpg.render_dearpygui_frame()            
+            dpg.render_dearpygui_frame()
             delta = int(time.time() - last_update)
             if  delta >= 60:
                 last_update = time.time()
