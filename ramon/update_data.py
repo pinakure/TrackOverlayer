@@ -170,11 +170,8 @@ class Data:
                     file.write(data)
             except:
                 print(f"ERROR: Failed to store cache for 'https://media.retroachievements.org/Badge/{picture}'!")
-                pass
-                
+                pass                
             return data
-        
-                    
 
     @staticmethod
     def writeCheevo():
@@ -266,8 +263,8 @@ img.active {
 
 
 class Ramon:
-    width               = 900
-    height              = 1440
+    width               = 1440
+    height              =  900
     
     settings            = {}
 
@@ -280,8 +277,11 @@ class Ramon:
     @staticmethod
     def loadcfg():
         Ramon.settings            = {
+            'width'         : 1440,
+            'height'        :  900,
             'auto_update'   : True,
             'fullscreen'    : True,
+            'horizontal'    : True,
             'username'      : '',
             'root'          : '.',
         }
@@ -297,13 +297,21 @@ class Ramon:
                     Ramon.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]
             Data.username = Ramon.settings['username']#workaround a design flaw
             Data.root     = Ramon.settings['root']
+            Ramon.width   = int(Ramon.settings['width']) - (4 if Ramon.settings['fullscreen'] else 0)
+            Ramon.height  = int(Ramon.settings['height'])
         except Exception as E:
             return 
         
     @staticmethod
+    def updateSettingsWhichRequireRestart(sender=None, user_data=None, args=None):
+        Ramon.settings['horizontal' ] = not dpg.get_value('vertical')
+        Ramon.settings['fullscreen' ] = dpg.get_value('fullscreen')
+        Ramon.restart = True
+        Data.mine = False
+    
+    @staticmethod
     def updateSettings(sender=None, user_data=None, args=None):
         Ramon.settings['auto_update'] = dpg.get_value('auto_update')
-        Ramon.settings['fullscreen' ] = dpg.get_value('fullscreen')
         Ramon.settings['username'   ] = dpg.get_value('username')
         Ramon.settings['root'       ] = '.'
         Data.root = Ramon.settings['root']
@@ -339,8 +347,9 @@ class Ramon:
                 dpg.add_menu_item(label="Refresh "   , callback=Ramon.refresh)
                 dpg.add_menu_item(label="Exit    "   , callback=Ramon.exit  )
             with dpg.menu(label="Options"):
-                dpg.add_checkbox(label="Auto Update", tag="auto_update" , default_value=Ramon.settings['auto_update']   , callback=Ramon.updateSettings)
-                dpg.add_checkbox(label="Fullscreen" , tag="fullscreen"  , default_value=Ramon.settings['fullscreen']    , callback=Ramon.updateSettings)
+                dpg.add_checkbox(label="Auto Update"    , tag="auto_update" , default_value=Ramon.settings['auto_update']   , callback=Ramon.updateSettings)
+                dpg.add_checkbox(label="Fullscreen"     , tag="fullscreen"  , default_value=Ramon.settings['fullscreen']    , callback=Ramon.updateSettingsWhichRequireRestart)
+                dpg.add_checkbox(label="Vertical Layout", tag="vertical"    , default_value=not Ramon.settings['horizontal'], callback=Ramon.updateSettingsWhichRequireRestart)
 
     @staticmethod
     def mkdir(dirname):
@@ -355,6 +364,10 @@ class Ramon:
     @staticmethod
     def start():
         Ramon.loadcfg()
+        if not Ramon.settings['horizontal']:
+            w, h = Ramon.width,Ramon.height
+            Ramon.height = w
+            Ramon.width  = h
         Ramon.mkdir('data')
         Ramon.mkdir('data/cache')
         Ramon.mkdir('themes')
@@ -455,7 +468,7 @@ class Ramon:
             with dpg.window(
                 tag='frame',
                 width=(Ramon.width-12), 
-                height=(Ramon.height - row)-46,                
+                height=(Ramon.height - ((row+46) if not Ramon.settings['fullscreen'] else (row+8))),
                 pos=(8,row),
                 no_move=True,
                 no_close=True,
@@ -532,9 +545,13 @@ class Ramon:
                 last_update = time.time()
                 if Ramon.settings['auto_update']:
                     Ramon.refresh()
+        dpg.remove_alias("main") 
+        dpg.delete_item('main')
         dpg.destroy_context()
         Ramon.writecfg()
-
+        
+        print("Closed succesfully")
+        
     @staticmethod
     def redraw():
         Ramon.clear()
@@ -579,4 +596,9 @@ class Ramon:
     def message(text):
         dpg.set_value('stdout', dpg.get_value('stdout')+'\n'+text)
 
+Ramon.restart = 0
 Ramon.start()
+if Ramon.restart:
+    import sys
+    cmdline = " ".join(sys.argv)
+    os.system(f'start {cmdline}')

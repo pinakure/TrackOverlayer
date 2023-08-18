@@ -5,6 +5,7 @@
 *.pkg
 *.manifest
 *.pyz
+ramon/data
 ramon/build/update_data/base_library.zip
 ramon/build/update_data/update_data.exe
 ramon/build/update_data/warn-update_data.txt
@@ -153,3 +154,4 @@ ramon/data/cache/386433.png
 ramon/dist/RAMon.exe
 ramon/RAMon.exe
 ramon/RAMon.exe
+ramon/config.txt
