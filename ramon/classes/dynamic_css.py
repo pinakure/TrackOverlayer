@@ -1,4 +1,5 @@
 import cssbeautifier 
+from classes.log        import Log
 
 class DynamicCSS:
 
@@ -18,8 +19,9 @@ class DynamicCSS:
         try:
             with open(f'{DynamicCSS.root}/css/{self.filename}.css', 'r') as input:
                 self.css = input.read()
+            Log.info(f"Loaded CSS Override for '{self.filename}'.")
         except FileNotFoundError:
-            print(f"W: CSS Override for '{self.filename}' not found; Generating file...")
+            Log.warning(f"CSS Override for '{self.filename}' not found; Generating file...")
             self.save()
 
     def save(self): 
@@ -27,5 +29,5 @@ class DynamicCSS:
             with open(f'{DynamicCSS.root}/css/{self.filename}.css', 'w') as input:
                 input.write( cssbeautifier.beautify(self.css ))
         except Exception as E:
-            print(f"E: Cannot write CSS Override for '{self.filename}' : {str(E)}")
+            Log.error(f"Cannot write CSS Override for '{self.filename}' : {str(E)}")
 

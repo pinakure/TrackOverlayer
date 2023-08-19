@@ -1,3 +1,3 @@
-@pyinstaller --onefile --noconsole -i icon.ico update_data.py
-@move dist\update_data.exe RAMon.exe
+@pyinstaller --onefile --noconsole -i icon.ico main.py
+@move dist\main.exe RAMon.exe
 @rmdir dist

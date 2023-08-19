@@ -1,4 +1,5 @@
 import requests, os 
+from classes.log    import Log
 
 class Cheevo:
     root            = '.'
@@ -25,11 +26,10 @@ class Cheevo:
 
     def __str__(self):
         if not os.path.exists(f'{Cheevo.root}/data/cache/{self.picture}'):
-            print(f"INFO: Caching cheevo picture {self.picture}...", end="")
+            Log.info(f"Caching cheevo picture {self.picture}...")
             data = requests.get( f'https://media.retroachievements.org/Badge/{self.picture}' ).content
             with open(f'{Cheevo.root}/data/cache/{self.picture}', 'wb') as file:
                 file.write(data)
-            print("OK")
         return f'<img class="{"active" if self.index == Cheevo.active_index else ""} round" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
 
     @staticmethod

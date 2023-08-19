@@ -9,18 +9,14 @@
         - Added preferences module
         - Bugfix: Fixed unlocked achievements position calculation, now displays correctly
         ------
-        
-"""
 
-import os, sys, time
+"""
 try: 
-    from dearpygui import dearpygui as dpg
-    from classes.dynamic_css import DynamicCSS
-    from classes.preferences import Preferences
     from classes.ramon       import Ramon
-    from classes.cheevo      import Cheevo
+    import os, sys
 except ImportError:
     os.system('pip install requests beautifulsoup4 dearpygui pynput cssbeautifier')
+    os.system(f'pause')
     exit()
 
 Ramon.start()
