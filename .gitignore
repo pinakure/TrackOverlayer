@@ -6,6 +6,9 @@
 *.manifest
 *.pyz
 ramon/data
+ramon/dist
+obs-studio
+ramon/css
 ramon/build/update_data/base_library.zip
 ramon/build/update_data/update_data.exe
 ramon/build/update_data/warn-update_data.txt
