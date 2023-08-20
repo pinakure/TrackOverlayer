@@ -1,5 +1,10 @@
-import cssbeautifier 
 from classes.log        import Log
+
+def beautify(input):
+    output = input.replace('{', '{\n\t')
+    output = output.replace(';', ';\n\t')    
+    output = output.replace('}', '\n}\n')
+    return output
 
 class DynamicCSS:
 
@@ -27,7 +32,7 @@ class DynamicCSS:
     def save(self): 
         try:
             with open(f'{DynamicCSS.root}/css/{self.filename}.css', 'w') as input:
-                input.write( cssbeautifier.beautify(self.css ))
+                input.write( beautify(self.css ))
         except Exception as E:
             Log.error(f"Cannot write CSS Override for '{self.filename}' : {str(E)}")
 

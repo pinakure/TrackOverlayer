@@ -18,7 +18,7 @@ try:
     from classes.ramon       import Ramon
     import os, sys
 except ImportError:
-    os.system('pip install requests beautifulsoup4 dearpygui pynput cssbeautifier')
+    os.system('pip install requests beautifulsoup4 dearpygui pynput')
     os.system(f'pause')
     exit()
 
