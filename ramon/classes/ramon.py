@@ -65,6 +65,7 @@ class Ramon:
     @staticmethod
     def updateCheevo(sender=None, args=None, user_data=None):
         Cheevo.active_index = user_data
+        Preferences.settings['current_cheevo'] = Cheevo.active_index
         for i in range(0,Cheevo.max):
             dpg.set_value(f'cheevo[{i+1}]', False)
         dpg.set_value(f'cheevo[{user_data}]', True)
@@ -231,7 +232,7 @@ class Ramon:
                 dpg.add_text(
                     tag='stdout',
                     pos=(31,0),
-                    color=(0,255,255),
+                    color=Preferences.settings['pending_cheevos'],
                 )            
                 for i in range(0,Cheevo.max):
                     dpg.add_checkbox(
@@ -245,7 +246,7 @@ class Ramon:
                     )
                 dpg.add_text(
                     tag='unlocked',
-                    color=(80,200,0),
+                    color=Preferences.settings['unlocked_cheevos'],
                     pos=(31,row_height*Cheevo.global_index)
                 )
             Data.updatePictures()

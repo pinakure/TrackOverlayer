@@ -10,6 +10,9 @@
         - Bugfix: Fixed unlocked achievements position calculation, now displays correctly
         ------
 
+        - Program now remembers last cheevo active after restart
+        - Settings dialog
+
 """
 try: 
     from classes.ramon       import Ramon

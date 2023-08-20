@@ -1,12 +1,13 @@
-from datetime import datetime, timedelta
-from dearpygui import dearpygui as dpg
-
+import json
+from datetime       import datetime, timedelta
+from dearpygui      import dearpygui as dpg
+from classes.cheevo import Cheevo
     
 class Preferences:
 
     root            = '.'
-    width           = 800
-    height          = 600
+    width           = 640
+    height          = 480
     parent          = None
     data            = None
     
@@ -30,7 +31,12 @@ class Preferences:
             'username'          : '',
             'root'              : '.',
             'gmt'               : 2,
+            'api_key'           : '',
+            'use_api'           : False,
             'simple_ui'         : False,
+            'pending_cheevos'   : '[0,255,255]',
+            'unlocked_cheevos'  : '[64, 128,0]',
+            'current_cheevo'    : 1,
         }
         Preferences.root     = Preferences.settings['root']
         
@@ -48,6 +54,10 @@ class Preferences:
             Preferences.settings['auto_update_rate']= int(Preferences.settings['auto_update_rate'])
             Preferences.settings['width']           = Preferences.parent.width
             Preferences.settings['height']          = Preferences.parent.height
+            Preferences.settings['pending_cheevos' ]= json.loads( Preferences.settings['pending_cheevos' ] )
+            Preferences.settings['unlocked_cheevos']= json.loads( Preferences.settings['unlocked_cheevos'] )
+            Preferences.settings['current_cheevo']  = int( Preferences.settings['current_cheevo'] )            
+            Cheevo.active_index                     = Preferences.settings['current_cheevo']
         except Exception as E:
             return 
 
@@ -81,12 +91,27 @@ class Preferences:
         Preferences.writecfg( restart=False )
    
     @staticmethod
+    def updateSettingColor(sender=None, user_data=None, args=None):
+        Preferences.settings[sender] = dpg.get_value(sender)        
+        Preferences.writecfg( restart=False )
+   
+    @staticmethod
     def createInterfaceTab():
         with dpg.tab(label="Interface", tag="tab_general"):
             with dpg.child_window():
-                createBooleanField('Simple UI       ' , 'simple_ui'     , restart=True)
-                createBooleanField('Fullscreen      ' , 'fullscreen'    , restart=True)
-                createBooleanField('Vertical Layout ' , 'vertical'      , restart=True)
+                createBooleanField('Simple UI       '   , 'simple_ui'       , restart=True)
+                createBooleanField('Fullscreen      '   , 'fullscreen'      , restart=True)
+                createBooleanField('Vertical Layout '   , 'vertical'        , restart=True)
+                createIntegerField('Width'              , 'width'           , min_value=320,max_value=1440)
+                createIntegerField('Height'             , 'height'          , min_value=320,max_value=1440)
+                dpg.add_text("Achievement Colors", color=(255,255,0))
+                createColorField  ('Pending '   , 'pending_cheevos' )
+                createColorField  ('Unlocked'   , 'unlocked_cheevos' )
+                dpg.configure_item('pending_cheevos' , pos=(0, 148))
+                pos = dpg.get_item_pos('pending_cheevos')
+                dpg.configure_item('unlocked_cheevos', pos=(pos[0]+192, pos[1]))
+                dpg.set_value('unlocked_cheevos', Preferences.settings['unlocked_cheevos'   ])
+                dpg.set_value('pending_cheevos' , Preferences.settings['pending_cheevos'    ])
                 
     @staticmethod
     def createOutputTab():
@@ -98,8 +123,14 @@ class Preferences:
     def createInputTab():
         with dpg.tab(label="Input", tag="tab_input"):
             with dpg.child_window():
-                createBooleanField('Auto Update'        , 'auto_update'      )
-                createIntegerField('Auto Update Rate'   , 'auto_update_rate' , min_value=1,max_value=60)
+                dpg.add_text( "API" , color=(255,255,0))
+                createBooleanField('Enabled'            , 'use_api'          )
+                createStringField ('API Key'            , 'api_key'          )
+                dpg.configure_item('api_key'            , pos=(96, 32))
+                dpg.add_text( "Auto Update data"        , color=(255,255,0))
+                createBooleanField('Enabled'            , 'auto_update'      )
+                createIntegerField('Minutes'            , 'auto_update_rate' , min_value=1,max_value=60)
+                dpg.configure_item('auto_update_rate'   , pos=(96, 78))
 
     @staticmethod
     def create( parent ):
@@ -140,3 +171,9 @@ def createBooleanField(name, setting_name, callback=Preferences.updateSettingBoo
 
 def createIntegerField(name, setting_name, callback=Preferences.updateSettingInteger, restart=False, min_value=0, max_value=9999):
     dpg.add_slider_int(label = name, tag = setting_name, callback=callback,default_value=int(Preferences.settings[setting_name]), min_value=min_value, max_value=max_value, user_data=restart) 
+
+def createStringField(name, setting_name, callback=Preferences.updateSetting, restart=False):
+    dpg.add_input_text(label = name, tag = setting_name, callback=callback,default_value=Preferences.settings[setting_name], user_data=False) 
+
+def createColorField(name, setting_name, callback=Preferences.updateSettingColor):
+    dpg.add_color_picker(height=128, width=128,label = name, tag = setting_name, callback=callback,default_value=Preferences.settings[setting_name], user_data=False) 
