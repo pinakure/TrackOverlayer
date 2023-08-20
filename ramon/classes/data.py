@@ -22,7 +22,6 @@ class Data:
     cheevos         = []
     mine            = True
     username        = ''
-    theme           = 'default'
     recent          = []
     reload_rate     = 60
     css             = {}
@@ -50,16 +49,21 @@ class Data:
             Data.last_activityr= usersummary.split('Last Activity: ')[1].split('Account')[0]
             Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
             stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
+            Log.info("Getting progress HTML")
             Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
+            Log.info("Getting progress")
             Data.progress       = Data.progress_html.split('width:')[1].split('"')[0]
             Data.progress_html  = f'<style>{Data.css["progress"].get()}</style><div class="progressbar grow">{Data.progress_html}</div>'
+            Log.info("Getting metadata")
             Data.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
+            Log.info("Getting cheevos raw data")
             Data.cheevos_raw    = Data.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
+            Log.info("Parsing cheevos")
             Data.cheevos        = Data.parseCheevos()
             for d in Data.cheevos:
                 if d.index == Cheevo.active_index:
                     Data.cheevo = d.name + "\n" + d.description
-                dpg.render_dearpygui_frame()           
+                #dpg.render_dearpygui_frame()           
             return True
         except Exception as E:
             Log.error(str(E))

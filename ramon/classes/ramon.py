@@ -88,12 +88,11 @@ class Ramon:
 
     @staticmethod
     def mkdir(dirname):
-        try:
-            os.mkdir(f'{Data.root}/{dirname}')
+        if not os.path.exists(f'{Preferences.root}/{dirname}'):
+            os.mkdir(f'{Preferences.root}/{dirname}')
             Log.info(f"Created directory '{dirname}'")
-        except:
+        else:
             Log.info(f"Using directory '{dirname}'")
-            pass
         
     @staticmethod 
     def setupCSS():
@@ -114,16 +113,15 @@ class Ramon:
         Preferences.parent = Ramon
         HotKeys.install()
         Preferences.loadcfg()
+        Ramon.mkdir('css')
+        Ramon.mkdir('data')
+        Ramon.mkdir('data/cache')
         Ramon.setupCSS()
         if Preferences.settings['vertical']:
             w, h = Ramon.width,Ramon.height
             Ramon.height = w
             Ramon.width  = h
-        Ramon.mkdir('css')
-        Ramon.mkdir('data')
-        Ramon.mkdir('data/cache')
-        Ramon.mkdir('themes')
-        Ramon.mkdir('themes/default')
+        
         dpg.create_context()
         dpg.create_viewport(title="RAMon", width=Ramon.width, height=Ramon.height)
         dpg.setup_dearpygui()

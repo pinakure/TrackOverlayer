@@ -26,7 +26,7 @@ class Preferences:
             'height'            :  900,
             'auto_update'       : True,
             'auto_update_rate'  : 1,
-            'fullscreen'        : True,
+            'fullscreen'        : False,
             'vertical'          : False,
             'username'          : '',
             'root'              : '.',
@@ -72,7 +72,7 @@ class Preferences:
     @staticmethod
     def updateUsername(sender=None, user_data=None, args=None):
         Preferences.settings['username'] = dpg.get_value('username')
-        Preferences.writecfg()
+        Preferences.writecfg( restart=False)
         Preferences.parent.refresh()
 
     @staticmethod
@@ -143,6 +143,7 @@ class Preferences:
             no_collapse=True, 
             no_resize=True,
             modal = True,
+            show = False,
             on_close=lambda:dpg.hide_item('preferences_main'),
             pos=((Preferences.parent.width / 2) - (Preferences.width / 2),(Preferences.parent.height / 2) - (Preferences.height / 2))
         ):
