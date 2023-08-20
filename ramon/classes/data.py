@@ -5,12 +5,14 @@ from bs4                    import BeautifulSoup
 from classes.cheevo         import Cheevo
 from classes.preferences    import Preferences
 from classes.log            import Log
+from classes.scraper        import Scraper
 
 class Data:
     parent          = None
     echo            = False
     score           = ''
     site_rank       = ''
+    last_seen_full  = ''
     last_seen       = ''
     last_activityr  = ''
     last_activity   = None
@@ -45,7 +47,8 @@ class Data:
             usersummary         = parsed_html.body.find('div', attrs={'class':'usersummary'}).text
             Data.score          = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
             Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
-            Data.last_seen      = usersummary.split('Last seen  in  ')[1].split('(')[0]
+            Data.last_seen_full = usersummary.split('Last seen  in  ')[1]
+            Data.last_seen      = Data.last_seen_full.split('(')[0]
             Data.last_activityr= usersummary.split('Last Activity: ')[1].split('Account')[0]
             Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
             stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
@@ -63,7 +66,10 @@ class Data:
             for d in Data.cheevos:
                 if d.index == Cheevo.active_index:
                     Data.cheevo = d.name + "\n" + d.description
-                #dpg.render_dearpygui_frame()           
+                #dpg.render_dearpygui_frame()               
+
+            Scraper.getGamePicture( Data.last_seen.split(':')[0].split('.')[0] )
+
             return True
         except Exception as E:
             Log.error(str(E))

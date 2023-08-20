@@ -3,7 +3,7 @@ from classes.log    import Log
 
 class Cheevo:
     root            = '.'
-    max             = 128    
+    max             = 256    
     min_width       = 0
     global_index    = 0
     active_index    = 1

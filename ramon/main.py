@@ -13,6 +13,10 @@
         - Program now remembers last cheevo active after restart
         - Settings dialog
 
+        ------
+        Log window 
+        ------
+
 """
 try: 
     from classes.ramon       import Ramon

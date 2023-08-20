@@ -84,7 +84,8 @@ class Ramon:
                 dpg.add_menu_item(label="Refresh "   , callback=Ramon.refresh)
                 dpg.add_menu_item(label="Exit    "   , callback=Ramon.exit  )
             with dpg.menu(label="Options"):
-                dpg.add_menu_item(label="Preferences"   , tag="preferences" , callback=Preferences.show            )
+                dpg.add_menu_item(label="Preferences"   , tag="preferences" , callback=Preferences.show     )
+                dpg.add_menu_item(label="Log"           , tag="view_log"    , callback=Log.show             )
 
     @staticmethod
     def mkdir(dirname):
@@ -264,6 +265,7 @@ class Ramon:
                 show=False
                 ):
                 dpg.add_progress_bar(tag="progress", width=200, pos=[0, 22])
+            Log.create( Ramon )
             Preferences.create( Ramon )
         dpg.set_viewport_small_icon(f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon(f"{Preferences.settings['root']}/icon.ico")
