@@ -55,6 +55,7 @@ class Ramon:
     height              = 900
     restart             = False    
     css                 = {}
+    version             = 0.5
 
     @staticmethod
     def updateCheevoManually(sender=None, args=None, user_data=None):
@@ -124,11 +125,11 @@ class Ramon:
             Ramon.width  = h
         
         dpg.create_context()
-        dpg.create_viewport(title="RAMon", width=Ramon.width, height=Ramon.height)
+        dpg.create_viewport(title="RAMon", width=Ramon.width+16, height=Ramon.height)
         dpg.setup_dearpygui()
         with dpg.window(
             tag='main',
-            label="RAMon", 
+            label=f"RAMon v.{Ramon.version}", 
             width=Ramon.width, 
             height=Ramon.height, 
             no_close=True, 
@@ -136,7 +137,7 @@ class Ramon:
             no_resize=True, 
             no_title_bar=True, 
             no_bring_to_front_on_focus=True, 
-            no_move=True
+            no_move=True,            
         ):
             Ramon.createMenu()
             row = 23
@@ -269,7 +270,7 @@ class Ramon:
             Preferences.create( Ramon )
         dpg.set_viewport_small_icon(f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon(f"{Preferences.settings['root']}/icon.ico")
-        
+        dpg.set_viewport_pos( (Preferences.settings['x-pos'], Preferences.settings['y-pos']))
         if not Data.username or len(Data.cheevos) == 0:
             Ramon.setProgress(1.0)
         return Ramon.render()
@@ -297,6 +298,12 @@ class Ramon:
                 last_update = time.time()
                 if Preferences.settings['auto_update']:
                     Ramon.refresh()
+        pos  = dpg.get_viewport_pos()
+        size = (dpg.get_viewport_width(), dpg.get_viewport_height() )
+        Preferences.settings['x-pos'] = pos[0]
+        Preferences.settings['y-pos'] = pos[1]
+        Preferences.settings['width'] = size[0]-16
+        Preferences.settings['height'] = size[1]
         dpg.remove_alias("main") 
         dpg.delete_item('main')
         dpg.destroy_context()
