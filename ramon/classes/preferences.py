@@ -23,7 +23,9 @@ class Preferences:
 
     @staticmethod
     def loadcfg():
-        Preferences.settings = {
+        defaults = {
+            'version'                   : Preferences.parent.version,
+            'last_game'                 : '',
             'width'                     : 1440,
             'height'                    :  900,
             'x-pos'                     :    0,
@@ -36,6 +38,7 @@ class Preferences:
             'root'                      : '.',
             'gmt'                       : 2,
             'api_key'                   : '',
+            'twitch-app-key'            : '',
             'use_api'                   : False,
             'simple_ui'                 : False,
             'pending_cheevos'           : [0,255,255],
@@ -63,8 +66,10 @@ class Preferences:
             'recent-font-glow'          : True,
             'recent-border-color'       : [255,255,255],
             'recent-font-color'         : [0,255,255],
+            'recent-font-size'          : 16,
             'recent-font'               : 'ff6',
         }
+        Preferences.settings = defaults
         Preferences.root     = Preferences.settings['root']
         
         try:
@@ -74,6 +79,16 @@ class Preferences:
                     if len(setting)==0:continue
                     parts = setting.split('=')
                     Preferences.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]
+            try:
+                if Preferences.settings['version'] == Preferences.parent.version:
+                    Log.info(f"Found version {Preferences.settings['version']} config file")
+            except:
+                Log.warning("Configuration file was invalid. Generating new one.")
+                root = Preferences.settings['root']
+                username = Preferences.settings['username']
+                Preferences.settings = defaults
+                Preferences.settings['root'     ] = root
+                Preferences.settings['username' ] = username
             Preferences.root                            = Preferences.settings['root']
             Preferences.parent.width                    = int(Preferences.settings['width' ]) - (4 if Preferences.settings['fullscreen'] else 0)
             Preferences.parent.height                   = int(Preferences.settings['height'])
@@ -184,7 +199,23 @@ class Preferences:
                 
     @staticmethod
     def loadCustomizations():
+        DynamicCSS.settings['cheevos']['border-width'  ] = Preferences.settings['cheevos-border-width' ]
+        DynamicCSS.settings['cheevos']['border-radius' ] = Preferences.settings['cheevos-border-radius']
+        DynamicCSS.settings['cheevos']['border-color'  ] = Preferences.settings['cheevos-border-color' ]
+        DynamicCSS.settings['cheevos']['active-color'  ] = Preferences.settings['cheevos-active-color' ]
+        
+        DynamicCSS.settings['locked']['border-width'   ] = Preferences.settings['locked-border-width'  ]
+        DynamicCSS.settings['locked']['border-radius'  ] = Preferences.settings['locked-border-radius' ]
+        DynamicCSS.settings['locked']['border-color'   ] = Preferences.settings['locked-border-color'  ]
+        DynamicCSS.settings['locked']['active-color'   ] = DynamicCSS.settings['cheevos']['active-color'  ]
+        
+        DynamicCSS.settings['unlocked']['border-width' ] = Preferences.settings['unlocked-border-width']
+        DynamicCSS.settings['unlocked']['border-radius'] = Preferences.settings['unlocked-border-radius']
+        DynamicCSS.settings['unlocked']['border-color' ] = Preferences.settings['unlocked-border-color']
+        DynamicCSS.settings['unlocked']['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
+        
         DynamicCSS.settings['recent']['font']           = Preferences.settings['recent-font']
+        DynamicCSS.settings['recent']['font-size']      = Preferences.settings['recent-font-size']
         DynamicCSS.settings['recent']['font-color']     = Preferences.settings['recent-font-color']
         DynamicCSS.settings['recent']['font-glow']      = Preferences.settings['recent-font-glow']
         DynamicCSS.settings['recent']['border-width']   = Preferences.settings['recent-border-width']
@@ -193,12 +224,26 @@ class Preferences:
 
     @staticmethod
     def updateCustomizations(sender=None, args=None, user_data=None):
+        Preferences.settings['cheevos-border-radius'  ]  = int(dpg.get_value('cheevos-border-radius'))
+        Preferences.settings['locked-border-radius'  ]  = int(dpg.get_value('locked-border-radius'))
+        Preferences.settings['unlocked-border-radius']  = int(dpg.get_value('unlocked-border-radius'))
+        Preferences.settings['cheevos-border-width'   ]  = int(dpg.get_value('cheevos-border-width'))
         Preferences.settings['recent-border-radius']    = int(dpg.get_value('recent-border-radius'))
+        Preferences.settings['locked-border-width'   ]  = int(dpg.get_value('locked-border-width'))
+        Preferences.settings['unlocked-border-width' ]  = int(dpg.get_value('unlocked-border-width'))
         Preferences.settings['recent-border-width']     = int(dpg.get_value('recent-border-width'))
-        Preferences.settings['recent-font']             = dpg.get_value('recent-font')
-        Preferences.settings['recent-font-color']       = dpg.get_value('recent-font-color')
+        
+        Preferences.settings['cheevos-border-color'   ]  = dpg.get_value('cheevos-border-color')
+        Preferences.settings['cheevos-active-color'   ]  = dpg.get_value('cheevos-active-color')
+        Preferences.settings['locked-border-color'   ]  = dpg.get_value('locked-border-color')
+        Preferences.settings['unlocked-border-color' ]  = dpg.get_value('unlocked-border-color')
         Preferences.settings['recent-border-color']     = dpg.get_value('recent-border-color')
+
+        Preferences.settings['recent-font']             = dpg.get_value('recent-font')
+        Preferences.settings['recent-font-size']        = int(dpg.get_value('recent-font-size'))
+        Preferences.settings['recent-font-color']       = dpg.get_value('recent-font-color')
         Preferences.settings['recent-font-glow']        = dpg.get_value('recent-font-glow')
+        print(json.dumps(Preferences.settings))
         Preferences.loadCustomizations()
         Preferences.writecfg( restart=False )
 
@@ -206,21 +251,20 @@ class Preferences:
     def addCheevosCustomizationPanel(tag):
         with dpg.child_window():
             dpg.add_text("Shape & Behavior", color=(255,255,0))
-            createIntegerField('Round Shape'        , f'{tag}-border-radius'    )
-            createIntegerField('Border Width'       , f'{tag}-border-width'    , min_value=0,max_value=16)
+            createIntegerField('Border Radius'      , f'{tag}-border-radius'   , max_value=128, callback=Preferences.updateCustomizations)
+            createIntegerField('Border Width'       , f'{tag}-border-width'    , max_value=16 , callback=Preferences.updateCustomizations)
             dpg.add_text("Widget colors"            , color=(255,255,0), pos=(8,84))
             if tag=='cheevos':
-                createColorField('Active'               , f'{tag}-active-color'    )
-            createColorField('Border'                   , f'{tag}-border-color'    )
+                createColorField('Active'               , f'{tag}-active-color'    , callback=Preferences.updateCustomizations)
+            createColorField('Border'                   , f'{tag}-border-color'    , callback=Preferences.updateCustomizations)
             if tag=='cheevos':
                 dpg.configure_item(f'{tag}-active-color', pos=(14,108))
                 pos = dpg.get_item_pos(f'{tag}-active-color')
                 dpg.configure_item(f'{tag}-border-color', pos=(pos[0]+192, pos[1]))
             else:
                 dpg.configure_item(f'{tag}-border-color', pos=(14,108))
-            dpg.add_button(label="Edit CSS File", pos=(Preferences.width - 130,3) , tag=f"css-{tag}", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\"+tag+".css"))
-            dpg.add_button(label="Apply Changes", pos=(Preferences.width - 130,24), tag=f"gen-{tag}", callback=DynamicCSS.customize, user_data=Preferences.parent.css[tag])
-
+            dpg.add_button(label="Edit CSS File", pos=(Preferences.width - 132,3) , tag=f"css-{tag}", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\"+tag+".css"))
+            dpg.add_button(label="Apply Changes", pos=(Preferences.width - 132,24), tag=f"gen-{tag}", callback=DynamicCSS.customize, user_data=Preferences.parent.css[tag])
 
     @staticmethod
     def createOutputTab():
@@ -245,29 +289,31 @@ class Preferences:
                         with dpg.child_window():
                             from classes.dynamic_css import fonts
                             dpg.add_text("Shape & Behavior", color=(255,255,0))
-                            createIntegerField('Border Radius'      , 'recent-border-radius'    , callback=Preferences.updateCustomizations)
-                            createIntegerField('Border Width'       , 'recent-border-width'     , callback=Preferences.updateCustomizations, min_value=0,max_value=16)
-                            
+                            createIntegerField('Border Radius'      , 'recent-border-radius'    , callback=Preferences.updateCustomizations, max_value=64)
+                            createIntegerField('Border Width'       , 'recent-border-width'     , callback=Preferences.updateCustomizations,max_value=16)
                             dpg.add_text("Widget colors"            , color=(255,255,0), pos=(8, 84))
                             createColorField('Border'               , 'recent-border-color'     , callback=Preferences.updateCustomizations)
                             dpg.configure_item('recent-border-color', pos=(14,108))
                             pos = dpg.get_item_pos('recent-border-color')
                             createColorField('Font'                 , 'recent-font-color'       , callback=Preferences.updateCustomizations)
-                            dpg.configure_item('recent-font-color', pos=(pos[0]+192, pos[1]))
-                            dpg.add_text("Font", color=(255,255,0), pos=(Preferences.width - 240, 134))
-                            dpg.add_listbox(tag='recent-font', num_items=len(fonts.keys()), items=list(fonts.keys()), callback=Preferences.updateCustomizations, pos=(Preferences.width - 240, 160),default_value=Preferences.settings['recent-font'])
+                            dpg.configure_item('recent-font-color'  , pos=(pos[0]+192, pos[1]))
+                            dpg.add_text("Font Type", color=(255,255,0)  , pos=(Preferences.width - 240, 134))
+                            dpg.add_listbox(tag='recent-font'       , num_items=len(fonts.keys()), items=list(fonts.keys()), callback=Preferences.updateCustomizations, pos=(Preferences.width - 240, 160),default_value=Preferences.settings['recent-font'])
                             dpg.add_text("Font Glow"                , color=(255,255,0), pos=(Preferences.width - 240, 84))
-                            createBooleanField('Enabled'            , 'recent-font-glow' )
-                            dpg.configure_item('recent-font-glow',  pos=(Preferences.width - 240, 108))
+                            createBooleanField('Enabled'            , 'recent-font-glow' , callback=Preferences.updateCustomizations)
+                            dpg.configure_item('recent-font-glow'   ,  pos=(Preferences.width - 240, 108))
+                            dpg.add_button(label="Edit CSS File"    , pos=(Preferences.width - 130,3), tag="css-recent", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\recent.css"))
+                            dpg.add_button(label="Apply Changes"    , pos=(Preferences.width - 130,24), tag="gen-recent", callback=DynamicCSS.customize, user_data=Preferences.parent.css['recent'])
+                            createIntegerField('Font Size'          , 'recent-font-size'     , callback=Preferences.updateCustomizations, min_value=1, max_value=64)
+                            dpg.add_text("Font Size"                , color=(255,255,0), pos=(Preferences.width - 240, 260))
+                            dpg.configure_item('recent-font-size'   ,  pos=(Preferences.width - 240, 280), width=200)
                             
-                            
-                            dpg.add_button(label="Edit CSS File", pos=(Preferences.width - 130,3), tag="css-recent", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\recent.css"))
-                            dpg.add_button(label="Apply Changes", pos=(Preferences.width - 130,24), tag="gen-recent", callback=DynamicCSS.customize, user_data=Preferences.parent.css['recent'])
-
     @staticmethod
     def createInputTab():
         with dpg.tab(label="Input", tag="tab_input"):
             with dpg.child_window():
+                dpg.add_text( "Twitch Integration" , color=(255,255,0))
+                createStringField ('App Key'            , 'twitch-app-key'  )
                 dpg.add_text( "API" , color=(255,255,0))
                 createBooleanField('Enabled'            , 'use_api'          )
                 createStringField ('API Key'            , 'api_key'          )

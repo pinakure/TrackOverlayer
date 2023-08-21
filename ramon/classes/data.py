@@ -1,4 +1,4 @@
-import requests, os
+import requests, os, random
 from dearpygui              import dearpygui as dpg
 from datetime               import datetime, timedelta
 from bs4                    import BeautifulSoup    
@@ -42,6 +42,7 @@ class Data:
         Preferences.data = Data
         if Preferences.settings['username'] == '': return
         try:
+            rid = random.random()
             payload             = requests.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
             parsed_html         = BeautifulSoup( payload, features='html.parser' )
             usersummary         = parsed_html.body.find('div', attrs={'class':'usersummary'}).text
@@ -49,6 +50,10 @@ class Data:
             Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
             Data.last_seen_full = usersummary.split('Last seen  in  ')[1]
             Data.last_seen      = Data.last_seen_full.split('(')[0]
+            if Preferences.settings['last_game'] != Data.last_seen:
+                Cheevo.active_index = 1
+                Preferences.settings['current_cheevo'] = Cheevo.active_index
+                Preferences.settings['last_game'] = Data.last_seen
             Data.last_activityr= usersummary.split('Last Activity: ')[1].split('Account')[0]
             Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
             stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
@@ -56,7 +61,7 @@ class Data:
             Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
             Log.info("Getting progress")
             Data.progress       = Data.progress_html.split('width:')[1].split('"')[0]
-            Data.progress_html  = f'<style>{Data.css["progress"].get()}</style><div class="progressbar grow">{Data.progress_html}</div>'
+            Data.progress_html  = f'<link rel="stylesheet" type="text/css" href="../css/progress.css?{rid}"><div class="progressbar grow">{Data.progress_html}</div>'
             Log.info("Getting metadata")
             Data.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
             Log.info("Getting cheevos raw data")
@@ -68,7 +73,7 @@ class Data:
                     Data.cheevo = d.name + "\n" + d.description
                 #dpg.render_dearpygui_frame()               
 
-            Scraper.getGamePicture( Data.last_seen.split(':')[0].split('.')[0] )
+            #Scraper.getGamePicture( Data.last_seen.split(':')[0].split('.')[0] )
 
             return True
         except Exception as E:
@@ -160,12 +165,13 @@ class Data:
     @staticmethod
     def writeCheevos():
         script = Data.getReloadSnippet()
+        rid = random.random()
         with open(f'{Preferences.root}/data/cheevos.html'         , 'w') as file:   
             with open(f'{Preferences.root}/data/cheevos_locked.html'  , 'w') as locked:   
                 with open(f'{Preferences.root}/data/cheevos_unlocked.html'  , 'w') as unlocked:   
-                    file.write     ( f"<style>{Data.css['cheevos'  ].get()}</style>{script}")
-                    locked.write   ( f"<style>{Data.css['locked'   ].get()}</style>{script}")
-                    unlocked.write ( f"<style>{Data.css['unlocked' ].get()}</style>{script}")
+                    file.write     ( f'<link rel="stylesheet" type="text/css" href="../css/cheevos.css?{rid}">{script}')
+                    locked.write   ( f'<link rel="stylesheet" type="text/css" href="../css/locked.css?{rid}">{script}')
+                    unlocked.write ( f'<link rel="stylesheet" type="text/css" href="../css/unlocked.css?{rid}">{script}')
                     count = 0
                     for d in Data.cheevos:
                         Data.parent.setProgress( count / len(Data.cheevos) )
@@ -180,8 +186,10 @@ class Data:
     @staticmethod
     def writeRecent():
         script = Data.getReloadSnippet()
+        rid = random.random()
         with open(f'{Preferences.root}/data/recent.html'        , 'w') as file:   
-            file.write(f'''<style>{Data.css['recent'].get()}</style>{script}<table><tbody>''')
+            file.write(f'''<link rel="stylesheet" type="text/css" href="../css/recent.css?{rid}">''')
+            file.write(f'''{script}<table><tbody>''')
             for r in Data.recent:
                 file.write(f'''
                             <tr><td colspan="2"><hr/></td></tr>
