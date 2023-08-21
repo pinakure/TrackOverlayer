@@ -78,6 +78,7 @@ class DynamicCSS:
     def customize(sender=None, args=None, user_data=None):
         settings        = DynamicCSS.settings[sender.split('gen-')[1]]
         border_radius   = str(settings['border-radius'])
+        effect_3d       = True
         border_width    = str(settings['border-width'])
         shadow_alpha    = str(settings['shadow-alpha'])
         font            = settings['font']
@@ -114,7 +115,7 @@ class DynamicCSS:
     line-height: """+font_size+"""px;
     border-collapse: collapse;
 }
-html, body { height: 100%; overflow-x: hidden; overflow-y: hidden; }
+html, body { height: 100%; overflow-x: hidden; overflow-y: hidden; """+("" if not effect_3d else "perspective: 800px;")+"""}
 html, img, body { background-color: rgba(0,0,0,0); padding: 0px 0px 0px 0px; line-height: 16px;}
 img { 
     background-color: rgba(0,0,0,0);
@@ -127,6 +128,11 @@ img.active {
     /*filter: brightness(1.5) hue-rotate(270deg);*/
     animation: flash 500ms linear 0s infinite alternate;                
 }
+"""+("" if not effect_3d else """
+table {
+    transform: rotatey(65deg) translate(10px, 170px);
+}
+""")+"""
 @keyframes flash {
     from {
         background-color: rgb("""+active_color[0]+""","""+active_color[1]+""","""+active_color[2]+""");

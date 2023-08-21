@@ -243,7 +243,6 @@ class Preferences:
         Preferences.settings['recent-font-size']        = int(dpg.get_value('recent-font-size'))
         Preferences.settings['recent-font-color']       = dpg.get_value('recent-font-color')
         Preferences.settings['recent-font-glow']        = dpg.get_value('recent-font-glow')
-        print(json.dumps(Preferences.settings))
         Preferences.loadCustomizations()
         Preferences.writecfg( restart=False )
 
