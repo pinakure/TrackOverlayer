@@ -103,10 +103,12 @@ class Ramon:
         cheevos_vars = {
             
         }
+        gradient = "#00668a, #069cd1 6%, #069cd1 50% ,#00668a 50%, #069cd1"
+        progress_css = """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} .completion-hardcore { height: 100% !important; background-image: linear-gradient(180deg, """+gradient+""") !important; }"""
         Ramon.css['cheevos' ] = DynamicCSS('cheevos'  , global_cheevos_css, cheevos_vars)
         Ramon.css['locked'  ] = DynamicCSS('locked'   , global_cheevos_css, cheevos_vars)
         Ramon.css['unlocked'] = DynamicCSS('unlocked' , global_cheevos_css, cheevos_vars)
-        Ramon.css['progress'] = DynamicCSS('progress' , """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} .completion-hardcore { height: 100% !important; background-image: linear-gradient(180deg, #00668a, #069cd1 6%, #069cd1 50% ,#00668a 50%, #069cd1) !important; }""")
+        Ramon.css['progress'] = DynamicCSS('progress' , progress_css      , cheevos_vars)
         Ramon.css['recent'  ] = DynamicCSS('recent'   , """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} hr{border: 1px solid #4808;box-shadow: 0px 4px 32px #0f0;margin: 0px 0px 0px 0px;}* { color: #8f0;text-shadow: 0px 0px 2px #0f0;font-family: 'ProggyCleanTTSZ', 'ff6'}b {color: #cf0;}"""+css_font)
 
     @staticmethod

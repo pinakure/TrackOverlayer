@@ -30,6 +30,10 @@ class DynamicCSS:
             'font-color'    : [ 128, 256, 0 ],
             'font-glow'     : False,
             'font-size'     : 12,
+            '3d'            : False,
+            'perspective'   : 800,
+            'rotation'      : 45,
+            'position'      : [0,0],
         },
         'locked' : {
             'border-radius' : 0,
@@ -43,6 +47,10 @@ class DynamicCSS:
             'font-color'    : [ 128, 256, 0 ],
             'font-glow'     : False,
             'font-size'     : 12,
+            '3d'            : False,
+            'perspective'   : 800,
+            'rotation'      : 45,
+            'position'      : [0,0],
         },
         'unlocked' : {
             'border-radius' : 0,
@@ -56,6 +64,10 @@ class DynamicCSS:
             'font-color'    : [ 128, 256, 0 ],
             'font-glow'     : False,
             'font-size'     : 12,
+            '3d'            : False,
+            'perspective'   : 800,
+            'rotation'      : 45,
+            'position'      : [0,0],
         },
         'recent'    : {
             'border-radius' : 0,
@@ -69,6 +81,16 @@ class DynamicCSS:
             'font-color'    : [ 128, 256, 0 ],
             'font-glow'     : True,
             'font-size'     : 12,
+            '3d'            : True,
+            'perspective'   : 800,
+            'rotation'      : 45,
+            'position'      : [0,0],
+        },
+        'progress'  : {
+            'upper-color'   : [255,255,255],
+            'lower-color'   : [255,  0,  0],
+            'hard'          : False,
+            'overlay'       : False,
         }
     }
 
@@ -76,9 +98,24 @@ class DynamicCSS:
 
     @staticmethod
     def customize(sender=None, args=None, user_data=None):
+
+        if sender=='gen-progress':
+            uc          = DynamicCSS.settings['progress']['upper-color'] 
+            bc          = DynamicCSS.settings['progress']['lower-color'] 
+            hard        = DynamicCSS.settings['progress']['hard'] 
+            overlay     = DynamicCSS.settings['progress']['overlay'] 
+            gradient    = f"rgb({uc[0]},{uc[1]},{uc[2]}), rgb({bc[0]},{bc[1]},{bc[2]}) { f'6%, rgb({bc[0]},{bc[1]},{bc[2]}) 50%, rgb({uc[0]},{uc[1]},{uc[2]}) 50%, rgb({bc[0]},{bc[1]},{bc[2]})' if hard else '' }"
+            css         = """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} .completion-hardcore { height: 100% !important; background-image: linear-gradient(180deg, """+gradient+""") !important; }"""
+            with open(f'{DynamicCSS.root}/css/{sender.split("gen-")[1]}.css', 'w') as input:
+                input.write( css )
+            return
+
         settings        = DynamicCSS.settings[sender.split('gen-')[1]]
         border_radius   = str(settings['border-radius'])
-        effect_3d       = True
+        effect_3d       = settings['3d']
+        perspective     = f"{settings['perspective']}px"
+        rotation        = f"{settings['rotation']}deg"
+        position        = f"{settings['position'][0]}px, {settings['position'][1]}px"
         border_width    = str(settings['border-width'])
         shadow_alpha    = str(settings['shadow-alpha'])
         font            = settings['font']
@@ -115,7 +152,7 @@ class DynamicCSS:
     line-height: """+font_size+"""px;
     border-collapse: collapse;
 }
-html, body { height: 100%; overflow-x: hidden; overflow-y: hidden; """+("" if not effect_3d else "perspective: 800px;")+"""}
+html, body { height: 100%; overflow-x: hidden; overflow-y: hidden; """+("" if not effect_3d else '''perspective: '''+perspective+''';''')+"""}
 html, img, body { background-color: rgba(0,0,0,0); padding: 0px 0px 0px 0px; line-height: 16px;}
 img { 
     background-color: rgba(0,0,0,0);
@@ -128,11 +165,11 @@ img.active {
     /*filter: brightness(1.5) hue-rotate(270deg);*/
     animation: flash 500ms linear 0s infinite alternate;                
 }
-"""+("" if not effect_3d else """
-table {
-    transform: rotatey(65deg) translate(10px, 170px);
+"""+("" if not effect_3d else '''
+table,div.table {
+    transform: rotatey('''+rotation+''') translate('''+position+''');
 }
-""")+"""
+''')+"""
 @keyframes flash {
     from {
         background-color: rgb("""+active_color[0]+""","""+active_color[1]+""","""+active_color[2]+""");

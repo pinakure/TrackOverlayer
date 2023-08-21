@@ -2,11 +2,10 @@ import json, os
 from datetime               import datetime, timedelta
 from dearpygui              import dearpygui as dpg
 from classes.cheevo         import Cheevo
-from classes.dynamic_css    import DynamicCSS
+from classes.dynamic_css    import DynamicCSS, fonts
 from classes.log            import Log
 
 class Preferences:
-
     root            = '.'
     width           = 640
     height          = 480
@@ -44,23 +43,43 @@ class Preferences:
             'pending_cheevos'           : [0,255,255],
             'unlocked_cheevos'          : [64, 128,0],
             'current_cheevo'            : 1,
+
+            'progress-upper-color'      : [255,255,0],
+            'progress-lower-color'      : [0,255,255],
+            'progress-hard-gradient'    : True,
+            'progress-overlay-text'     : False,
             
             'cheevos-border-radius'     : 16,
             'cheevos-border-width'      : 3,
             'cheevos-border-color'      : [255,255,255],
             'cheevos-active-color'      : [255,255,  0],
             'cheevos-shadow'            : True,
+            'cheevos-3d'                : False,
+            'cheevos-perspective'       : 800,
+            'cheevos-rotation'          : 45,
+            'cheevos-x'                 : 10, 
+            'cheevos-y'                 : 170,
             
             'locked-border-radius'      : 16,
             'locked-border-width'       : 3,
             'locked-border-color'       : [255,255,255],
             'locked-shadow'             : True,
+            'locked-3d'                 : False,
+            'locked-perspective'        : 800,
+            'locked-rotation'           : 45,
+            'locked-x'                  : 10, 
+            'locked-y'                  : 170,
             
             'unlocked-border-radius'    : 16,
             'unlocked-border-width'     : 3,
             'unlocked-border-color'     : [255,255,255],
             'unlocked-shadow'           : True,
-            
+            'unlocked-3d'               : False,
+            'unlocked-perspective'      : 800,
+            'unlocked-rotation'         : 45,
+            'unlocked-x'                : 10, 
+            'unlocked-y'                : 170,
+
             'recent-border-radius'      : 4,
             'recent-border-width'       : 0,
             'recent-font-glow'          : True,
@@ -68,6 +87,11 @@ class Preferences:
             'recent-font-color'         : [0,255,255],
             'recent-font-size'          : 16,
             'recent-font'               : 'ff6',
+            'recent-3d'                 : True,
+            'recent-perspective'        : 800,
+            'recent-rotation'           : 45,
+            'recent-x'                  : 10, 
+            'recent-y'                  : 170,
         }
         Preferences.settings = defaults
         Preferences.root     = Preferences.settings['root']
@@ -95,31 +119,56 @@ class Preferences:
             Preferences.settings['width']               = Preferences.parent.width
             Preferences.settings['height']              = Preferences.parent.height
             json_fields = [
-                'x-pos',
-                'y-pos',
-                'gmt',
-                'auto_update_rate',
-                'pending_cheevos',
-                'unlocked_cheevos',
-                'current_cheevo',
-                
-                'cheevos-border-radius',
-                'cheevos-border-width',
-                'cheevos-border-color',
-                'cheevos-active-color',
-                
-                'locked-border-radius',
-                'locked-border-width',
-                'locked-border-color',
-                
-                'unlocked-border-radius',
-                'unlocked-border-width',
-                'unlocked-border-color',
-
-                'recent-border-radius',
-                'recent-border-width',
-                'recent-border-color',
-                'recent-font-color'                
+                'x-pos'                     ,
+                'y-pos'                     ,
+                #----------------------------
+                'gmt'                       ,
+                'auto_update_rate'          ,
+                'pending_cheevos'           ,
+                'unlocked_cheevos'          ,
+                'current_cheevo'            ,
+                #----------------------------
+                'cheevos-border-radius'     ,
+                'cheevos-border-width'      ,
+                'cheevos-border-color'      ,
+                'cheevos-active-color'      ,
+                #----------------------------
+                'locked-border-radius'      ,
+                'locked-border-width'       ,
+                'locked-border-color'       ,
+                #----------------------------                
+                'unlocked-border-radius'    ,
+                'unlocked-border-width'     ,
+                'unlocked-border-color'     ,
+                #----------------------------
+                'recent-border-radius'      ,
+                'recent-border-width'       ,
+                'recent-border-color'       ,
+                'recent-font-color'         ,  
+                #----------------------------
+                'progress-upper-color'      ,
+                'progress-lower-color'      ,
+                #----------------------------
+                'recent-perspective'        ,
+                'recent-rotation'           ,
+                'recent-x'                  ,
+                'recent-y'                  ,
+                #----------------------------
+                'locked-perspective'        ,
+                'locked-rotation'           ,
+                'locked-x'                  ,
+                'locked-y'                  ,
+                #----------------------------
+                'unlocked-perspective'      ,
+                'unlocked-rotation'         ,
+                'unlocked-x'                ,
+                'unlocked-y'                ,
+                #----------------------------
+                'cheevos-perspective'       ,
+                'cheevos-rotation'          ,
+                'cheevos-x'                 ,
+                'cheevos-y'                 ,
+                #----------------------------
             ]
             for field in json_fields:                
                 Preferences.settings[field] = json.loads( str(Preferences.settings[field]) )
@@ -198,56 +247,99 @@ class Preferences:
                 dpg.set_value('pending_cheevos' , Preferences.settings['pending_cheevos'    ])
                 
     @staticmethod
+    def loadCustomization( category ):
+        DynamicCSS.settings[category]['border-width'    ] = Preferences.settings[f'{category}-border-width' ]
+        DynamicCSS.settings[category]['border-radius'   ] = Preferences.settings[f'{category}-border-radius']
+        DynamicCSS.settings[category]['border-color'    ] = Preferences.settings[f'{category}-border-color' ]
+        DynamicCSS.settings[category]['3d'              ] = Preferences.settings[f'{category}-3d'           ]
+        DynamicCSS.settings[category]['perspective'     ] = Preferences.settings[f'{category}-perspective'  ]
+        DynamicCSS.settings[category]['rotation'        ] = Preferences.settings[f'{category}-rotation'     ]
+        DynamicCSS.settings[category]['position'        ] = [ Preferences.settings[f'{category}-x'], Preferences.settings[f'{category}-y']]
+        try:
+            DynamicCSS.settings[category]['active-color'  ] = Preferences.settings[f'{category}-active-color' ]
+        except: 
+            Log.info(f"No 'active-color' set for {category}. Skipping variable setup.")
+        try:
+            DynamicCSS.settings['recent']['font'            ] = Preferences.settings['recent-font'          ]
+            DynamicCSS.settings['recent']['font-size'       ] = Preferences.settings['recent-font-size'     ]
+            DynamicCSS.settings['recent']['font-color'      ] = Preferences.settings['recent-font-color'    ]
+            DynamicCSS.settings['recent']['font-glow'       ] = Preferences.settings['recent-font-glow'     ]
+        except: 
+            Log.info(f"No 'font' set for {category}. Skipping variable setup.")
+        try:
+            DynamicCSS.settings['progress']['overlay'       ] = Preferences.settings['progress-overlay-text']
+            DynamicCSS.settings['progress']['hard'          ] = Preferences.settings['progress-hard-gradient']
+            DynamicCSS.settings['progress']['upper-color'   ] = Preferences.settings['progress-upper-color' ]
+            DynamicCSS.settings['progress']['lower-color'   ] = Preferences.settings['progress-lower-color' ]
+        except: 
+            Log.info(f"No 'gradient' set for {category}. Skipping variable setup.")
+        
+    @staticmethod
     def loadCustomizations():
-        DynamicCSS.settings['cheevos']['border-width'  ] = Preferences.settings['cheevos-border-width' ]
-        DynamicCSS.settings['cheevos']['border-radius' ] = Preferences.settings['cheevos-border-radius']
-        DynamicCSS.settings['cheevos']['border-color'  ] = Preferences.settings['cheevos-border-color' ]
-        DynamicCSS.settings['cheevos']['active-color'  ] = Preferences.settings['cheevos-active-color' ]
+        Preferences.loadCustomization('cheevos' )
+        Preferences.loadCustomization('locked'  )
+        Preferences.loadCustomization('unlocked')
+        Preferences.loadCustomization('recent'  )
+        # Manual fixes for locked and unlocked 
+        DynamicCSS.settings['locked'    ]['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
+        DynamicCSS.settings['unlocked'  ]['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
+        DynamicCSS.settings['recent'    ]['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
         
-        DynamicCSS.settings['locked']['border-width'   ] = Preferences.settings['locked-border-width'  ]
-        DynamicCSS.settings['locked']['border-radius'  ] = Preferences.settings['locked-border-radius' ]
-        DynamicCSS.settings['locked']['border-color'   ] = Preferences.settings['locked-border-color'  ]
-        DynamicCSS.settings['locked']['active-color'   ] = DynamicCSS.settings['cheevos']['active-color'  ]
-        
-        DynamicCSS.settings['unlocked']['border-width' ] = Preferences.settings['unlocked-border-width']
-        DynamicCSS.settings['unlocked']['border-radius'] = Preferences.settings['unlocked-border-radius']
-        DynamicCSS.settings['unlocked']['border-color' ] = Preferences.settings['unlocked-border-color']
-        DynamicCSS.settings['unlocked']['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
-        
-        DynamicCSS.settings['recent']['font']           = Preferences.settings['recent-font']
-        DynamicCSS.settings['recent']['font-size']      = Preferences.settings['recent-font-size']
-        DynamicCSS.settings['recent']['font-color']     = Preferences.settings['recent-font-color']
-        DynamicCSS.settings['recent']['font-glow']      = Preferences.settings['recent-font-glow']
-        DynamicCSS.settings['recent']['border-width']   = Preferences.settings['recent-border-width']
-        DynamicCSS.settings['recent']['border-radius']  = Preferences.settings['recent-border-radius']
-        DynamicCSS.settings['recent']['border-color']   = Preferences.settings['recent-border-color']
-
     @staticmethod
     def updateCustomizations(sender=None, args=None, user_data=None):
-        Preferences.settings['cheevos-border-radius'  ]  = int(dpg.get_value('cheevos-border-radius'))
-        Preferences.settings['locked-border-radius'  ]  = int(dpg.get_value('locked-border-radius'))
-        Preferences.settings['unlocked-border-radius']  = int(dpg.get_value('unlocked-border-radius'))
-        Preferences.settings['cheevos-border-width'   ]  = int(dpg.get_value('cheevos-border-width'))
-        Preferences.settings['recent-border-radius']    = int(dpg.get_value('recent-border-radius'))
-        Preferences.settings['locked-border-width'   ]  = int(dpg.get_value('locked-border-width'))
-        Preferences.settings['unlocked-border-width' ]  = int(dpg.get_value('unlocked-border-width'))
-        Preferences.settings['recent-border-width']     = int(dpg.get_value('recent-border-width'))
-        
-        Preferences.settings['cheevos-border-color'   ]  = dpg.get_value('cheevos-border-color')
-        Preferences.settings['cheevos-active-color'   ]  = dpg.get_value('cheevos-active-color')
-        Preferences.settings['locked-border-color'   ]  = dpg.get_value('locked-border-color')
-        Preferences.settings['unlocked-border-color' ]  = dpg.get_value('unlocked-border-color')
-        Preferences.settings['recent-border-color']     = dpg.get_value('recent-border-color')
-
-        Preferences.settings['recent-font']             = dpg.get_value('recent-font')
-        Preferences.settings['recent-font-size']        = int(dpg.get_value('recent-font-size'))
-        Preferences.settings['recent-font-color']       = dpg.get_value('recent-font-color')
-        Preferences.settings['recent-font-glow']        = dpg.get_value('recent-font-glow')
+        Preferences.settings['progress-hard-gradient'   ] = dpg.get_value('progress-hard-gradient'      )
+        Preferences.settings['progress-upper-color'     ] = dpg.get_value('progress-upper-color'        )
+        Preferences.settings['progress-lower-color'     ] = dpg.get_value('progress-lower-color'        )
+        Preferences.settings['progress-overlay-text'    ] = dpg.get_value('progress-overlay-text'       )
+        Preferences.settings['cheevos-border-radius'    ] = int(dpg.get_value('cheevos-border-radius'   ))
+        Preferences.settings['locked-border-radius'     ] = int(dpg.get_value('locked-border-radius'    ))
+        Preferences.settings['unlocked-border-radius'   ] = int(dpg.get_value('unlocked-border-radius'  ))
+        Preferences.settings['cheevos-border-width'     ] = int(dpg.get_value('cheevos-border-width'    ))
+        Preferences.settings['recent-border-radius'     ] = int(dpg.get_value('recent-border-radius'    ))
+        Preferences.settings['locked-border-width'      ] = int(dpg.get_value('locked-border-width'     ))
+        Preferences.settings['unlocked-border-width'    ] = int(dpg.get_value('unlocked-border-width'   ))
+        Preferences.settings['recent-border-width'      ] = int(dpg.get_value('recent-border-width'     ))        
+        Preferences.settings['cheevos-border-color'     ] = dpg.get_value    ('cheevos-border-color'    )
+        Preferences.settings['cheevos-active-color'     ] = dpg.get_value    ('cheevos-active-color'    )
+        Preferences.settings['locked-border-color'      ] = dpg.get_value    ('locked-border-color'     )
+        Preferences.settings['unlocked-border-color'    ] = dpg.get_value    ('unlocked-border-color'   )
+        Preferences.settings['recent-border-color'      ] = dpg.get_value    ('recent-border-color'     )
+        Preferences.settings['recent-font'              ] = dpg.get_value    ('recent-font'             )
+        Preferences.settings['recent-font-size'         ] = int(dpg.get_value('recent-font-size'        ))
+        Preferences.settings['recent-font-color'        ] = dpg.get_value    ('recent-font-color'       )
+        Preferences.settings['recent-font-glow'         ] = dpg.get_value    ('recent-font-glow'        )
+        Preferences.settings['recent-3d'                ] = dpg.get_value    ('recent-3d'               )
+        Preferences.settings['recent-perspective'       ] = int(dpg.get_value('recent-perspective'      ))
+        Preferences.settings['recent-rotation'          ] = int(dpg.get_value('recent-rotation'         ))
+        Preferences.settings['recent-x'                 ] = int(dpg.get_value('recent-x'                ))
+        Preferences.settings['recent-y'                 ] = int(dpg.get_value('recent-y'                ))
+        Preferences.settings['unlocked-3d'              ] = dpg.get_value    ('unlocked-3d'             )
+        Preferences.settings['unlocked-perspective'     ] = int(dpg.get_value('unlocked-perspective'    ))
+        Preferences.settings['unlocked-rotation'        ] = int(dpg.get_value('unlocked-rotation'       ))
+        Preferences.settings['unlocked-x'               ] = int(dpg.get_value('unlocked-x'              ))
+        Preferences.settings['unlocked-y'               ] = int(dpg.get_value('unlocked-y'              ))        
+        Preferences.settings['locked-3d'                ] = dpg.get_value    ('locked-3d'               )
+        Preferences.settings['locked-perspective'       ] = int(dpg.get_value('locked-perspective'      ))
+        Preferences.settings['locked-rotation'          ] = int(dpg.get_value('locked-rotation'         ))
+        Preferences.settings['locked-x'                 ] = int(dpg.get_value('locked-x'                ))
+        Preferences.settings['locked-y'                 ] = int(dpg.get_value('locked-y'                ))        
+        Preferences.settings['cheevos-3d'               ] = dpg.get_value    ('cheevos-3d'              )
+        Preferences.settings['cheevos-perspective'      ] = int(dpg.get_value('cheevos-perspective'     ))
+        Preferences.settings['cheevos-rotation'         ] = int(dpg.get_value('cheevos-rotation'        ))
+        Preferences.settings['cheevos-x'                ] = int(dpg.get_value('cheevos-x'               ))
+        Preferences.settings['cheevos-y'                ] = int(dpg.get_value('cheevos-y'               ))
         Preferences.loadCustomizations()
         Preferences.writecfg( restart=False )
 
     @staticmethod
-    def addCheevosCustomizationPanel(tag):
+    def addCustomizationPanel(tag):
+        file = {
+            'cheevos'           : 'cheevos',
+            'locked'            : 'cheevos_locked',
+            'unlocked'          : 'cheevos_unlocked',
+            'progress'          : 'progress',
+            'recent'            : 'recent',
+        }[tag]
         with dpg.child_window():
             dpg.add_text("Shape & Behavior", color=(255,255,0))
             createIntegerField('Border Radius'      , f'{tag}-border-radius'   , max_value=128, callback=Preferences.updateCustomizations)
@@ -262,8 +354,38 @@ class Preferences:
                 dpg.configure_item(f'{tag}-border-color', pos=(pos[0]+192, pos[1]))
             else:
                 dpg.configure_item(f'{tag}-border-color', pos=(14,108))
-            dpg.add_button(label="Edit CSS File", pos=(Preferences.width - 132,3) , tag=f"css-{tag}", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\"+tag+".css"))
-            dpg.add_button(label="Apply Changes", pos=(Preferences.width - 132,24), tag=f"gen-{tag}", callback=DynamicCSS.customize, user_data=Preferences.parent.css[tag])
+            dpg.add_button(label="Edit CSS File", pos=(Preferences.width - 132,3) , tag=f"css-{tag}"    , callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\"+tag+".css"))
+            dpg.add_button(label="Apply Changes", pos=(Preferences.width - 132,24), tag=f"gen-{tag}"    , callback=DynamicCSS.customize, user_data=Preferences.parent.css[tag])
+            dpg.add_button(label="Open  Preview", pos=(Preferences.width - 132,45), tag=f"preview-{tag}", callback=lambda: os.system('start '+Preferences.root.replace('/', '\\')+"\\data\\"+file+".html"))
+            with dpg.child_window(
+                tag=f'{tag}-effect-settings',
+                pos=(Preferences.width - 240, 80),
+            ):                                     
+                with dpg.tab_bar():
+                    with dpg.tab( label="3D Effects" ):                                
+                        createBooleanField("Enable"     , f'{tag}-3d'           , callback=Preferences.updateCustomizations)
+                        dpg.add_text("3D Perspective"   , color=(255,255,0))
+                        createIntegerField(None         , f'{tag}-perspective'  , callback=Preferences.updateCustomizations, min_value=   1, max_value=1600)
+                        dpg.add_text("Angle"            , color=(255,255,0))
+                        createIntegerField(None         , f'{tag}-rotation'     , callback=Preferences.updateCustomizations, min_value=-180, max_value= 180)
+                        dpg.add_text("Position"         , color=(255,255,0))
+                        createIntegerField("X"          , f'{tag}-x'            , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
+                        createIntegerField("Y"          , f'{tag}-y'            , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
+
+    @staticmethod
+    def addProgressPanel():
+        with dpg.child_window():
+            dpg.add_text("Progressbar colors"           , color=(255,255,0))
+            createBooleanField('Overlay Percentage'     , 'progress-overlay-text'    , callback=Preferences.updateCustomizations)
+            createBooleanField('Hard Gradient'          , 'progress-hard-gradient'   , callback=Preferences.updateCustomizations)
+            createColorField('Upper'                    , 'progress-upper-color'     , callback=Preferences.updateCustomizations)
+            dpg.configure_item('progress-upper-color'   , pos=(14,80))
+            pos = dpg.get_item_pos('progress-upper-color')
+            createColorField('Lower'                    , 'progress-lower-color'     , callback=Preferences.updateCustomizations)
+            dpg.configure_item('progress-lower-color'   , pos=(pos[0]+192, pos[1]))
+            dpg.add_button(label="Edit CSS File"        , pos=(Preferences.width - 132, 3), tag="css-progress"      , callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\progress.css"))
+            dpg.add_button(label="Apply Changes"        , pos=(Preferences.width - 132,24), tag="gen-progress"      , callback=DynamicCSS.customize, user_data=Preferences.parent.css['progress'])
+            dpg.add_button(label="Open  Preview"        , pos=(Preferences.width - 132,45), tag="preview-progress"  , callback=lambda: os.system('start '+Preferences.root.replace('/', '\\')+"\\data\\progress.html"))
 
     @staticmethod
     def createOutputTab():
@@ -274,19 +396,15 @@ class Preferences:
                 dpg.add_text("Style Personalization", color=(255,255,0))
                 with dpg.tab_bar():
                     with dpg.tab(label="cheevos.html", tag="css_cheevos"):
-                        Preferences.addCheevosCustomizationPanel('cheevos')                        
+                        Preferences.addCustomizationPanel('cheevos')                        
                     with dpg.tab(label="cheevos_locked.html", tag="css_cheevos_locked"):
-                        Preferences.addCheevosCustomizationPanel('locked')                        
+                        Preferences.addCustomizationPanel('locked')                        
                     with dpg.tab(label="cheevos_unlocked.html", tag="css_cheevos_unlocked"):
-                        Preferences.addCheevosCustomizationPanel('unlocked')                        
+                        Preferences.addCustomizationPanel('unlocked')                        
                     with dpg.tab(label="progress.html", tag="css_progress"):
-                        with dpg.child_window():
-                            dpg.add_button(label="Edit CSS File", pos=(Preferences.width - 130,3), tag="css-progress", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\progress.css"))
-                            dpg.add_button(label="Apply Changes", pos=(Preferences.width - 130,24), tag="gen-progress", callback=DynamicCSS.customize, user_data=Preferences.parent.css['progress'])
-
+                        Preferences.addProgressPanel()
                     with dpg.tab(label="recent.html", tag="css_recent"):
                         with dpg.child_window():
-                            from classes.dynamic_css import fonts
                             dpg.add_text("Shape & Behavior", color=(255,255,0))
                             createIntegerField('Border Radius'      , 'recent-border-radius'    , callback=Preferences.updateCustomizations, max_value=64)
                             createIntegerField('Border Width'       , 'recent-border-width'     , callback=Preferences.updateCustomizations,max_value=16)
@@ -296,17 +414,33 @@ class Preferences:
                             pos = dpg.get_item_pos('recent-border-color')
                             createColorField('Font'                 , 'recent-font-color'       , callback=Preferences.updateCustomizations)
                             dpg.configure_item('recent-font-color'  , pos=(pos[0]+192, pos[1]))
-                            dpg.add_text("Font Type", color=(255,255,0)  , pos=(Preferences.width - 240, 134))
-                            dpg.add_listbox(tag='recent-font'       , num_items=len(fonts.keys()), items=list(fonts.keys()), callback=Preferences.updateCustomizations, pos=(Preferences.width - 240, 160),default_value=Preferences.settings['recent-font'])
-                            dpg.add_text("Font Glow"                , color=(255,255,0), pos=(Preferences.width - 240, 84))
-                            createBooleanField('Enabled'            , 'recent-font-glow' , callback=Preferences.updateCustomizations)
-                            dpg.configure_item('recent-font-glow'   ,  pos=(Preferences.width - 240, 108))
-                            dpg.add_button(label="Edit CSS File"    , pos=(Preferences.width - 130,3), tag="css-recent", callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\recent.css"))
-                            dpg.add_button(label="Apply Changes"    , pos=(Preferences.width - 130,24), tag="gen-recent", callback=DynamicCSS.customize, user_data=Preferences.parent.css['recent'])
-                            createIntegerField('Font Size'          , 'recent-font-size'     , callback=Preferences.updateCustomizations, min_value=1, max_value=64)
-                            dpg.add_text("Font Size"                , color=(255,255,0), pos=(Preferences.width - 240, 260))
-                            dpg.configure_item('recent-font-size'   ,  pos=(Preferences.width - 240, 280), width=200)
-                            
+                            dpg.add_button(label="Edit CSS File"    , pos=(Preferences.width - 132, 3), tag="css-recent"        , callback=lambda: os.system('notepad '+Preferences.root.replace('/', '\\')+"\\css\\recent.css"))
+                            dpg.add_button(label="Apply Changes"    , pos=(Preferences.width - 132,24), tag="gen-recent"        , callback=DynamicCSS.customize, user_data=Preferences.parent.css['recent'])
+                            dpg.add_button(label="Open  Preview"    , pos=(Preferences.width - 132,45), tag=f"preview-recent"   , callback=lambda: os.system('start '+Preferences.root.replace('/', '\\')+"\\data\\recent.html"))
+                            with dpg.child_window(
+                                tag='recent-effect-settings',
+                                pos=(Preferences.width - 240, 80),
+                            ):                                     
+                                with dpg.tab_bar():
+                                    with dpg.tab(label="Font"):
+                                        dpg.add_text("Font Type", color=(255,255,0))
+                                        dpg.add_combo(tag='recent-font'     , items=list(fonts.keys())  , callback=Preferences.updateCustomizations, default_value=Preferences.settings['recent-font'])
+                                        dpg.add_text("Font Glow"            , color=(255,255,0))
+                                        createBooleanField('Enabled'        , 'recent-font-glow'        , callback=Preferences.updateCustomizations)
+                                        dpg.add_text("Font Size"            , color=(255,255,0))
+                                        createIntegerField(None             , 'recent-font-size'        , callback=Preferences.updateCustomizations, min_value=1, max_value=64)
+                                        dpg.configure_item('recent-font-size')
+                                    with dpg.tab( label="3D Effects" ):                                
+                                        createBooleanField("Enable"         , 'recent-3d'               , callback=Preferences.updateCustomizations)
+                                        dpg.add_text("3D Perspective"       , color=(255,255,0))
+                                        createIntegerField(None             , 'recent-perspective'      , callback=Preferences.updateCustomizations, min_value=   1, max_value=1600)
+                                        dpg.add_text("Angle"                , color=(255,255,0))
+                                        createIntegerField(None             , 'recent-rotation'         , callback=Preferences.updateCustomizations, min_value=-180, max_value= 180)
+                                        dpg.add_text("Position"             , color=(255,255,0))
+                                        createIntegerField("X"              , 'recent-x'                , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
+                                        createIntegerField("Y"              , 'recent-y'                , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
+                                        
+                                    
     @staticmethod
     def createInputTab():
         with dpg.tab(label="Input", tag="tab_input"):

@@ -172,6 +172,9 @@ class Data:
                     file.write     ( f'<link rel="stylesheet" type="text/css" href="../css/cheevos.css?{rid}">{script}')
                     locked.write   ( f'<link rel="stylesheet" type="text/css" href="../css/locked.css?{rid}">{script}')
                     unlocked.write ( f'<link rel="stylesheet" type="text/css" href="../css/unlocked.css?{rid}">{script}')
+                    file.write     ( '<div class="table">')
+                    locked.write   ( '<div class="table">')
+                    unlocked.write ( '<div class="table">')
                     count = 0
                     for d in Data.cheevos:
                         Data.parent.setProgress( count / len(Data.cheevos) )
@@ -181,6 +184,9 @@ class Data:
                         else:
                             unlocked.write( str(d) + '\n' )
                         count+=1
+                    file.write     ('</div>')
+                    locked.write   ('</div>')
+                    unlocked.write ('</div>')
                     Data.parent.setProgress(1.0)
         
     @staticmethod
