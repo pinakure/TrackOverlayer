@@ -1,2 +1,2 @@
 @echo off
-start pythonw update_data.py
+start pythonw main.py

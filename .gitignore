@@ -9,6 +9,10 @@ ramon/data
 ramon/dist
 obs-studio
 ramon/css
+ramon/main.build
+test/
+ramon/main.dist
+ramon/main.onefile-build
 ramon/build/update_data/base_library.zip
 ramon/build/update_data/update_data.exe
 ramon/build/update_data/warn-update_data.txt

@@ -61,7 +61,7 @@ class Data:
             Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
             Log.info("Getting progress")
             Data.progress       = Data.progress_html.split('width:')[1].split('"')[0]
-            Data.progress_html  = f'<link rel="stylesheet" type="text/css" href="../css/progress.css?{rid}"><div class="progressbar grow">{Data.progress_html}</div>'
+            Data.progress_html  = f'{Data.getReloadSnippet()}<link rel="stylesheet" type="text/css" href="../css/progress.css?{rid}"><div class="progressbar grow">{Data.progress_html}</div>'
             Log.info("Getting metadata")
             Data.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
             Log.info("Getting cheevos raw data")

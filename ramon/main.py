@@ -24,6 +24,8 @@
         ------------
         Perspective Personalization for widgets
         Progressbar personalization
+        ---------------------
+        TODO: Check why cheevo resets to index 1 on achievement obtainment but remains ticked on last position (checkbox)
 """
 try: 
     from classes.ramon       import Ramon
