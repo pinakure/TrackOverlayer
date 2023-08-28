@@ -88,6 +88,7 @@ class Cheevo(Model):
             cheevo = Cheevo.get(id=cheevo_id)
             cheevo.locked = locked
             cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'              
+            cheevo.index  = index
             cheevo.save()
             return cheevo
         except:            
