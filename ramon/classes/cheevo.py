@@ -86,6 +86,9 @@ class Cheevo(Model):
                 Cheevo.min_width = len(name)+1
         try:
             cheevo = Cheevo.get(id=cheevo_id)
+            if cheevo.locked and not locked:
+                # invalidate cache on unlock!
+                cheevo.cached = False
             cheevo.locked = locked
             cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'              
             cheevo.index  = index

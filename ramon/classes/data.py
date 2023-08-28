@@ -189,7 +189,7 @@ class Data:
                 
     @staticmethod
     def getReloadSnippet():
-        return """<script>function refresh(){ window.location.reload(); } setInterval(refresh, """+str(Data.reload_rate*1000)+""")</script>"""
+        return """<script>function refresh(){ window.location.reload(); } setInterval(refresh, """+str(Data.reload_rate*500)+""")</script>"""
 
     @staticmethod
     def writeCheevos():
