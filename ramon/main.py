@@ -25,13 +25,28 @@
         Perspective Personalization for widgets
         Progressbar personalization
         ---------------------
-        TODO: Check why cheevo resets to index 1 on achievement obtainment but remains ticked on last position (checkbox)
+        28-8-23
+        - Added ORM (pewee) to keep better tracking of which cheevos have been notified (planning doing a splash to display as OBS overlay)
+        - Turned Cheevo class into Model Class to interface the DB, added Game class
+        - Auto game data scraping ( name, picture and game_id )
+        - Now each cheevo has its own unique id, taken directly from RA id data
+        - Made a field in Game table to store which achievement is selected, so that attribute is 
+          saved for next sessions, and if game changes it changes automatically :)
+        TODO: 
+            - Ramon.collectNotifications() 
+            - Ramon.dumpNotifications() -> Dumps Js + HTML + CSS to a auto updating, show only once notification queue
+                - We may have to subdivide this into subclass
+                - But hell it will be cool to be able to show em in overlay instead of 
+                  being forced to use the embedded blocky Retroarch notifications, at expense of 
+                  having to manually update or waiting for autoupdate, delaying the realtime notification 
+                  when one achievement gets unlocked.
+
 """
 try: 
-    from classes.ramon       import Ramon
     import os, sys
+    from classes.ramon       import Ramon
 except ImportError:
-    os.system('pip install requests beautifulsoup4 dearpygui pynput')
+    os.system('pip install requests beautifulsoup4 dearpygui pynput peewee')
     os.system(f'pause')
     exit()
 
