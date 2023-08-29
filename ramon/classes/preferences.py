@@ -258,21 +258,21 @@ class Preferences:
         try:
             DynamicCSS.settings[category]['active-color'  ] = Preferences.settings[f'{category}-active-color' ]
         except: 
-            Log.info(f"No 'active-color' set for {category}. Skipping variable setup.")
+            Log.warning(f"No 'active-color' set for {category}. Skipping variable setup.")
         try:
             DynamicCSS.settings['recent']['font'            ] = Preferences.settings['recent-font'          ]
             DynamicCSS.settings['recent']['font-size'       ] = Preferences.settings['recent-font-size'     ]
             DynamicCSS.settings['recent']['font-color'      ] = Preferences.settings['recent-font-color'    ]
             DynamicCSS.settings['recent']['font-glow'       ] = Preferences.settings['recent-font-glow'     ]
         except: 
-            Log.info(f"No 'font' set for {category}. Skipping variable setup.")
+            Log.warning(f"No 'font' set for {category}. Skipping variable setup.")
         try:
             DynamicCSS.settings['progress']['overlay'       ] = Preferences.settings['progress-overlay-text']
             DynamicCSS.settings['progress']['hard'          ] = Preferences.settings['progress-hard-gradient']
             DynamicCSS.settings['progress']['upper-color'   ] = Preferences.settings['progress-upper-color' ]
             DynamicCSS.settings['progress']['lower-color'   ] = Preferences.settings['progress-lower-color' ]
         except: 
-            Log.info(f"No 'gradient' set for {category}. Skipping variable setup.")
+            Log.warning(f"No 'gradient' set for {category}. Skipping variable setup.")
         
     @staticmethod
     def loadCustomizations():

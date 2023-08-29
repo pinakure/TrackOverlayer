@@ -52,6 +52,8 @@ class Log:
     @staticmethod
     def info(text):
         Log.print(f'I: {text}')
+        if not Log.stdout:
+            dpg.set_viewport_title(f'RAMon - {text}')            
 
     @staticmethod
     def error(text):

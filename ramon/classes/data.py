@@ -147,6 +147,7 @@ class Data:
             Data.getUserSummary()
             Data.setActiveCheevo( Data.game.current )
             Data.getCheevos()
+            dpg.set_viewport_title(f'RAMon - { f"{Data.progress}  -  {len([cheevo for cheevo in Data.cheevos if not cheevo.locked])}/{len(Data.cheevos)}" if Data.game else "No game"}')
             return True
         except Exception as E:
             Log.error(str(E))
