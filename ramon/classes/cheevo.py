@@ -53,12 +53,20 @@ class Cheevo(Model):
     def menu(self):
         return f'{self.name.ljust(Cheevo.min_width, " ")}'+"\n"+(" "*9)+f'{self.description}'
     
+    @staticmethod
+    def getPicture( cheevo_id ):
+        data = requests.get( f'https://media.retroachievements.org/Badge/{cheevo_id}.png' ).content
+        with open(f'{Cheevo.root}/data/cache/{cheevo_id}.png', 'wb') as file:
+            file.write(data)
+        data = requests.get( f'https://media.retroachievements.org/Badge/{cheevo_id}_lock.png' ).content
+        with open(f'{Cheevo.root}/data/cache/{cheevo_id}_lock.png', 'wb') as file:
+            file.write(data)
+        return data
+
     def build_cache(self):
         try:
             Log.info(f"Caching cheevo picture {self.picture}...")
-            data = requests.get( f'https://media.retroachievements.org/Badge/{self.picture}' ).content
-            with open(f'{Cheevo.root}/data/cache/{self.picture}', 'wb') as file:
-                file.write(data)
+            Cheevo.getPicture( self.picture.split('.png')[0].split('_lock')[0] )
             self.cached = True
             self.save()
         except Exception as E:
@@ -85,6 +93,7 @@ class Cheevo(Model):
             if len(name)>Cheevo.min_width:
                 Cheevo.min_width = len(name)+1
         try:
+            # cheevo already exists in DB
             cheevo = Cheevo.get(id=cheevo_id)
             if cheevo.locked and not locked:
                 # invalidate cache on unlock!
@@ -95,6 +104,7 @@ class Cheevo(Model):
             cheevo.save()
             return cheevo
         except:            
+            # cheevo does not exist in DB, create new
             return Cheevo.create(
                 id          = cheevo_id,
                 name        = name.replace('"', "´"), 

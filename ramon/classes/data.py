@@ -42,46 +42,78 @@ class Data:
     css             = {}
     game            = None
     game_id         = 0
+    parsed          = None
 
     @staticmethod
     def parseCheevos(game):
         cheevos = []
         for c in Data.cheevos_raw:
             cheevos.append( Cheevo.parse( game, c ) )
-        return cheevos
-        
+        return cheevos       
+
     @staticmethod
-    def query():
-        Log.info('Refreshing data...')
-        Data.css = Data.parent.css
-        Preferences.data = Data
-        if Preferences.settings['username'] == '': return
+    def getRank( usersummary ):
         try:
-            rid = random.random()
-            payload             = requests.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
-            parsed_html         = BeautifulSoup( payload, features='html.parser' )
-            usersummary_raw     = parsed_html.body.find('div', attrs={'class':'usersummary'})
-            usersummary         = usersummary_raw.text
-            Data.score          = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
+            Log.info("Parsing User Rank...")
             Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
-            Data.last_seen_full = usersummary.split('Last seen  in  ')[1]
-            Data.last_seen      = Data.last_seen_full.split('(')[0]
-            # if Preferences.settings['last_game'] != Data.last_seen:
-            #     Cheevo.active_index = 1
-            #     Preferences.settings['current_cheevo'] = Cheevo.active_index
-            #     Preferences.settings['last_game'] = Data.last_seen
-            Data.game_id        = int(str(usersummary_raw).split('retroachievements.org/game/')[1].split('"')[0])
-            Data.game           = Game.loadOrCreate(Data.game_id)
-            # @move to Cheevo.setCurrent()
-            Cheevo.active_index = Data.game.current
-            Preferences.settings['current_cheevo'] = Cheevo.active_index
-            for i in range(0,Cheevo.max):
-                dpg.set_value(f'cheevo[{i+1}]', False)
-                dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
-            #end of @move
+        except Exception as E:
+            Log.error(str(E))
+            
+    @staticmethod
+    def getDate( usersummary ):
+        try:
+            Log.info("Parsing User Last Activity Date...")
             Data.last_activityr = usersummary.split('Last Activity: ')[1].split('Account')[0]
             Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
-            stats               = str(parsed_html.body.find('div', attrs={'class':'userpage recentlyplayed'}))
+        except Exception as E:
+            Log.error(str(E))
+        
+    @staticmethod
+    def getScore( usersummary ):
+        try:
+            Log.info("Parsing User Score...")
+            Data.score = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
+        except Exception as E:
+            Log.error(str(E))
+
+    @staticmethod
+    def getGame( usersummary_raw ):
+        try:
+            Log.info("Getting Game data...")
+            Data.game_id = int(str(usersummary_raw).split('retroachievements.org/game/')[1].split('"')[0])
+            Data.game    = Game.loadOrCreate(Data.game_id)   
+            Data.last_seen_full = usersummary_raw.text.split('Last seen  in  ')[1]
+            Data.last_seen      = Data.last_seen_full.split('(')[0]              
+        except Exception as E:
+            Log.error(str(E))
+
+    @staticmethod
+    def getUserSummary():
+        try:
+            Log.info("Getting User Summary HTML...")
+            usersummary_raw     = Data.parsed.body.find('div', attrs={'class':'usersummary'})
+            usersummary         = usersummary_raw.text
+            Data.getScore(usersummary)
+            Data.getRank(usersummary)
+            Data.getDate(usersummary)
+            Data.getGame(usersummary_raw)
+        except Exception as E:
+            Log.error(str(E))
+    
+    @staticmethod
+    def setActiveCheevo(index):
+        Cheevo.active_index = index
+        Preferences.settings['current_cheevo'] = Cheevo.active_index
+        for i in range(0,Cheevo.max):
+            dpg.set_value(f'cheevo[{i+1}]', False)
+            dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
+            
+    @staticmethod 
+    def getCheevos():
+        try:
+            rid = random.random()
+            Log.info("Updating cheevo info...")
+            stats = str(Data.parsed.body.find('div', attrs={'class':'userpage recentlyplayed'}))
             try:
                 Log.info("Getting progress HTML")
                 Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
@@ -100,10 +132,21 @@ class Data:
             for d in Data.cheevos:
                 if d.index == Cheevo.active_index:
                     Data.cheevo = d.name + "\n" + d.description
-                #dpg.render_dearpygui_frame()               
+        except Exception as E:
+            Log.error(str(E))
 
-            #Scraper.getGamePicture( Data.last_seen.split(':')[0].split('.')[0] )
-
+    @staticmethod
+    def query():
+        Log.info('Refreshing data...')
+        Data.css = Data.parent.css
+        Preferences.data = Data
+        if Preferences.settings['username'] == '': return
+        try:
+            payload             = requests.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
+            Data.parsed         = BeautifulSoup( payload, features='html.parser' )
+            Data.getUserSummary()
+            Data.setActiveCheevo( Data.game.current )
+            Data.getCheevos()
             return True
         except Exception as E:
             Log.error(str(E))
@@ -149,27 +192,18 @@ class Data:
     @staticmethod
     def getCurrentCheevo( picture ):
         # try first if image is in cache
-        if os.path.exists(f'{Preferences.root}/data/cache/{picture}'):
-            with open(f'{Preferences.root}/data/cache/{picture}', 'rb') as file:
-                # Log.info(f'Using cached image {picture}')
-                return file.read()
-        else:
-            url = f'https://media.retroachievements.org/Badge/{picture}'
-            try:
-                #Log.info(f'Requesting cheevo image "{picture}"')
-                data = requests.get( url ).content
-            except:
-                Log.error(f"Failed to retrieve 'https://media.retroachievements.org/Badge/{picture}'!")
-                return None                
-            try:
-                with open(f'{Preferences.root}/data/cache/{picture}', 'wb') as file:
-                    #Log.info(f'Storing cached image "{picture}"')
-                    file.write(data)
-            except:
-                Log.error(f"Failed to store cache for 'https://media.retroachievements.org/Badge/{picture}'!")
-                pass                
-            return data
-
+        cheevo_id = picture.split('.png')[0].split('_lock')[0]
+        if not os.path.exists(f'{Preferences.root}/data/cache/{picture}'):
+            Cheevo.getPicture( cheevo_id )
+        data = {}
+        with open(f'{Preferences.root}/data/cache/{cheevo_id}.png', 'rb') as file:
+            # Log.info(f'Using cached image {picture}')
+            data[0] = file.read()
+        with open(f'{Preferences.root}/data/cache/{cheevo_id}_lock.png', 'rb') as file:
+            # Log.info(f'Using cached image {picture}')
+            data[1] = file.read()
+        return data
+        
     @staticmethod
     def writeCheevo():
         if Preferences.settings['username'] == '': return
@@ -182,9 +216,11 @@ class Data:
                     Data.cheevo = d.name + "\n" + d.description
                     # get achievement picture
                     data = Data.getCurrentCheevo( d.picture )
-                    if data:
+                    if len(data)>0:
                         with open(f"{Preferences.root}/data/current_cheevo.png", 'wb') as picture:
-                            picture.write(data )
+                            picture.write(data[0] )
+                        with open(f"{Preferences.root}/data/current_cheevo_lock.png", 'wb') as picture:
+                            picture.write(data[1] )
                         Data.updatePictures()
                 
     @staticmethod
