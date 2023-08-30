@@ -1,4 +1,4 @@
-import requests, os, random
+import requests, os, random, json
 from dearpygui              import dearpygui as dpg
 from datetime               import datetime, timedelta
 from bs4                    import BeautifulSoup    
@@ -278,6 +278,32 @@ class Data:
             file.write('''</tbody><table>''')
 
     @staticmethod
+    def getNotifications():
+        notifications = []
+        cheevos = (Cheevo
+                .select()
+                .join(Game)
+                .where(Cheevo.game==Data.game, Cheevo.locked==False, Cheevo.notified==False)
+                .order_by(Cheevo.index.asc())
+                .dicts()
+            )
+        for cheevo in cheevos:
+            notifications.append( [ cheevo['name'], cheevo['description'], cheevo['picture'].rstrip('.png').rstrip('_lock') ] )
+        return notifications
+        
+    @staticmethod
+    def writeNotifications():
+        notifications = Data.getNotifications()
+        data = json.dumps(notifications)
+        try:
+            with open(f'{Preferences.root}/plugins/xbox-achievement/template.html', 'r') as file:
+                template = file.read()
+            with open(f'{Preferences.root}/data/notifications.html', 'w') as file:
+                file.write(template.replace('var notifications = []', f'var notifications = {data}'))
+        except:
+            Log.error("Cannot read xbox-achievement template at plugins/xbox-achievement/template.html")
+
+    @staticmethod
     def write():
         if Preferences.settings['username'] == '': return
         with open(f'{Preferences.root}/data/progress.html'      , 'w') as file:   file.write(Data.progress_html )
@@ -286,6 +312,7 @@ class Data:
         with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(Data.last_seen     ))
         with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(Data.site_rank     )
         with open(f'{Preferences.root}/data/score.txt'          , 'w') as file:   file.write(Data.score         )        
+        Data.writeNotifications()
         Data.writeCheevo()
         Data.writeCheevos()
         Data.writeRecent()

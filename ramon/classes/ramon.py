@@ -56,7 +56,8 @@ class Ramon:
     height              = 900
     restart             = False    
     css                 = {}
-    version             = 0.5
+    version             = 0.18
+    timer               = None
 
     @staticmethod
     def updateCheevoManually(sender=None, args=None, user_data=None):
@@ -288,8 +289,7 @@ class Ramon:
             dpg.set_value('progress', value)
             dpg.show_item('progress_overlay')
                 
-    timer = None
-
+    
     @staticmethod
     def render():
         import time
@@ -360,10 +360,10 @@ class Ramon:
     @staticmethod
     def refresh(sender=None, user_data=None, args=None):
         Ramon.timer = None
-        Ramon.clear()
-        dpg.set_value('stdout','Requesting Data...')
         Cheevo.global_index = 0
         if Data.query():
+            Ramon.clear()
+            dpg.set_value('stdout','Requesting Data...')
             Ramon.redraw()
             Data.write()
         else:
