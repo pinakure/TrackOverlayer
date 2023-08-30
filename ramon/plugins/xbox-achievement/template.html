@@ -1,11 +1,15 @@
 <html>
     <head>
         <style>
+            body {
+                background-color: rgba(0,0,0,0);
+            }
+
             #notifications {
                 box-sizing          : border-box;
                 padding             : 0px 0px 0px 0px;
                 margin              : 0px 0px 0px 0px;
-                background-color    : #000;
+                background-color    : rgba(0,0,0,0);
             }
             
             .notification {
@@ -87,7 +91,6 @@
                 }
             }
         </style>
-        <audio muted="true" src="xbox.mp3" id="sound"></audio>
         <script>
             function Notification( name, description, picture ){
                 this.name               = name;
@@ -131,9 +134,10 @@
                 queue       : [],
                 notification: null,
                 callback    : null,
-                sound       : document.getElementById('sound'),
+                sound       : null,
 
                 start       : function( notifications ){
+                    Notifier.sound = new Audio('./xbox.wav');
                     for( notification_index in notifications ){
                         notification = notifications[notification_index]
                         Notifier.enqueue( 
@@ -170,6 +174,7 @@
     <body id="notifications"></body>
     <script>
         var notifications = [];
-        Notifier.start( notifications );        
+        Notifier.start( notifications ); 
     </script>
+    
 </html>

@@ -285,10 +285,11 @@ class Data:
                 .join(Game)
                 .where(Cheevo.game==Data.game, Cheevo.locked==False, Cheevo.notified==False)
                 .order_by(Cheevo.index.asc())
-                .dicts()
             )
         for cheevo in cheevos:
-            notifications.append( [ cheevo['name'], cheevo['description'], cheevo['picture'].rstrip('.png').rstrip('_lock') ] )
+            notifications.append( [ cheevo.name, cheevo.description, cheevo.picture.rstrip('.png').rstrip('_lock') ] )
+            cheevo.notified = True
+            cheevo.save()
         return notifications
         
     @staticmethod
@@ -298,8 +299,45 @@ class Data:
         try:
             with open(f'{Preferences.root}/plugins/xbox-achievement/template.html', 'r') as file:
                 template = file.read()
+            
+            iframe = '''
+            <html>
+                <head>
+                    <style>
+                        * {
+                            overflow: hidden;
+                            padding: 0px 0px 0px 0px;
+                            margin: 0px 0px 0px 0px;
+                            border: none;
+                        }
+                        iframe {
+                            position: absolute;
+                            left: calc( 50% - calc( 1440px / 2 ) );
+                            top: 0px;
+                            background-color: rgba(0,0,0,0);
+                        }
+                        button {
+                            position: absolute;
+                            top: 160px;
+                            width: 128px;
+                            border: 1px outset #ccc;
+                            text-align: center;
+                            left: calc( 50% - 64px );
+                        }
+                    </style>
+                </head>
+                <body>
+                    <iframe width="1440" height="128" src="./notifications.html"></iframe>
+                    <button type="button" id="interact">ENABLE SOUND</button>   
+                    <script>alert("Click to allow\nsound for Xbox\nCheevo Notifications");</script>   
+                             
+                </body>
+            </html>
+            '''
             with open(f'{Preferences.root}/data/notifications.html', 'w') as file:
                 file.write(template.replace('var notifications = []', f'var notifications = {data}'))
+            with open(f'{Preferences.root}/data/notifications_sfx.html', 'w') as file:
+                file.write(iframe)
         except:
             Log.error("Cannot read xbox-achievement template at plugins/xbox-achievement/template.html")
 
