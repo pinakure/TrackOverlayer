@@ -48,8 +48,8 @@ class Data:
     def parseCheevos(game):
         cheevos = []
         for i, c in enumerate(Data.cheevos_raw):
-            dpg.set_viewport_title(f'RAMon - Processing cheevo {i+1}/{len(Data.cheevos_raw)}')
-            dpg.render_dearpygui_frame()
+            # dpg.set_viewport_title(f'RAMon - Processing cheevo {i+1}/{len(Data.cheevos_raw)}')
+            # dpg.render_dearpygui_frame()
             cheevos.append( Cheevo.parse( game, c ) )
         return cheevos       
         dpg.set_viewport_title(f'RAMon - Done processing cheevos')
