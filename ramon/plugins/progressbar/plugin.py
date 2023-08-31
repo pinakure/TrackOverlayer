@@ -12,12 +12,12 @@ class plugin(Plugin):
 
         #@ Composer Settings
         self.z_index     = 10
-        self.width       = 1024
-        self.height      = 128
+        self.width       = 360
+        self.height      = 32
         self.scale       = 1   
-        self.y           = 800
+        self.y           = 550
+        self.x           = 10
         #@ Vars
-
 
 
 

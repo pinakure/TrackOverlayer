@@ -29,7 +29,6 @@ class Data:
     last_seen       = ''
     last_activityr  = ''
     last_activity   = None
-    progress_html   = ''
     progress        = ''
     stats           = ''
     cheevo          = ''
@@ -48,13 +47,9 @@ class Data:
     def parseCheevos(game):
         cheevos = []
         for i, c in enumerate(Data.cheevos_raw):
-            # dpg.set_viewport_title(f'RAMon - Processing cheevo {i+1}/{len(Data.cheevos_raw)}')
-            # dpg.render_dearpygui_frame()
             cheevos.append( Cheevo.parse( game, c ) )
         return cheevos       
-        dpg.set_viewport_title(f'RAMon - Done processing cheevos')
-        dpg.render_dearpygui_frame()
-
+        
     @staticmethod
     def getRank( usersummary ):
         try:
@@ -120,15 +115,15 @@ class Data:
             stats = str(Data.parsed.body.find('div', attrs={'class':'userpage recentlyplayed'}))
             try:
                 Log.info("Getting progress HTML")
-                Data.progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
+                progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
+                Log.info("Getting progress")
+                Data.progress  = progress_html.split('width:')[1].split('"')[0]
             except:
-                dpg.set_value('stdout', 'This game has no achievements.')
+                Data.progress  = '0%'
+                dpg.set_value('stdout', 'Asuming no achievements, since no progressbar was found.')
                 return True
-            Log.info("Getting progress")
-            Data.progress       = Data.progress_html.split('width:')[1].split('"')[0]
-            Data.progress_html  = f'{Data.getReloadSnippet()}<link rel="stylesheet" type="text/css" href="../css/progress.css?{rid}"><div class="progressbar grow">{Data.progress_html}</div>'
             Log.info("Getting metadata")
-            Data.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
+            Data.stats = stats.split('<div class="mb-5">')[1].split('</div>')[0]
             Log.info("Getting cheevos raw data")
             Data.cheevos_raw    = Data.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
             Log.info("Parsing cheevos")
@@ -303,8 +298,6 @@ class Data:
     @staticmethod
     def write():
         if Preferences.settings['username'] == '': return
-        with open(f'{Preferences.root}/data/progress.html'      , 'w') as file:   file.write(Data.progress_html )
-        with open(f'{Preferences.root}/data/progress.txt'       , 'w') as file:   file.write(Data.progress      )
         with open(f'{Preferences.root}/data/last_activity.txt'  , 'w') as file:   file.write(Data.last_activity.strftime("%d %b %Y, %H:%M").upper() )
         with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(Data.last_seen     ))
         with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(Data.site_rank     )
