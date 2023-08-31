@@ -31,11 +31,17 @@ class Endpoints:
     def twitch_username():
         return Preferences.settings['twitch-username']
     
+    @staticmethod
+    def progress():
+        from classes.data import Data
+        return Data.progress
+    
     byName = {
         'notifications'     : notifications,
         'username'          : username,
         'twitch-username'   : twitch_username,
         'current-cheevo'    : current_cheevo,
+        'progress'          : progress,
     }
 
 class Plugin:
