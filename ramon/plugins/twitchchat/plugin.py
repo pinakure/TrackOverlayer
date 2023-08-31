@@ -33,7 +33,7 @@ class plugin(Plugin):
         return {
             'width'   : px(self.width   ),
             'height'  : px(self.height  ),
-            'left'    : px(self.x),
+            'left'    : 'calc( calc( var(--width) - var(--twitchchat-width) ) - 16px );',
             'top'     : px(self.y),
             'scale'   : self.scale,
             'z-index' : self.z_index,

@@ -93,8 +93,9 @@ class Ramon:
                 dpg.add_menu_item(label="Create Compile Script "   , callback=Ramon.createCompileScript)
                 dpg.add_menu_item(label="Exit                  "   , callback=Ramon.exit  )
             with dpg.menu(label="Options"):
-                dpg.add_menu_item(label="Preferences"   , tag="preferences" , callback=Preferences.show     )
-                dpg.add_menu_item(label="Log"           , tag="view_log"    , callback=Log.show             )
+                dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )
+                dpg.add_menu_item(label="Log"               , tag="view_log"    , callback=Log.show             )
+                dpg.add_checkbox(label="Plugin Debugging"   , tag="debugplugins", callback=Plugin.toggleDebug   , default_value=Plugin.debug)
 
     @staticmethod
     def mkdir(dirname):

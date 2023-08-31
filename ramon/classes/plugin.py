@@ -42,7 +42,7 @@ class Plugin:
 
     loaded = {}
     width  = 1440
-    debug  = True
+    debug  = False
 
     def __init__(self):
         self.template_data  = None
@@ -123,6 +123,12 @@ class Plugin:
 
     def iframe(self):
         return f'<iframe id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
+
+    @staticmethod
+    def toggleDebug():
+        Plugin.debug = not Plugin.debug
+        Log.verbose = Plugin.debug
+        Plugin.compose()
 
     @staticmethod
     def compose():

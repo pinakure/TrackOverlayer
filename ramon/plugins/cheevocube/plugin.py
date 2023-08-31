@@ -30,9 +30,12 @@ class plugin(Plugin):
 
 
     def composerVars(self):
+        factor = (self.scale / 2)+1
         return {
-            'width'   : px(self.width   ),
-            'height'  : px(self.height  ),
+            'width'   : px( Plugin.width ),            
+            'left'    : "calc( calc( var(--width) * var(--cheevocube-scale) ) * -0.925 )",
+            'top'     : "calc( -1 * calc( 240px * var(--cheevocube-scale) ) )",
+            'height'  : px( self.height  ),
             'scale'   : self.scale,
             'z-index' : self.z_index,
         }
