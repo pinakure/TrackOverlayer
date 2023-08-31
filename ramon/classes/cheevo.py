@@ -54,12 +54,12 @@ class Cheevo(Model):
         return f'{self.name.ljust(Cheevo.min_width, " ")}'+"\n"+(" "*9)+f'{self.description}'
     
     @staticmethod
-    def getPicture( cheevo_id ):
-        data = requests.get( f'https://media.retroachievements.org/Badge/{cheevo_id}.png' ).content
-        with open(f'{Cheevo.root}/data/cache/{cheevo_id}.png', 'wb') as file:
+    def getPicture( picture_id ):
+        data = requests.get( f'https://media.retroachievements.org/Badge/{picture_id}.png' ).content
+        with open(f'{Cheevo.root}/data/cache/{picture_id}.png', 'wb') as file:
             file.write(data)
-        data = requests.get( f'https://media.retroachievements.org/Badge/{cheevo_id}_lock.png' ).content
-        with open(f'{Cheevo.root}/data/cache/{cheevo_id}_lock.png', 'wb') as file:
+        data = requests.get( f'https://media.retroachievements.org/Badge/{picture_id}_lock.png' ).content
+        with open(f'{Cheevo.root}/data/cache/{picture_id}_lock.png', 'wb') as file:
             file.write(data)
         return data
 
@@ -82,7 +82,7 @@ class Cheevo(Model):
     def parse( game, payload ):
         name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'")
         picture     = payload.split('img src=')[1].split('.png')[0].replace('\\\'', '') + ".png"
-        cheevo_id   = picture.split('/')[-1].split('.png')[0].split('_lock')[0]
+        cheevo_id   = int(payload.split('achievement/')[1].split('"')[0])
         locked      = picture.find('lock')>-1
         description = payload.split('mb-1')[1].split('gt')[1].split('&lt;/div')[0].replace(';', '')
         index       = 0
@@ -99,7 +99,8 @@ class Cheevo(Model):
             cheevo.index  = index
             cheevo.save()
             return cheevo
-        except:            
+        except Exception as E:            
+            Log.error("Cannot update cheevo, creating new one", E)
             # cheevo does not exist in DB, create new
             return Cheevo.create(
                 id          = cheevo_id,

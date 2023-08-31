@@ -47,8 +47,10 @@ class Data:
     @staticmethod
     def parseCheevos(game):
         cheevos = []
-        for i, c in enumerate(Data.cheevos_raw):
+        Log.info(f'Parsing {len(Data.cheevos_raw)} raw cheevos')
+        for c in Data.cheevos_raw:
             cheevos.append( Cheevo.parse( game, c ) )
+        Log.info(f'Got {len(cheevos)} sane cheevo instances')
         return cheevos       
         
     @staticmethod
