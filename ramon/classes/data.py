@@ -36,7 +36,7 @@ class Data:
     cheevos_raw     = []
     cheevos         = []
     mine            = True
-    username        = ''
+    notifications   = []
     recent          = []
     reload_rate     = 60
     css             = {}

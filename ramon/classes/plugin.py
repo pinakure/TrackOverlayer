@@ -14,12 +14,51 @@ def cvar(name, value):
 class Endpoints:
 
     @staticmethod
+    def autoupdate():
+        from classes.data import Data
+        payload = f"""<body style="width: 100%; height:100%; overflow: hidden; transition: background-color 500ms ease-in-out; " ><script>
+            document.getElementsByTagName('body')[0].style.backgroundColor = '#0f0';
+            localStorage.setItem('current-cheevo'   ,  {Endpoints.current_cheevo()  }   );
+            localStorage.setItem('cheevo-progress'  , '{Endpoints.progress()        }'  );
+            localStorage.setItem('username'         , '{Endpoints.username()        }'  );
+            localStorage.setItem('twitch-username'  , '{Endpoints.twitch_username() }'  );
+            var notifications = [];
+            """+"""
+            try {
+                notifications = JSON.parse(localStorage.getItem('notifications'));
+            } catch(e){
+                console.warn("notifications : Item does not exist in localstorage");
+            }
+            """+f"""
+            var payload = {Endpoints.notifications() };
+            if( !notifications ) notifications = [];
+            for(item in payload)
+                notifications.push( payload[item] );
+            localStorage.setItem('notifications'    , JSON.stringify(notifications));
+            """+"""
+            setTimeout(function(){ 
+                location.reload(); 
+            }, 
+            5000);
+            setTimeout(function(){             
+                document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';
+            },
+            500);
+            console.log(localStorage.getItem('notifications'));
+            </script></body>
+        """
+        try:
+            with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
+                file.write( payload )
+            Data.notifications = []
+        except Exception as E:
+            Log.error("Cannot write Autoupdate data script file", E)
+        return payload
+
+    @staticmethod
     def notifications():
         from classes.data import Data
-        return f"""
-        var notifications = {json.dumps(Data.notifications)};
-        var progress      = '{Data.progress}';
-        """
+        return json.dumps(Data.notifications)
     
     @staticmethod
     def current_cheevo():
@@ -112,12 +151,13 @@ class Plugin:
     @staticmethod
     def runLoaded():
         # Feed plugin with the data corresponding to its data endpoint (that data is refreshed each time Ramon.refresh is summoned)
-            for name,plugin in Plugin.loaded.items():
-                try:
-                    payload = None if not plugin.endpoint else Endpoints.byName[ plugin.endpoint ]()
-                    plugin.render(payload)
-                except Exception as E:
-                    Log.error(f"Cannot run plugin {name}", E)            
+        for name,plugin in Plugin.loaded.items():
+            try:
+                payload = None if not plugin.endpoint else Endpoints.byName[ plugin.endpoint ]()
+                plugin.render(payload)
+            except Exception as E:
+                Log.error(f"Cannot run plugin {name}", E)    
+        Endpoints.autoupdate()        
     
     def cssRule(self):
         return f'#{self.name}'+'{'+f"""
@@ -181,6 +221,8 @@ class Plugin:
         except Exception as E:
             Log.error("Cannot write Plugin Overlay template file", E)
         #
+        # Create plugin data feeder js script 
+        Endpoints.autoupdate()
         Log.time(True)  
 
     @staticmethod

@@ -183,7 +183,12 @@
     </body>    
     <script>        
         /*JS*/
-        localStorage.setItem('cheevo-progress', progress)
+        var notifications = [];
+        try {
+            notifications = JSON.parse(localStorage.getItem('notifications'))
+        }catch(e){
+            console.warn("notifications : item does not exist on localStorage");
+        }
         Notifier.start( notifications ); 
     </script>
     

@@ -282,7 +282,7 @@ class Ramon:
         dpg.set_viewport_small_icon(f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon(f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_pos( (Preferences.settings['x-pos'], Preferences.settings['y-pos']))
-        if not Data.username or len(Data.cheevos) == 0:
+        if not Preferences.settings['username'] or len(Data.cheevos) == 0:
             Ramon.setProgress(1.0)
         return True
         
