@@ -299,6 +299,7 @@ class Ramon:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
             file.write(f'''@pyinstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe RAMon_debug.exe'''+"\n")
             file.write(f'''@pyinstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe RAMon.exe'''+"\n")
+        dpg.set_viewport_title('RAMon - Compiled "compile.bat" script succesfully')
 
     @staticmethod
     def render():
