@@ -222,5 +222,5 @@ hr{
             with open(f'{DynamicCSS.root}/css/{self.filename}.css', 'w') as input:
                 input.write( beautify(self.css ))
         except Exception as E:
-            Log.error(f"Cannot write CSS Override for '{self.filename}' : {str(E)}")
+            Log.error(f"Cannot write CSS Override for '{self.filename}'", E)
 

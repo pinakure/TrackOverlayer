@@ -47,9 +47,13 @@ class Data:
     @staticmethod
     def parseCheevos(game):
         cheevos = []
-        for c in Data.cheevos_raw:
+        for i, c in enumerate(Data.cheevos_raw):
+            dpg.set_viewport_title(f'RAMon - Processing cheevo {i+1}/{len(Data.cheevos_raw)}')
+            dpg.render_dearpygui_frame()
             cheevos.append( Cheevo.parse( game, c ) )
         return cheevos       
+        dpg.set_viewport_title(f'RAMon - Done processing cheevos')
+        dpg.render_dearpygui_frame()
 
     @staticmethod
     def getRank( usersummary ):
@@ -57,7 +61,7 @@ class Data:
             Log.info("Parsing User Rank...")
             Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse User Rank", E)
             
     @staticmethod
     def getDate( usersummary ):
@@ -66,7 +70,7 @@ class Data:
             Data.last_activityr = usersummary.split('Last Activity: ')[1].split('Account')[0]
             Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse User Last Activity Date", E)
         
     @staticmethod
     def getScore( usersummary ):
@@ -74,7 +78,7 @@ class Data:
             Log.info("Parsing User Score...")
             Data.score = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse User Score", E)
 
     @staticmethod
     def getGame( usersummary_raw ):
@@ -85,7 +89,7 @@ class Data:
             Data.last_seen_full = usersummary_raw.text.split('Last seen  in  ')[1]
             Data.last_seen      = Data.last_seen_full.split('(')[0]              
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse Game Data", E)
 
     @staticmethod
     def getUserSummary():
@@ -98,7 +102,7 @@ class Data:
             Data.getDate(usersummary)
             Data.getGame(usersummary_raw)
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse payload getting User Summary", E)
     
     @staticmethod
     def setActiveCheevo(index):
@@ -133,7 +137,7 @@ class Data:
                 if d.index == Cheevo.active_index:
                     Data.cheevo = d.name + "\n" + d.description
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse Updated Cheevo information", E)
 
     @staticmethod
     def query():
@@ -150,7 +154,7 @@ class Data:
             dpg.set_viewport_title(f'RAMon - { f"{Data.progress}  -  {len([cheevo for cheevo in Data.cheevos if not cheevo.locked])}/{len(Data.cheevos)}" if Data.game else "No game"}')
             return True
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot query RetroAchievements", E)
             return False
         
     @staticmethod
@@ -158,7 +162,7 @@ class Data:
         try:   
             width, height, depth, data = dpg.load_image(f'{Preferences.root}/data/current_cheevo.png')                
         except Exception as E:
-            Log.error("Cannot load current_cheevo.png\n\n")
+            Log.error("Cannot load 'current_cheevo.png'", E)
         
         with dpg.texture_registry(show=False):
             try:
@@ -186,10 +190,8 @@ class Data:
                 )
                 #Log.info("Added image 'current_cheevo_image'.")
             except Exception as E:
-                Log.error("Cannot create static texture 'current_cheevo_img'.")
-                Log.error(str(E))
-                pass
-        
+                Log.error("Cannot create static texture 'current_cheevo_img'.", E)
+                
     @staticmethod
     def getCurrentCheevo( picture ):
         # try first if image is in cache
@@ -208,9 +210,9 @@ class Data:
     @staticmethod
     def writeCheevo():
         if Preferences.settings['username'] == '': return
-        with open(f'{Preferences.root}/data/current_cheevo.txt' , 'w') as file:   
-            for d in Data.cheevos:
-                if d.index == Cheevo.active_index:
+        for d in Data.cheevos:
+            if d.index == Cheevo.active_index:
+                with open(f'{Preferences.root}/data/current_cheevo.txt' , 'w') as file:   
                     file.write(str(d.name))
                     file.write('\n')
                     file.write(str(d.description))
@@ -295,52 +297,9 @@ class Data:
     @staticmethod
     def writeNotifications():
         notifications = Data.getNotifications()
+        Data.notifications = notifications
         data = json.dumps(notifications)
-        try:
-            with open(f'{Preferences.root}/plugins/xbox-achievement/template.html', 'r') as file:
-                template = file.read()
-            
-            iframe = '''
-            <html>
-                <head>
-                    <style>
-                        * {
-                            overflow: hidden;
-                            padding: 0px 0px 0px 0px;
-                            margin: 0px 0px 0px 0px;
-                            border: none;
-                        }
-                        iframe {
-                            position: absolute;
-                            left: calc( 50% - calc( 1440px / 2 ) );
-                            top: 0px;
-                            background-color: rgba(0,0,0,0);
-                        }
-                        button {
-                            position: absolute;
-                            top: 160px;
-                            width: 128px;
-                            border: 1px outset #ccc;
-                            text-align: center;
-                            left: calc( 50% - 64px );
-                        }
-                    </style>
-                </head>
-                <body>
-                    <iframe width="1440" height="128" src="./notifications.html"></iframe>
-                    <button type="button" id="interact">ENABLE SOUND</button>   
-                    <script>alert("Click to allow\nsound for Xbox\nCheevo Notifications");</script>   
-                             
-                </body>
-            </html>
-            '''
-            with open(f'{Preferences.root}/data/notifications.html', 'w') as file:
-                file.write(template.replace('var notifications = []', f'var notifications = {data}'))
-            with open(f'{Preferences.root}/data/notifications_sfx.html', 'w') as file:
-                file.write(iframe)
-        except:
-            Log.error("Cannot read xbox-achievement template at plugins/xbox-achievement/template.html")
-
+        
     @staticmethod
     def write():
         if Preferences.settings['username'] == '': return

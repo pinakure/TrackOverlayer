@@ -70,8 +70,7 @@ class Cheevo(Model):
             self.cached = True
             self.save()
         except Exception as E:
-            Log.error(str(E))
-            Log.warning(f"Cannot create cache for cheevo {self.id}")
+            Log.error(f"Cannot create cache for cheevo {self.id}", E)
     
     def __str__(self):
         if not self.cached:
@@ -94,10 +93,7 @@ class Cheevo(Model):
                 Cheevo.min_width = len(name)+1
         try:
             # cheevo already exists in DB
-            cheevo = Cheevo.get(id=cheevo_id)
-            if cheevo.locked and not locked:
-                # invalidate cache on unlock!
-                cheevo.cached = False
+            cheevo = Cheevo.get(id=cheevo_id)            
             cheevo.locked = locked
             cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'              
             cheevo.index  = index
@@ -120,4 +116,4 @@ try:
     db.connect()
     db.create_tables([Game, Cheevo])
 except Exception as E:
-    Log.error(str(E))
+    Log.warning(str(E))

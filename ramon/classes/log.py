@@ -1,13 +1,14 @@
 from dearpygui import dearpygui as dpg
+import traceback, time
 
 class Log:
-    
+    verbose = False
     parent  = None
     stdout  = True
     BR      = '\n'
     width   = 800
     height  = 600
-
+    
     @staticmethod
     def create(parent):
         Log.parent = parent 
@@ -47,14 +48,29 @@ class Log:
 
     @staticmethod
     def warning(text):
-        Log.print(f'W: {text}')
+        Log.print("WARNING:\n\t"+text+"\n")
 
     @staticmethod
     def info(text):
-        Log.print(f'I: {text}')
+        Log.print(f'{text}')
         if not Log.stdout:
-            dpg.set_viewport_title(f'RAMon - {text}')            
+            dpg.set_viewport_title(f'RAMon - {text}')
+            # if dpg.is_dearpygui_running(): 
+            #     dpg.render_dearpygui_frame()
 
     @staticmethod
-    def error(text):
-        Log.print(f'E: {text}')
+    def time( finish=False ):
+        if not finish:
+            Log.when = time.time_ns()
+        else:
+            Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/1000) } msec")
+
+    @staticmethod
+    def error(text, exception=None):
+        if not Log.stdout:
+            dpg.show_item('log_window')
+        Log.print("\t"+('-'*80)+"\n")
+        Log.print("\t"+f'ERROR: {text}'+(('\n\t'+str(exception)) if exception else '')+"\n")
+        if Log.verbose: 
+            Log.print("\t"+(traceback.format_exc() if exception else 'Sorry!')+"\n")
+        Log.print('\t'+('-'*80)+"\n")

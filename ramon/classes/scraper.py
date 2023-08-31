@@ -18,6 +18,6 @@ class Scraper:
         except Exception as E:
             try:
                 os.unlink(f'{Preferences.root}/data/last_seen.png')
-            except:
-                pass
-            Log.error(str(E))
+            except Exception as I:
+                Log.warning(f"Cannot retrieve game picture from {Scraper.picture_root}", E)                
+            Log.error(f"Cannot retrieve game picture from {Scraper.picture_root}", E)

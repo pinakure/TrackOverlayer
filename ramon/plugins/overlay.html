@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RAMon PerFEct Overlay</title>
+        <style>
+            :root {
+                /*VARS*/                
+            }
+            * {
+                overflow    : hidden;
+                padding     : 0px 0px 0px 0px;
+                margin      : 0px 0px 0px 0px;
+                border      : none;
+                box-sizing  : border-box;
+            }
+            body {
+                width       : var(--width);
+                height      : 100%;
+                z-index     : -1;                
+                /* border      : 2px solid #f0f; */
+            }
+            body, iframe {
+                position         : absolute;
+                background-color : rgba(0,0,0,0);
+                overflow         : hidden;
+            }
+            #button {
+                z-index : 4000;
+                position: absolute;
+                top: 256px;
+                left: calc( 50% - 64px );
+                width: 128px;
+                height: 32px;
+                border: 1px solid #444;
+            }         
+            /* -----------------------------------------------
+                            GENERATED CONTENT 
+            ----------------------------------------------- */
+            /*CSS*/            
+        </style>
+    </head>
+    <body>
+        <button id="button" type="button" onclick="document.getElementById('button').remove()">Click to allow sound playback</button>                  
+        <!-------------------------------------------------
+                        GENERATED CONTENT 
+        -------------------------------------------------->
+        <!--HTML-->        
+    </body>
+</html>

@@ -34,6 +34,7 @@ class Preferences:
             'fullscreen'                : False,
             'vertical'                  : False,
             'username'                  : '',
+            'twitch-username'           : '',
             'root'                      : '.',
             'gmt'                       : 2,
             'api_key'                   : '',
@@ -174,7 +175,7 @@ class Preferences:
                 Preferences.settings[field] = json.loads( str(Preferences.settings[field]) )
             Cheevo.active_index = Preferences.settings['current_cheevo']
         except Exception as E:
-            Log.error(str(E))
+            Log.error("Cannot parse/load config.txt", E)
             return 
 
     @staticmethod

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            :root {
+                /*VARS*/           
+            }
+
+            body {
+                padding     : 0px 0px 0px 0px;
+                margin      : 0px 0px 0px 0px;
+                box-sizing  : 0px 0px 0px 0px;
+                overflow    : hidden;
+            }
+
+            .back {
+                /* Fix back face to be facing us */
+                transform : rotatex(180deg); -webkit-transform:rotatex(180deg);
+            }
+
+            .container {
+                width               : var( --cheevocube-size );
+                height              : var( --cheevocube-size );
+                position            : absolute;
+                left                : var( --cheevocube-left );
+                top                 : var( --cheevocube-top );
+                perspective         : 1000px; -webkit-perspective : 1000px;
+            }
+
+            #cube {
+                width               : 100%;
+                height              : 100%;
+                position            : absolute;
+                transform-style     : preserve-3d; -webkit-transform-style: preserve-3d;
+                animation           : rotatecube 12s linear infinite; -webkit-animation : rotatecube 12s linear infinite;
+            }
+
+            #cube div img {
+                animation: heartbeat 2s alternate ease-in-out infinite; -webkit-animation: heartbeat 2s alternate ease-in-out infinite;
+            }
+
+            #cube div {
+                height      : var(--cheevocube-size);
+                width       : var(--cheevocube-size);
+                display     : block;
+                position    : absolute;
+                border      : none;
+                line-height : 200px;
+                text-align  : center;
+                font-size   : 50px;
+                font-weight : bold;
+                box-shadow  : 0px 0px 8px #0f0;
+                border      : 2px solid #0f0;
+            }
+            @keyframes heartbeat {
+                0%  { filter: opacity(100%)             }
+                100%{ filter: opacity(0%)               }
+            }
+            @-webkit-keyframes heartbeat {
+                0%  { filter: opacity(100%)             }
+                100%{ filter: opacity(0%)               }
+            }
+            @keyframes rotatecube {
+                0%  { -webkit-transform: rotateY(360deg) }
+                25% { -webkit-transform: rotateY(270deg) }
+                50% { -webkit-transform: rotateY(180deg) }
+                75% { -webkit-transform: rotateY( 90deg) }
+                100%{ -webkit-transform: rotateY(  0deg) }
+            } 
+            @-webkit-keyframes rotatecube {
+                0%  { -webkit-transform: rotateY(360deg) }
+                25% { -webkit-transform: rotateY(270deg) }
+                50% { -webkit-transform: rotateY(180deg) }
+                75% { -webkit-transform: rotateY( 90deg) }
+                100%{ -webkit-transform: rotateY(  0deg) }
+            } 
+
+            #cube .front    { -webkit-transform:                    rotateY(0deg )                      translateZ( calc( var(--cheevocube-size) / 2 ) );}
+            #cube .back     { -webkit-transform: rotateX( 180deg )                      rotateZ(180deg) translateZ( calc( var(--cheevocube-size) / 2 ) );}
+            #cube .right    { -webkit-transform:                    rotateY(  90deg )                   translateZ( calc( var(--cheevocube-size) / 2 ) );}
+            #cube .left     { -webkit-transform:                    rotateY( -90deg )                   translateZ( calc( var(--cheevocube-size) / 2 ) );}
+            #cube .top      { -webkit-transform: rotateX(  90deg )                                      translateZ( calc( var(--cheevocube-size) / 2 ) );}
+            #cube .bottom   { -webkit-transform: rotateX( -90deg )                                      translateZ( calc( var(--cheevocube-size) / 2 ) );}
+            #cube *         {
+                background-image  : url('current_cheevo.png');
+                background-repeat : no-repeat;
+                background-size   : 100% 100%;
+                image-rendering   : pixelated;    
+            }
+        </style>
+        <script>
+            var current_face=1;
+
+            function refresh(){ 
+            faces = [ 'front', 'right', 'back', 'left']
+            current_face++;
+
+            items = [
+                document.getElementsByClassName(faces[current_face%4]),
+            ]
+            
+            for( item in items){
+                rid                           = parseInt(Math.random()*65535);
+                node                          = items[item][0]
+                node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
+                node.children[0].src          = `current_cheevo_lock.png?${rid}`;
+                node.children[0].style.width  = '100%';
+                node.children[0].style.height = '100%';
+            }
+            } 
+            setInterval(refresh, 3000)
+        </script>
+    </head>
+    <body>        
+        <div class="container">
+            <div id="cube">
+                <div class="front"  ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+                <div class="back"   ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+                <div class="right"  ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+                <div class="left"   ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+                <div class="top"    ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+                <div class="bottom" ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+            </div>
+        </div>
+    </body>
+</html>
