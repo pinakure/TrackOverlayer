@@ -5,6 +5,7 @@ from bs4                    import BeautifulSoup
 from classes.cheevo         import Cheevo,Game
 from classes.preferences    import Preferences
 from classes.log            import Log
+from classes.plugin         import Plugin
 from classes.scraper        import Scraper
 
 def ascii(string):
@@ -109,6 +110,7 @@ class Data:
             
     @staticmethod 
     def getCheevos():
+        import random
         try:
             rid = random.random()
             Log.info("Updating cheevo info...")
@@ -117,7 +119,7 @@ class Data:
                 Log.info("Getting progress HTML")
                 progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
                 Log.info("Getting progress")
-                Data.progress  = progress_html.split('width:')[1].split('"')[0]
+                Data.progress  = progress_html.split('width:')[1].split('"')[0] if not Plugin.debug else f'{int(random.random()*100)}%'
             except:
                 Data.progress  = '0%'
                 dpg.set_value('stdout', 'Asuming no achievements, since no progressbar was found.')

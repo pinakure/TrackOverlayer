@@ -25,6 +25,7 @@ class plugin(Plugin):
         #@ Install settings
         self.files      = [
             'progress-overlay.png',
+            'experience.wav',
         ]    
 
     def composerVars(self):

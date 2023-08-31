@@ -16,7 +16,10 @@ class Endpoints:
     @staticmethod
     def notifications():
         from classes.data import Data
-        return json.dumps(Data.notifications)
+        return f"""
+        var notifications = {json.dumps(Data.notifications)};
+        var progress      = '{Data.progress}';
+        """
     
     @staticmethod
     def current_cheevo():
