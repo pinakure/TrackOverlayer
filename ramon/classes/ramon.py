@@ -375,12 +375,25 @@ class Ramon:
     def refresh(sender=None, user_data=None, args=None):
         Ramon.timer = None
         Cheevo.global_index = 0
+        
+        if Preferences.settings['offline']:
+            Data.last_activity = datetime.strptime(Preferences.settings['last_date'], "%d %b %Y, %H:%M")
+            Data.last_seen     = Preferences.settings['last_game']
+            Data.site_rank     = Preferences.settings['rank']
+            Data.score         = Preferences.settings['score']
+            Ramon.redraw()
+            Data.write()
+            Plugin.runLoaded()
+            dpg.set_value('stdout','Offline mode, disable to get live data from RetroAchievements.org')
+            return False
+
         if Data.query():
             Ramon.clear()
             dpg.set_value('stdout','Requesting Data...')
             Ramon.redraw()
             Data.write()
             Plugin.runLoaded()
+            return True
         else:
             dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')
         

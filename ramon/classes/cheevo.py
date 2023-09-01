@@ -100,7 +100,7 @@ class Cheevo(Model):
             cheevo.save()
             return cheevo
         except Exception as E:            
-            Log.error("Cannot update cheevo, creating new one", E)
+            Log.warning(f"Cannot update cheevo {cheevo_id}, creating new one")
             # cheevo does not exist in DB, create new
             return Cheevo.create(
                 id          = cheevo_id,

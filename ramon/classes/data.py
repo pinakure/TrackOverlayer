@@ -43,6 +43,7 @@ class Data:
     game            = None
     game_id         = 0
     parsed          = None
+    logged_user     = None
 
     @staticmethod
     def parseCheevos(game):
@@ -148,6 +149,9 @@ class Data:
     @staticmethod
     def login():
         try:
+            if Preferences.settings['username'] == '': return False        
+            # Avoid double login, but keep ability to re-login if username changes during execution
+            if Data.session and Data.logged_user == Preferences.settings['username']: return True
             Data.profile_url = f"https://retroachievements.org/user/{Preferences.settings['username']}"
             Log.info("Logging in...")
             Data.session = requests.Session()
@@ -175,36 +179,58 @@ class Data:
             }                
             # Request for login.
             login_response = Data.session.post(Data.login_url, data=form_data)
-
             # print(login_response.status_code, response.text)
             return login_response.status_code==200
         
         except Exception as E:
-            Log.error("Login failed", E)
+            Log.error("Cannot log in in retro arch", E)
+            Data.session = None
             return False
-        
+
     @staticmethod
-    def query():
-        Log.info('Refreshing data...')
-        Data.css = Data.parent.css
-        Preferences.data = Data
-        if Preferences.settings['username'] == '': return
+    def getPayload():
+        try:            
+            # Try to get RA user profile HTML
+            Data.payload = Data.session.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
+            if not Data.payload:
+                Log.error("Cannot get RA Payload")
+                return False
+            # Dump copy of profile HTML at data/profile.html
+            with open(f"{ Preferences.settings[ 'root' ] }/profile.html", "wb" ) as file:
+                file.write( Data.payload.encode('utf-8') )
+            return True
+        except Exception as E:
+            Log.error("Cannot get RetroAchievements Payload", E)
+            return False        
+    
+    @staticmethod
+    def parse():
+        # Try to parse profile HTML and extract metadata
         try:
-            if not Data.session:
-                if not Data.login():
-                    return False
-            Data.payload        = Data.session.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
-            # with open("profile.html", "wb") as file:
-            #     file.write( Data.payload.encode('utf-8') )
-            Data.parsed         = BeautifulSoup( Data.payload, features='html.parser' )
+            Data.parsed = BeautifulSoup( Data.payload, features='html.parser' )
             Data.getUserSummary()
             Data.setActiveCheevo( Data.game.current )
             Data.getCheevos()
             dpg.set_viewport_title(f'RAMon - { f"{Data.progress}  -  {len([cheevo for cheevo in Data.cheevos if not cheevo.locked])}/{len(Data.cheevos)}" if Data.game else "No game"}')
             return True
         except Exception as E:
-            Log.error("Cannot query RetroAchievements", E)
+            Log.error("Cannot parse profile HTML, the structure may have be changed.", E)
             return False
+
+    @staticmethod
+    def query():        
+        Log.info('Refreshing data...')
+        Data.css = Data.parent.css  # deprecated, as CSS used is not DynamicCSS anymore in most of the plugins 
+        Preferences.data = Data     # deprecated, as it is a Static class and does not need to be double referenced
+        # Try to log in in RA
+        if not Data.login():
+            Log.error("Login failed")
+            return False
+        Data.logged_user = Preferences.settings['username']            
+        if not Data.getPayload():
+            Log.error("Cannot parse get profile HTML")
+            return False
+        return Data.parse()
         
     @staticmethod
     def updatePictures():

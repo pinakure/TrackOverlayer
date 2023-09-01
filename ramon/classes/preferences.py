@@ -24,7 +24,10 @@ class Preferences:
     def loadcfg():
         defaults = {
             'version'                   : Preferences.parent.version,
-            'last_game'                 : '',
+            'last_game'                 : 'TestGame',
+            'last_date'                 : '01 Jan 2000, 00:00',
+            'rank'                      : '1 / 50,000',
+            'score'                     : '999999',
             'width'                     : 1440,
             'height'                    :  900,
             'x-pos'                     :    0,
@@ -40,6 +43,7 @@ class Preferences:
             'gmt'                       : 2,
             'api_key'                   : '',
             'twitch-app-key'            : '',
+            'offline'                   : False,
             'use_api'                   : False,
             'simple_ui'                 : False,
             'pending_cheevos'           : [0,255,255],
@@ -449,17 +453,18 @@ class Preferences:
             with dpg.child_window():
                 dpg.add_text( "Twitch Integration" , color=(255,255,0))
                 createStringField ('App Key'            , 'twitch-app-key'  )
-                dpg.add_text( "API" , color=(255,255,0))
+                dpg.add_text( "Use RA API" , color=(255,255,0))
                 createBooleanField('Enabled'            , 'use_api'          )
                 createStringField ('API Key'            , 'api_key'          )
-                #TODO: Use api, until then, these should be kept disabled and readonly
-                dpg.configure_item('api_key'            , pos=(96, 32), readonly=True)
-                dpg.configure_item('use_api'            , enabled=False)
+                # #TODO: Use api, until then, these should be kept disabled and readonly
+                # dpg.configure_item('api_key'            , pos=(96, 32), readonly=True)
+                # dpg.configure_item('use_api'            , pos=(96, 78), enabled=False)
 
-                dpg.add_text( "Auto Update data"        , color=(255,255,0))
-                createBooleanField('Enabled'            , 'auto_update'      )
-                createIntegerField('Minutes'            , 'auto_update_rate' , min_value=1,max_value=60)
-                dpg.configure_item('auto_update_rate'   , pos=(96, 78))
+                # dpg.add_text( "Auto Update data"        , color=(255,255,0))
+                # createBooleanField('Enabled'            , 'auto_update'      )
+                # createIntegerField('Minutes'            , 'auto_update_rate' , min_value=1,max_value=60)
+                # dpg.configure_item('auto_update_rate'   , pos=(96, 78))
+                # createStringField ('RA Password'        , 'password'         )
 
     @staticmethod
     def create( parent ):
