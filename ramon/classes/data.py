@@ -82,9 +82,12 @@ class Data:
     def getGame( usersummary_raw ):
         try:
             Log.info("Getting Game data...")
-            Data.game_id = int(str(usersummary_raw).split('retroachievements.org/game/')[1].split('"')[0])
+            # Log.info(Data.payload)  
+            gamepart = str(usersummary_raw).split('retroachievements.org/game/')[1]
+            # Log.info(gamepart)           
+            Data.game_id = int(gamepart.split('"')[0])
             Data.game    = Game.loadOrCreate(Data.game_id)   
-            Data.last_seen_full = usersummary_raw.text.split('Last seen  in  ')[1]
+            Data.last_seen_full = usersummary_raw.text.split('Last seen  in  ')[1].split('[')[0]
             Data.last_seen      = Data.last_seen_full.split('(')[0]              
         except Exception as E:
             Log.error("Cannot parse Game Data", E)
@@ -138,6 +141,48 @@ class Data:
         except Exception as E:
             Log.error("Cannot parse Updated Cheevo information", E)
 
+    login_url = "https://retroachievements.org/request/auth/login.php"
+    profile_url = "https://retroachievements.org/user/xxxxx"
+    session   = None
+
+    @staticmethod
+    def login():
+        try:
+            Data.profile_url = f"https://retroachievements.org/user/{Preferences.settings['username']}"
+            Log.info("Logging in...")
+            Data.session = requests.Session()
+            headers = {
+                'Host': 'retroachievements.org',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept-Language': 'es-ES,es;q=0.9',
+                'Accept-Encoding': 'gzip, deflate',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Origin': 'https://retroachievements.org',
+                'Referer': Data.profile_url,
+            }
+            Data.session.headers.update(headers)
+            # Login page request.
+            # Extract payload data from login page.
+            response = Data.session.get( Data.profile_url )
+            soup  = BeautifulSoup(response.text, features='html.parser')
+            token = soup.find('input').get('value')            
+            # Add data in payload.
+            form_data = {
+                'u': Preferences.settings['username'],
+                'p': Preferences.settings['password'],
+                '_token': token,                
+            }                
+            # Request for login.
+            login_response = Data.session.post(Data.login_url, data=form_data)
+
+            # print(login_response.status_code, response.text)
+            return login_response.status_code==200
+        
+        except Exception as E:
+            Log.error("Login failed", E)
+            return False
+        
     @staticmethod
     def query():
         Log.info('Refreshing data...')
@@ -145,8 +190,13 @@ class Data:
         Preferences.data = Data
         if Preferences.settings['username'] == '': return
         try:
-            payload             = requests.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
-            Data.parsed         = BeautifulSoup( payload, features='html.parser' )
+            if not Data.session:
+                if not Data.login():
+                    return False
+            Data.payload        = Data.session.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
+            # with open("profile.html", "wb") as file:
+            #     file.write( Data.payload.encode('utf-8') )
+            Data.parsed         = BeautifulSoup( Data.payload, features='html.parser' )
             Data.getUserSummary()
             Data.setActiveCheevo( Data.game.current )
             Data.getCheevos()

@@ -34,6 +34,7 @@ class Preferences:
             'fullscreen'                : False,
             'vertical'                  : False,
             'username'                  : '',
+            'password'                  : '',
             'twitch-username'           : '',
             'root'                      : '.',
             'gmt'                       : 2,

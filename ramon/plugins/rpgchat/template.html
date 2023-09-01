@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            :root {
+                /*VARS*/           
+            }
+            html {
+                width       : 320px;
+                height      : 160px;
+            }
+            body {
+                width       : 320px;
+                height      : 160px;
+            }
+            html, body {
+                padding     : 0px 0px 0px 0px;
+                margin      : 0px 0px 0px 0px;
+                box-sizing  : 0px 0px 0px 0px;
+                overflow    : hidden;                
+            }
+            
+            img {
+                image-rendering: pixelated;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+            #chat,#pic {
+                transition: filter 1s;
+                filter: opacity(0);
+            }
+            #chat {
+                clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
+                animation-duration: 500ms;
+                animation-timing-function: ease-in-out;
+                animation-fill-mode: forwards;
+                animation-iteration-count: 1;
+            }
+
+            .visible{
+                animation-name: fadein;
+                animation-duration: 500ms;
+                animation-timing-function: ease-in-out;
+                animation-fill-mode: forwards;
+                animation-iteration-count: 1;
+            }
+            
+            .hidden {
+                animation-name: fadeout;
+                animation-duration: 500ms;
+                animation-timing-function: ease-in-out;
+                animation-fill-mode: forwards;
+                animation-iteration-count: 1;
+            }
+            button {
+                /* display: none; */
+                filter  : opacity(0);
+                position: absolute; 
+                bottom  : 8px;
+                right   : 8px;
+                border  : none;      
+                width   : 16px;          
+                height  : 16px;          
+                max-width   : 16px;          
+                max-height  : 16px;   
+                
+            }
+            #wrapper {
+                display: inline-block; 
+                overflow: hidden;
+                width: 320px;
+                height: 160px;
+                /* background-color:#444;; */
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+
+            @keyframes fadein {
+                from { filter: opacity(0); }
+                to   { filter: opacity(1); }               
+            }
+            
+            @keyframes fadeout {
+                from { filter: opacity(1); }
+                to   { filter: opacity(0); }               
+            }
+
+            @keyframes open {
+                0% {clip-path: polygon(0% 0%, 100% 0%, 100%  50%, 0%  50%);filter: opacity(1);}
+                19%{clip-path: polygon(0% 0%, 100% 0%, 100%  50%, 0%  50%);}
+                20%{clip-path: polygon(0% 0%, 100% 0%, 100%  60%, 0%  60%);}
+                39%{clip-path: polygon(0% 0%, 100% 0%, 100%  60%, 0%  60%);}
+                40%{clip-path: polygon(0% 0%, 100% 0%, 100%  70%, 0%  70%);}
+                59%{clip-path: polygon(0% 0%, 100% 0%, 100%  70%, 0%  70%);}
+                60%{clip-path: polygon(0% 0%, 100% 0%, 100%  80%, 0%  80%);}
+                79%{clip-path: polygon(0% 0%, 100% 0%, 100%  80%, 0%  80%);}
+                80%{clip-path: polygon(0% 0%, 100% 0%, 100%  90%, 0%  90%);}
+                99%{clip-path: polygon(0% 0%, 100% 0%, 100%  90%, 0%  90%);}
+               100%{clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);filter: opacity(1);}
+            }            
+            
+            @keyframes close {
+                0% {clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);filter: opacity(1);}
+                19%{clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);}
+                20%{clip-path: polygon(0% 0%, 100% 0%, 100%  90%, 0%  90%);}
+                39%{clip-path: polygon(0% 0%, 100% 0%, 100%  90%, 0%  90%);}
+                40%{clip-path: polygon(0% 0%, 100% 0%, 100%  80%, 0%  80%);}
+                59%{clip-path: polygon(0% 0%, 100% 0%, 100%  80%, 0%  80%);}
+                60%{clip-path: polygon(0% 0%, 100% 0%, 100%  70%, 0%  70%);}
+                79%{clip-path: polygon(0% 0%, 100% 0%, 100%  70%, 0%  70%);}
+                80%{clip-path: polygon(0% 0%, 100% 0%, 100%  60%, 0%  60%);}
+                99%{clip-path: polygon(0% 0%, 100% 0%, 100%  60%, 0%  60%);}
+               100%{clip-path: polygon(0% 0%, 100% 0%, 100%  50%, 0%  50%);filter: opacity(1);}
+            }            
+
+        </style>
+        <script>
+            var Chat = {
+                pictgt : null,
+                target : null,
+                button : null,
+                usrpic : 'https://static-cdn.jtvnw.net/jtv_user_pictures/30c1196b-441f-4081-a48e-2e5d96912c3b-profile_image-70x70.png',
+
+                start : function(username){
+                    Chat.target = document.getElementById('chat');
+                    Chat.pictgt = document.getElementById('pic');
+                    Chat.button = document.getElementById('button');
+                    Chat.show();                    
+                },
+
+                show : function(){
+                    Chat.target.className = "visible";
+                    Chat.pictgt.className = "visible";                    
+                    Chat.pictgt.src = Chat.usrpic;                    
+                    setTimeout( Chat.open, 1000);
+                },
+                
+                open : function(){
+                    Chat.target.style.animationName="open";
+                    setTimeout( Chat.ready, 1000)
+                }, 
+                
+                ready : function(){
+                    Chat.button.style.display='inline block';
+                    Chat.button.className = "visible";
+                }, 
+                
+                continue : function(){
+                    Chat.button.style.display='none';
+                    Chat.close()
+                },
+                
+                close : function(){
+                    Chat.target.style.animationName="close";
+                    setTimeout( Chat.hide, 1000)
+                }, 
+
+                hide : function(){
+                    Chat.target.style.animationName="";
+                    Chat.target.className = "hidden";
+                    Chat.pictgt.className = "hidden";
+                    Chat.button.className = "hidden";
+                },
+
+            }
+        </script>
+    </head>
+    <body>     
+        <!--HTML-->
+        <div id="wrapper">            
+            <img id="pic" style="top: 8px" src="" width="72" height="72">
+            <img id="chat" src="rpgchat.png" width="320" height="160">
+            <button  id="button" type="button" onclick="Chat.continue()"></button>
+        </div>
+        <script>
+            Chat.start(/*JS*/);
+        </script>
+    </body>
+</html>

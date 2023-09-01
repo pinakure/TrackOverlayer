@@ -30,8 +30,6 @@ class Endpoints:
             """+"""
             setTimeout(function(){ location.reload(); }, 5000);
             """+("""setTimeout(function(){ document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';},500);""" if Plugin.debug else "")+"""
-            console.clear();
-            console.log(JSON.parse(localStorage.getItem('notifications')));
             </script></body>"""
         try:
             with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
@@ -64,12 +62,17 @@ class Endpoints:
         from classes.data import Data
         return Data.progress
     
+    @staticmethod
+    def nop():
+        return ''
+    
     byName = {
         'notifications'     : notifications,
         'username'          : username,
         'twitch-username'   : twitch_username,
         'current-cheevo'    : current_cheevo,
         'progress'          : progress,
+        'superchat'         : nop,
     }
 
 class Plugin:
