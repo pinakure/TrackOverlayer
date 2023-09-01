@@ -11,42 +11,28 @@ def pc(value):
 def cvar(name, value):
     return f'--{name}:{value},'+"\n"
 
+def sane( insane ):
+    return insane.replace("'", "`").replace(r'\`', '`')
+
 class Endpoints:
 
     @staticmethod
     def autoupdate():
         from classes.data import Data
-        payload = f"""<body style="width: 100%; height:100%; overflow: hidden; transition: background-color 500ms ease-in-out; " ><script>
+        payload = """<body style="width: 100%; height:100%; overflow: hidden; """+(f"""transition: background-color 500ms ease-in-out; " >""" if Plugin.debug else '">')+f"""
+        <script>
             document.getElementsByTagName('body')[0].style.backgroundColor = '#0f0';
-            localStorage.setItem('current-cheevo'   ,  {Endpoints.current_cheevo()  }   );
+            localStorage.setItem('current-cheevo'   ,  {Endpoints.current_cheevo().replace("'", "`")  }   );
             localStorage.setItem('cheevo-progress'  , '{Endpoints.progress()        }'  );
             localStorage.setItem('username'         , '{Endpoints.username()        }'  );
             localStorage.setItem('twitch-username'  , '{Endpoints.twitch_username() }'  );
-            var notifications = [];
+            localStorage.setItem('notifications'    , '{Endpoints.notifications()   }'  );
             """+"""
-            try {
-                notifications = JSON.parse(localStorage.getItem('notifications'));
-            } catch(e){
-                console.warn("notifications : Item does not exist in localstorage");
-            }
-            """+f"""
-            var payload = {Endpoints.notifications() };
-            if( !notifications ) notifications = [];
-            for(item in payload)
-                notifications.push( payload[item] );
-            localStorage.setItem('notifications'    , JSON.stringify(notifications));
-            """+"""
-            setTimeout(function(){ 
-                location.reload(); 
-            }, 
-            5000);
-            setTimeout(function(){             
-                document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';
-            },
-            500);
-            console.log(localStorage.getItem('notifications'));
-            </script></body>
-        """
+            setTimeout(function(){ location.reload(); }, 5000);
+            """+("""setTimeout(function(){ document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';},500);""" if Plugin.debug else "")+"""
+            console.clear();
+            console.log(JSON.parse(localStorage.getItem('notifications')));
+            </script></body>"""
         try:
             with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
                 file.write( payload )
@@ -58,12 +44,12 @@ class Endpoints:
     @staticmethod
     def notifications():
         from classes.data import Data
-        return json.dumps(Data.notifications)
+        return sane(json.dumps(Data.notifications))
     
     @staticmethod
     def current_cheevo():
         from classes.data import Data
-        return json.dumps( Data.cheevo )
+        return sane(json.dumps( Data.cheevo ))
     
     @staticmethod
     def username():
@@ -191,7 +177,7 @@ class Plugin:
         #
         Log.info("Merging plugins into single overlay...")
         cvars = f'--width : {Plugin.width}px;'+'\n\t\t\t\t'
-        css   = ""
+        css   = "body { border: 1px dotted #f80; }" if Plugin.debug else ''
         html  = ""
         js    = ""
         data  = ""

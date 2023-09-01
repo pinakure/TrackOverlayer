@@ -96,6 +96,14 @@ class Ramon:
                 dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )
                 dpg.add_menu_item(label="Log"               , tag="view_log"    , callback=Log.show             )
                 dpg.add_checkbox(label="Plugin Debugging"   , tag="debugplugins", callback=Plugin.toggleDebug   , default_value=Plugin.debug)
+            with dpg.menu(label="Links"):
+                with dpg.menu(label="Twitch"):
+                    dpg.add_menu_item(label="Chat"              , tag="twitch_chat" , callback=Preferences.show     )
+                with dpg.menu(label="RetroAchievements"):
+                    dpg.add_menu_item(label="User Profile"      , tag="ra_user_profile" , callback=Preferences.show     )
+                    dpg.add_menu_item(label="Game Profile"      , tag="ra_game_profile" , callback=Preferences.show     )
+                    dpg.add_menu_item(label="Cheevo Page"       , tag="ra_cheevo_page"  , callback=Preferences.show     )
+
 
     @staticmethod
     def mkdir(dirname):

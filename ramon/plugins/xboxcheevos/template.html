@@ -137,14 +137,26 @@
 
             var Notifier = {
                 
+                notified    : {},
                 timeout     : 5,
                 queue       : [],
                 notification: null,
                 callback    : null,
                 sound       : null,
 
-                start       : function( notifications ){
+                start       : function( ){
                     Notifier.sound = new Audio('./xbox.wav');
+                    Notifier.callback = setInterval(Notifier.work, 1000);
+                },
+
+                feed : function(){
+                    var notifications = [];
+                    try {
+                        notifications = JSON.parse(localStorage.getItem('notifications'))
+                        localStorage.setItem('notifications', '[]')
+                    }catch(e){
+                        console.warn("notifications : item does not exist on localStorage");
+                    }
                     for( notification_index in notifications ){
                         notification = notifications[notification_index]
                         Notifier.enqueue( 
@@ -152,21 +164,23 @@
                             notification[1],
                             notification[2],
                         );                    
-                    }                    
-                    Notifier.callback = setInterval(Notifier.work, 1000);
+                    }
                 },
 
                 work        : function( ){
+                    Notifier.feed();
                     if( Notifier.queue.length > 0){
                         if(!Notifier.notification){
                             Notifier.notification = Notifier.queue[0];
                             Notifier.queue.splice(0,1);
-                            Notifier.notification.show();
+                            if(!Notifier.notified[ Notifier.notification.name ])
+                                Notifier.notification.show();
+                            Notifier.notified[ Notifier.notification.name ] =true
                         }
                     } else {
                         clearInterval(Notifier.callback);
                         Notifier.callback = setTimeout(function(){ location.reload(); }, 15000);                        
-                    }
+                    }                    
                 },
 
                 enqueue     : function( name, description, picture ){
@@ -182,14 +196,8 @@
         <!--HTML-->
     </body>    
     <script>        
-        /*JS*/
-        var notifications = [];
-        try {
-            notifications = JSON.parse(localStorage.getItem('notifications'))
-        }catch(e){
-            console.warn("notifications : item does not exist on localStorage");
-        }
-        Notifier.start( notifications ); 
+        /*JS*/        
+        Notifier.start( ); 
     </script>
     
 </html>
