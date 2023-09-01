@@ -30,7 +30,9 @@ class HotKeys:
             HotKeys.shift = True
             return 
         if key == keyboard.Key.f5 and HotKeys.ctrl:
-            if not Ramon.timer:
+            if Ramon.timer:
+                Ramon.timer.cancel()
+                Ramon.timer = None
                 Ramon.refresh()
 
     @staticmethod
@@ -319,24 +321,36 @@ class Ramon:
         dpg.set_value('stdout', "Fetching Cheevo data...")
         dpg.render_dearpygui_frame()        
         Ramon.refresh()        
+        # ---------------------------------------- LOOP START ---------------------------------------
         while dpg.is_dearpygui_running() and Data.mine and not Ramon.restart:
             dpg.render_dearpygui_frame()
             if Preferences.settings['auto_update'] and not Ramon.timer:
                 Ramon.timer = Timer( Preferences.settings['auto_update_rate']*60, Ramon.refresh )
                 Ramon.timer.start()           
+        # ----------------------------------------- LOOP END ----------------------------------------
+        # ---------------------------------------- DEINIT START -------------------------------------
+        # First of all Remove any timer left so it wont try to run on missing ui elements
         if Ramon.timer:
+            Ramon.timer.cancel()
             Ramon.timer = None
+        # Begin deinitialization, begin dumping the log 
+        with open('ramon.log', "w") as file:
+            file.write(dpg.get_value('log'))
+        # Unbind messages from log to see them while ui is deinitializedlog             
+        Log.stdout = True
+        # Store window position and shape at exit
         pos  = dpg.get_viewport_pos()
         size = (dpg.get_viewport_width(), dpg.get_viewport_height() )
         Preferences.settings['x-pos'] = pos[0]
         Preferences.settings['y-pos'] = pos[1]
         Preferences.settings['width'] = size[0]-16
         Preferences.settings['height'] = size[1]
+        Preferences.writecfg()
+        Log.info("Settings stored")
+        # Unitialize UI library
         dpg.remove_alias("main") 
         dpg.delete_item('main')
-        dpg.destroy_context()
-        Preferences.writecfg()
-        
+        dpg.destroy_context()        
         Log.info("Closed succesfully")
         
     @staticmethod

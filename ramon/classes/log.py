@@ -63,7 +63,7 @@ class Log:
         if not finish:
             Log.when = time.time_ns()
         else:
-            Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/1000) } msec")
+            Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/10000) } msec")
 
     @staticmethod
     def error(text, exception=None):
