@@ -41,10 +41,11 @@ class Preferences:
             'twitch-username'           : '',
             'root'                      : '.',
             'gmt'                       : 2,
-            'api_key'                   : '',
             'twitch-app-key'            : '',
+            'twitch-use-api'            : False,
+            'ra-use-api'                : False,
+            'ra-app-key'                : '',
             'offline'                   : False,
-            'use_api'                   : False,
             'simple_ui'                 : False,
             'pending_cheevos'           : [0,255,255],
             'unlocked_cheevos'          : [64, 128,0],
@@ -451,20 +452,52 @@ class Preferences:
     def createInputTab():
         with dpg.tab(label="Input", tag="tab_input"):
             with dpg.child_window():
-                dpg.add_text( "Twitch Integration" , color=(255,255,0))
-                createStringField ('App Key'            , 'twitch-app-key'  )
-                dpg.add_text( "Use RA API" , color=(255,255,0))
-                createBooleanField('Enabled'            , 'use_api'          )
-                createStringField ('API Key'            , 'api_key'          )
-                # #TODO: Use api, until then, these should be kept disabled and readonly
-                # dpg.configure_item('api_key'            , pos=(96, 32), readonly=True)
-                # dpg.configure_item('use_api'            , pos=(96, 78), enabled=False)
-
-                # dpg.add_text( "Auto Update data"        , color=(255,255,0))
-                # createBooleanField('Enabled'            , 'auto_update'      )
-                # createIntegerField('Minutes'            , 'auto_update_rate' , min_value=1,max_value=60)
-                # dpg.configure_item('auto_update_rate'   , pos=(96, 78))
-                # createStringField ('RA Password'        , 'password'         )
+                dpg.add_text( "Twitch"          , tag="twitch-label"        , color=(205,255,0) )
+                dpg.add_text( "API Key"         , tag="twitch-app-key-label", color=(255,255,0) )
+                dpg.add_text( "Use API"         , tag="twitch-use-api-label", color=(255,255,0) )
+                dpg.add_text( "IRC Channel"     , tag="twitch-username-label",color=(255,255,0) )
+                createStringField (''           , 'twitch-app-key'                              )
+                createStringField (''           , 'twitch-username'                             )
+                createBooleanField('Enabled'    , 'twitch-use-api'                              )
+                dpg.add_text( "RetroAchievements",tag="ra-label"            , color=(205,255,0) )
+                dpg.add_text( "API Key"         , tag="ra-app-key-label"    , color=(255,255,0) )
+                dpg.add_text( "Use API"         , tag="ra-use-api-label"    , color=(255,255,0) )
+                createStringField (''           , 'ra-app-key'                                  )
+                createBooleanField('Enabled'    , 'ra-use-api'                                  )
+                dpg.add_text( "RA Password"     , tag="ra-password-label"   , color=(255,255,0) )
+                dpg.add_text( "Offline Mode"    , tag="ra-offline-label"    , color=(255,255,0) )
+                createStringField (''           , 'password'                                    )
+                createBooleanField(''           , 'offline'                                     )
+                dpg.add_text( "AutoRefresh Rate", tag="auto-update-rate-label",color=(255,255,0))
+                dpg.add_text( "Use AutoRefresh" , tag="auto-update-enable-lbl",color=(255,255,0))
+                createBooleanField('Auto Update', 'auto_update'     )
+                createIntegerField('Minutes'    , 'auto_update_rate' , min_value=1,max_value=60)
+                columns = [ 150, 16 ]
+                y = 8
+                dpg.configure_item('twitch-label'           , pos=(          8,   y ));y+=24
+                dpg.configure_item('twitch-app-key-label'   , pos=( columns[0],   y ))
+                dpg.configure_item('twitch-use-api-label'   , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('twitch-app-key'         , pos=( columns[0],   y ))
+                dpg.configure_item('twitch-use-api'         , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('twitch-username-label'  , pos=( columns[0],   y ));y+=24
+                dpg.configure_item('twitch-username'        , pos=( columns[0],   y ));y+=24
+                y+=24
+                dpg.configure_item('ra-label'               , pos=(          8,   y ));y+=24
+                dpg.configure_item('ra-app-key-label'       , pos=( columns[0],   y ))
+                dpg.configure_item('ra-use-api-label'       , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('ra-app-key'             , pos=( columns[0],   y ))
+                dpg.configure_item('ra-use-api'             , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('ra-password-label'      , pos=( columns[0],   y ))
+                dpg.configure_item('ra-offline-label'       , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('password'               , pos=( columns[0],   y ))
+                dpg.configure_item('offline'                , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('auto-update-rate-label' , pos=( columns[0],   y ))
+                dpg.configure_item('auto-update-enable-lbl' , pos=( columns[1],   y ));y+=24
+                dpg.configure_item('auto_update_rate'       , pos=( columns[0],   y ))
+                dpg.configure_item('auto_update'            , pos=( columns[1],   y ));y+=24                
+                dpg.configure_item('password'               , password=True)
+                dpg.configure_item('ra-app-key'             , password=True)
+                dpg.configure_item('twitch-app-key'         , password=True)
 
     @staticmethod
     def create( parent ):

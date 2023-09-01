@@ -1,0 +1,114 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../css/recent.css">
+        <style>
+            :root {
+                --dummy-var : 0;
+                /*VARS*/
+            }
+            body {
+                background-color: rgba(0,0,0,0);
+            }
+
+            #recentunlocks {
+                box-sizing          : border-box;
+                padding             : 0px 0px 0px 0px;
+                margin              : 0px 0px 0px 0px;
+                background-color    : rgba(0,0,0,0);
+            }
+            
+            /*CSS*/
+
+        </style>
+        <script>
+            var Recent = {
+
+                parent      : null,
+                list        : [],
+                update_rate : 5, // in seconds!
+                
+                updatecss : function(){
+                    var rid = parseInt(Math.random()*655356);
+                    var par  = document.getElementsByTagName('head')[0];
+                    var old  = document.getElementsByTagName('link')[0];
+                    var link = document.createElement('link');
+                    link.rel = "stylesheet";
+                    link.type = "text/css";
+                    link.href = `../css/recent.css?${ rid }`;
+                    par.append(link);
+                    setTimeout(function(){ old.remove();}, 1000);
+                },
+
+                row : function(name, description, picture ){
+                    return `
+                    <tr>
+                        <td colspan="2">
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2">
+                            <img style="border-radius: none !important" src="cache/${ picture }.png">
+                        </td>
+                        <td><b>${ name }</b></td>
+                    </tr>
+                    <tr>
+                        <td>${ description }</td>
+                    </tr>                        
+                    `;
+                },
+
+                render : function(){                    
+                    var payload = '';
+                    for( r in Recent.list ){
+                        var item = Recent.list[ r ];
+                        name        = item[0];
+                        description = item[1];
+                        picture     = item[2];
+                        payload    += Recent.row( name, description, picture );
+                    }
+                    Recent.parent.innerHTML = payload;
+                },
+
+                getData: function(){
+                    // Read from localStorage and clear localStorage after reading
+                    if( localStorage.getItem('debug')=='1'){
+                        Recent.list = [
+                            [ "Test cheevo", "Test Description", "01723" ],
+                            [ "Test cheevo", "Test Description", "14053" ],
+                            [ "Test cheevo", "Test Description", "14054" ],
+                            [ "Test cheevo", "Test Description", "14056" ],
+                            [ "Test cheevo", "Test Description", "14057" ],
+                        ]
+                        return;
+                    }
+                    try {
+                        Recent.list = JSON.parse(localStorage.getItem('recent'));                        
+                    } catch(e) {
+                        Recent.list = null;
+                    }
+                    if(!Recent.list) Recent.list = [];
+                },
+
+                update : function(){
+                    console.log("Recent Plugin : Refresh data")
+                    Recent.updatecss();
+                    Recent.getData();
+                    Recent.render();
+                    setTimeout( Recent.update, Recent.update_rate * 1000 );
+                },
+
+                start : function(){
+                    Recent.parent = document.getElementById('output');   
+                    Recent.update();
+                },
+            };
+        </script>
+    </head>
+    <body id="recentunlocks">
+        <table>
+            <tbody id="output"></tbody>
+        </table>        
+        <script>Recent.start();</script>
+    </body>  
+</html>

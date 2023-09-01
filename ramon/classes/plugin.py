@@ -27,6 +27,8 @@ class Endpoints:
             localStorage.setItem('username'         , '{Endpoints.username()        }'  );
             localStorage.setItem('twitch-username'  , '{Endpoints.twitch_username() }'  );
             localStorage.setItem('notifications'    , '{Endpoints.notifications()   }'  );
+            localStorage.setItem('recent'           , '{Endpoints.recent()          }'  );
+            localStorage.setItem('debug'            , '{1 if Plugin.debug else 0    }'  );
             """+"""
             setTimeout(function(){ location.reload(); }, 5000);
             """+("""setTimeout(function(){ document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';},500);""" if Plugin.debug else "")+"""
@@ -58,6 +60,11 @@ class Endpoints:
         return Preferences.settings['twitch-username']
     
     @staticmethod
+    def recent():
+        from classes.data import Data
+        return sane(json.dumps(Data.recent))
+    
+    @staticmethod
     def progress():
         from classes.data import Data
         return Data.progress
@@ -72,6 +79,7 @@ class Endpoints:
         'twitch-username'   : twitch_username,
         'current-cheevo'    : current_cheevo,
         'progress'          : progress,
+        'recent'            : recent,
         'superchat'         : nop,
     }
 
