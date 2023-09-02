@@ -22,12 +22,33 @@ class plugin(Plugin):
         #@ Vars
         
 
-        self.settings   = {
-            "enabled"       : "0",
-            "border-radius" : "32",
-            "border-width"  : "8",
-            "name"          : "[240,240,0,255]",
-            "description"   : "[240,240,0,255]",
+        self.settings = {
+            "enabled"                   : False,
+            "perspective"               : 0,
+            "angle"                     : 0,
+            
+            "border-radius"             : 32,
+            "border-width"              : 8,
+            "name-color"                : [255,255,255,255],
+            "name-font"                 : "ff6", 
+            "name-font-size"            : 16, 
+            "name-font-italic"          : False, 
+            "name-font-bold"            : False, 
+            "name-shadow"               : [0,0,0,0], 
+            "name-shadow-pos-x"         : 0,
+            "name-shadow-pos-y"         : 0,
+            "name-shadow-blur"          : 0, 
+            "name-line-height"          : 18, 
+            "description-color"         : [255,255,255,255],
+            "description-font"          : "ff6", 
+            "description-font-size"     : 16, 
+            "description-font-italic"   : False, 
+            "description-font-bold"     : False, 
+            "description-shadow"        : [0,0,0,0], 
+            "description-shadow-pos-x"  : 0,
+            "description-shadow-pos-y"  : 0,
+            "description-shadow-blur"   : 0, 
+            "description-line-height"   : 18, 
         } 
 
 

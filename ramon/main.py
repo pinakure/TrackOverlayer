@@ -58,13 +58,18 @@ Progressbar personalization
 - Moved plugin settings (debug mode) to preferences dialog
 - Ability for plugins to store and retrieve any setting seamlessly
 - Offline mode, for debugging purposes, avoiding excesive queries to retroachievements at boot and faking some data 
-- TODO: Plugin configuration auto generated tab per each plugin ( spartan but functional )
+- Plugin configuration auto generated tab per each plugin ( spartan but functional )
+---------------------------
+- Plugin configuration auto generated tab per each plugin, now fancier :P
+- Fixed bug causing an error per plugin loaded if plugin.cfg didnt exist
+
 """
 try: 
     import os, sys
     from classes.ramon          import Ramon
     from classes.plugin         import Plugin
     from classes.preferences    import Preferences
+    from pathlib                import Path
 except ImportError:
     os.system('pip install requests beautifulsoup4 dearpygui pynput peewee pyinstaller')
     os.system(f'pause')
@@ -72,11 +77,20 @@ except ImportError:
 
 if Ramon.start():
     # load plugins
+    Path('plugins.cfg').touch() # avoid error messages if file does not exist...
     for plugin in Ramon.plugins:
         Plugin.load( plugin )
     Preferences.populatePluginsTab()
     Preferences.updatePluginLists()
     # build plugin overlay, if any loaded
+    if Preferences.settings['debug']:
+        from dearpygui import dearpygui as D
+        Preferences.show()
+        D.set_value('preferences-tabs', 'tab_plugins')
+        D.set_value('plugin-tabs'     , 'tab_plugins-rpgchat')
+        Plugin.debug = Preferences.settings['debug']
+        # D.set_value('plugin-preferences-tabs', 'plugin-tabs')
+        # D.set_value('plugin-tabs')
     if len( Ramon.plugins ): 
         Plugin.compose()
     # enter main loop

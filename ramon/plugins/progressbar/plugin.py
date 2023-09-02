@@ -19,7 +19,11 @@ class plugin(Plugin):
         self.x           = 10
         #@ Vars
 
-
+        self.settings   = {
+            "enabled"                   : False,
+            "perspective"               : 0,
+            "angle"                     : 0,
+        } 
 
 
         #@ Install settings

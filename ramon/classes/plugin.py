@@ -14,6 +14,43 @@ def cvar(name, value):
 def sane( insane ):
     return insane.replace("'", "`").replace(r'\`', '`')
 
+def parseBool(string):
+    return string.lower() in [ 'true', '1', 'yes']
+
+def isBool(string):
+    return string.lower() in [ 'true', 'false', '1', '0', 'yes', 'no']
+
+def isInt(string):
+    try:
+        number = int( string )
+        return True
+    except:
+        return False
+    
+def parseInt(string):
+    return int(string)
+
+def isFloat(string):
+    try:
+        number = float( string )
+        return True
+    except:
+        return False
+
+def parseFloat(string):
+    return float(string)
+
+def isColor(string):
+    return (
+        ( len(string) > 0 ) and 
+        ( string[0] == '[' ) and 
+        ( string[-1]== ']' )
+    )
+    
+def parseColor(string):
+    return json.loads(string)
+
+
 class Endpoints:
 
     @staticmethod
@@ -102,7 +139,7 @@ class Plugin:
         self.scale          = 1
         self.files          = []
         self.settings       = {
-            'enabled' : "0",
+            'enabled' : False,
         }
         self.endpoint       = None #defines which kind of data payload will be fed from @rendering
         self.template       = 'template.html'
@@ -110,7 +147,7 @@ class Plugin:
     @staticmethod
     def updateColor( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
-        varname = sender.split('-')[-1]
+        varname =user_data
         plugin_name = sender.lstrip('plugin-setting-').split('-')[0]
         plugin = Plugin.loaded[ plugin_name ]
         value[0] = int( value[0] * 255)
@@ -123,8 +160,8 @@ class Plugin:
     @staticmethod
     def updateSettings( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
-        varname     = sender.split('-')[-1]
-        plugin_name = sender.lstrip('plugin-setting-').split('-')[0]
+        varname     = user_data
+        plugin_name = sender.lstrip( 'plugin-setting-').split('-')[0]
         plugin = Plugin.loaded[ plugin_name ]
         plugin.settings[ varname ] = value
         Plugin.writeConfig()
@@ -301,6 +338,9 @@ class Plugin:
                 settings = {} if not current in Plugin.loaded.keys() else Plugin.loaded[current].settings
                 continue
             [ key, value ] = line.split('=')
+            if isColor(value)   : value = parseColor(value)
+            elif isInt(value)   : value = parseInt(value)
+            elif isBool(value)  : value = parseBool(value)
             settings[ key ] = value
         if current and current in Plugin.loaded.keys():
             Plugin.loaded[current].settings = settings

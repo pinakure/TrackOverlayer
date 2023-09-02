@@ -24,6 +24,18 @@ class plugin(Plugin):
 
 
 
+        self.settings   = {
+            "enabled"                   : False,
+            "cube-color"                : [0,0,0,0],
+            "cube-shadow"               : [0,255,0,255],
+            "cube-shadow-pos-x"         : 0,
+            "cube-shadow-pos-y"         : 0,
+            "cube-shadow-blur"          : 0,
+            "cube-border-color"         : [0,255,0,255],
+            "cube-border-width"         : 2,
+        } 
+
+
 
 
 

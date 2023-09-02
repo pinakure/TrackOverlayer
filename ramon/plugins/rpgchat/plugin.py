@@ -11,9 +11,24 @@ class plugin(Plugin):
         self.color       = '#cc0'
 
         self.settings    = {
-            "enabled" : "0",
-            "username": "",
-            "text"    : "[240,240,0,255]",
+            "enabled"           : 0,
+            "username"          : "",
+            "perspective"       : 0,
+            "angle"             : 0,
+            "text-color"        : [240,240,0,255],
+            "text-font"         : "ff6", 
+            "text-pos-x"        : 10,
+            "text-pos-y"        : 10,
+            "text-font-size"    : 16, 
+            "text-font-italic"  : False, 
+            "text-font-bold"    : False, 
+            "text-shadow"       : [0,0,0,0], 
+            "text-shadow-pos-x" : 0,
+            "text-shadow-pos-y" : 0,
+            "text-shadow-blur"  : 0, 
+            "text-line-height"  : 18, 
+            "text-border-width" : 18, 
+            "text-border-color" : [0,0,0,0], 
         }
 
         #@ Composer Settings
