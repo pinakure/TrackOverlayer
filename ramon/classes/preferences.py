@@ -399,17 +399,65 @@ class Preferences:
         from classes.plugin import Plugin
         with dpg.tab(label="Plugins", tag="tab_plugins"):
             with dpg.child_window():
-                plugins = Plugin.discover()
-                available_plugins = list(plugins)
-                labels = [ 
-                    dpg.add_text("Found"    , color=(255,255,0)), 
-                    dpg.add_text("Enabled"  , color=(255,255,0)), 
-                ]
-                dpg.configure_item(labels[0], pos=(   8, 8 ) )
-                dpg.configure_item(labels[1], pos=( 316, 8 ) )
-                dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=300, num_items=10, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
-                dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=300, num_items=10, pos=( 316,  32 ), callback=Plugin.disable, default_value=None)
+                with dpg.tab_bar(tag="plugin-tabs"):
+                    with dpg.tab(label="General", tag="tab_plugins-general"):
+                        with dpg.child_window():
+                            plugins = Plugin.discover()
+                            available_plugins = list(plugins)
+                            labels = [ 
+                                dpg.add_text("Found"        , color=(255,255,0)), 
+                                dpg.add_text("Enabled"      , color=(255,255,0)), 
+                                dpg.add_text("Debug Mode"   , color=(255,255,0)), 
+                            ]
+                            dpg.configure_item(labels[0], pos=(   8,   8 ) )
+                            dpg.configure_item(labels[1], pos=( 316,   8 ) )
+                            dpg.configure_item(labels[2], pos=(   8, 218 ) )
+                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=300, num_items=10, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
+                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=300, num_items=10, pos=( 316,  32 ), callback=Plugin.disable, default_value=None)
+                            dpg.add_checkbox(label="Enabled", tag="debugplugins", callback=Plugin.toggleDebug   , default_value=Plugin.debug, pos=(8, 242))
+                    
+    @staticmethod
+    def populatePluginsTab():
+        from classes.plugin import Plugin
+        # Make a tab for every plugin' settings
+        for name, plugin in Plugin.loaded.items():            
+            with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
+                with dpg.child_window():
+                    dpg.add_text(plugin.description, tag=f'plugin-setting-{plugin.name}-{name}-description', color=(55,155,255)),
+                    colors = {}
+                    for name,value in plugin.settings.items():
+                        if name in ['enabled', '']: continue
+                        if len(value) and value[0] == '[':
+                            value = json.loads(value)
+                            colors[ name ] = value
+                        else:
+                            # String field
+                            dpg.add_text(name, tag=f'plugin-setting-{plugin.name}-{name}-label', color=(255,255,0)),
+                            dpg.add_input_text(tag=f'plugin-setting-{plugin.name}-{name}', default_value=value, callback=Plugin.updateSettings, user_data=name)
+                    if len(colors):
+                        dpg.add_text("colors", tag=f'plugin-setting-{plugin.name}-colors-label', color=(255,255,0)),
+                        with dpg.tab_bar(tag=f"plugin-tabs-{plugin.name}"):
+                            for name, color in colors.items():                            
+                                with dpg.tab(label=name, tag=f"tab_plugins-{plugin.name}-{name}"):
+                                    with dpg.child_window(no_scrollbar=True, height=170):
+                                        dpg.add_color_picker(
+                                            tag             = f'plugin-setting-{plugin.name}-{name}', 
+                                            default_value   = (0, 0, 0, 255),
+                                            callback        = Plugin.updateColor, 
+                                            user_data       = name, 
+                                            width           = 200, 
+                                            height          = 32, 
+                                            no_side_preview = True, 
+                                            no_small_preview= True, 
+                                            no_inputs       = True, 
+                                            alpha_bar       = True, 
+                                            picker_mode     = dpg.mvColorPicker_wheel,
+                                            display_type=dpg.mvColorEdit_uint8,
+
+                                        )
+                                        dpg.set_value(f'plugin-setting-{plugin.name}-{name}',color)
         
+
     @staticmethod
     def updatePluginLists():
         from classes.plugin import Plugin
@@ -480,19 +528,19 @@ class Preferences:
                 dpg.add_text( "IRC Channel"     , tag="twitch-username-label",color=(255,255,0) )
                 createStringField (''           , 'twitch-app-key'                              )
                 createStringField (''           , 'twitch-username'                             )
-                createBooleanField('Enabled'    , 'twitch-use-api'                              )
+                createBooleanField(''           , 'twitch-use-api'                              )
                 dpg.add_text( "RetroAchievements",tag="ra-label"            , color=(205,255,0) )
                 dpg.add_text( "API Key"         , tag="ra-app-key-label"    , color=(255,255,0) )
                 dpg.add_text( "Use API"         , tag="ra-use-api-label"    , color=(255,255,0) )
                 createStringField (''           , 'ra-app-key'                                  )
-                createBooleanField('Enabled'    , 'ra-use-api'                                  )
+                createBooleanField(''           , 'ra-use-api'                                  )
                 dpg.add_text( "RA Password"     , tag="ra-password-label"   , color=(255,255,0) )
                 dpg.add_text( "Offline Mode"    , tag="ra-offline-label"    , color=(255,255,0) )
                 createStringField (''           , 'password'                                    )
                 createBooleanField(''           , 'offline'                                     )
                 dpg.add_text( "AutoRefresh Rate", tag="auto-update-rate-label",color=(255,255,0))
                 dpg.add_text( "Use AutoRefresh" , tag="auto-update-enable-lbl",color=(255,255,0))
-                createBooleanField('Auto Update', 'auto_update'     )
+                createBooleanField(''           , 'auto_update'     )
                 createIntegerField('Minutes'    , 'auto_update_rate' , min_value=1,max_value=60)
                 columns = [ 150, 16 ]
                 y = 8
@@ -568,4 +616,12 @@ def createStringField(name, setting_name, callback=Preferences.updateSetting, re
     dpg.add_input_text(label = name, tag = setting_name, callback=callback,default_value=Preferences.settings[setting_name], user_data=False) 
 
 def createColorField(name, setting_name, callback=Preferences.updateSettingColor):
-    dpg.add_color_picker(height=128, width=128,label = name, tag = setting_name, callback=callback,default_value=Preferences.settings[setting_name], user_data=False) 
+    dpg.add_color_picker(
+        height=128, 
+        width=128,
+        label = name, 
+        tag = setting_name, 
+        callback=callback,
+        default_value=Preferences.settings[setting_name], 
+        user_data=False
+    ) 

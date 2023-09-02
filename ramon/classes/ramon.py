@@ -97,7 +97,6 @@ class Ramon:
             with dpg.menu(label="Options"):
                 dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )
                 dpg.add_menu_item(label="Log"               , tag="view_log"    , callback=Log.show             )
-                dpg.add_checkbox(label="Plugin Debugging"   , tag="debugplugins", callback=Plugin.toggleDebug   , default_value=Plugin.debug)
             with dpg.menu(label="Links"):
                 with dpg.menu(label="Twitch"):
                     dpg.add_menu_item(label="Chat"              , tag="twitch_chat" , callback=Preferences.show     )

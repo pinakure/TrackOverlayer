@@ -6,9 +6,15 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'rpgchat'
-        self.description = 'RPGlike SuperChat Window',
+        self.description = 'RPGlike SuperChat Window'
         self.endpoint    = 'superchat'
         self.color       = '#cc0'
+
+        self.settings    = {
+            "enabled" : "0",
+            "username": "",
+            "text"    : "[240,240,0,255]",
+        }
 
         #@ Composer Settings
         self.z_index     = 10

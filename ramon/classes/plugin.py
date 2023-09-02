@@ -62,7 +62,7 @@ class Endpoints:
     @staticmethod
     def recent():
         from classes.data import Data
-        return sane(json.dumps(Data.recent))
+        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Data.recent] ))
     
     @staticmethod
     def progress():
@@ -108,32 +108,52 @@ class Plugin:
         self.template       = 'template.html'
     
     @staticmethod
-    def enable( sender=None, user_data=None, args=None ):
+    def updateColor( sender=None, value=None, user_data=None ):
+        from dearpygui import dearpygui as dpg
+        name = sender.lstrip('plugin-setting-').rstrip(user_data).strip('-')
+        plugin = Plugin.loaded[name]
+        value[0] = int( value[0] * 255)
+        value[1] = int( value[1] * 255)
+        value[2] = int( value[2] * 255)
+        value[3] = int( value[3] * 255)
+        plugin.settings[ user_data ] = value
+        Plugin.writeConfig()
+
+    @staticmethod
+    def updateSettings( sender=None, value=None, user_data=None ):
+        from dearpygui import dearpygui as dpg
+        name = sender.lstrip('plugin-setting-').rstrip(user_data).strip('-')
+        plugin = Plugin.loaded[name]
+        plugin.settings[ user_data ] = value
+        Plugin.writeConfig()
+
+    @staticmethod
+    def enable( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
-        if not user_data in enabled:
-            Plugin.loaded[user_data].settings['enabled'] = "1"
+        if not value in enabled:
+            Plugin.loaded[value].settings['enabled'] = "1"
             Plugin.writeConfig()
-            enabled.append( user_data )
+            enabled.append( value )
             dpg.configure_item('enabled-plugins', items = enabled)
             # Re-generate overlay with enabled plugin
             Plugin.compose()
             # Run Plugin
-            Plugin.loaded[user_data].run()
+            Plugin.loaded[value].run()
     
     @staticmethod
-    def disable( sender=None, user_data=None, args=None ):
+    def disable( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
-        if user_data in enabled:
-            Plugin.loaded[user_data].settings['enabled'] = "0"
+        if value in enabled:
+            Plugin.loaded[value].settings['enabled'] = "0"
             Plugin.writeConfig()
-            enabled.remove( user_data )
+            enabled.remove( value )
             dpg.configure_item('enabled-plugins', items = enabled)
             # Re-generate overlay with enabled plugin
             Plugin.compose()
             # Run Plugin
-            Plugin.loaded[user_data].run()
+            Plugin.loaded[value].run()
 
     def open(self):
         with open( f"{Preferences.settings['root']}/plugins/{self.name}/{self.template}", 'r') as file:
@@ -275,8 +295,8 @@ class Plugin:
             if line[0] == '[':
                 if current and current in Plugin.loaded.keys():
                     Plugin.loaded[current].settings = settings
-                settings = {}
                 current  = line.strip('[').strip(']')
+                settings = {} if not current in Plugin.loaded.keys() else Plugin.loaded[current].settings
                 continue
             [ key, value ] = line.split('=')
             settings[ key ] = value

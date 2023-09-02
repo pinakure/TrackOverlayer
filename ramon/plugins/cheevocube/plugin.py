@@ -6,7 +6,7 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'cheevocube'
-        self.description = 'Current Achievement Rotating 3D Cube',
+        self.description = 'Current Achievement Rotating 3D Cube'
         self.endpoint    = 'current-cheevo'
         self.color       = '#0f0'
 

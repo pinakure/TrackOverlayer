@@ -6,7 +6,7 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'progressbar'
-        self.description = 'RetroAchievements Current Game progress bar widget',
+        self.description = 'RetroAchievements Current Game progress bar widget'
         self.endpoint    = 'progress'
         self.color       = '#ff0'
 

@@ -74,6 +74,7 @@ if Ramon.start():
     # load plugins
     for plugin in Ramon.plugins:
         Plugin.load( plugin )
+    Preferences.populatePluginsTab()
     Preferences.updatePluginLists()
     # build plugin overlay, if any loaded
     if len( Ramon.plugins ): 

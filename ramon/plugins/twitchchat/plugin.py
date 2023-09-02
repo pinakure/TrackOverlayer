@@ -6,7 +6,7 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'twitchchat'
-        self.description = 'Twitch Live Chat Typewriter',
+        self.description = 'Twitch Live Chat Typewriter'
         self.endpoint    = 'twitch-username'
         self.color       = '#f00'
 

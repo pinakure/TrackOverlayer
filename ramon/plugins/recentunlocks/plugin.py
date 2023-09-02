@@ -4,6 +4,7 @@ class plugin(Plugin):
 
     def __init__(self):
         Plugin.__init__(self)
+
         #@ Plugin Settings
         self.name        = 'recentunlocks'
         self.description = 'Recent Cheevo unlocks list'
@@ -21,7 +22,11 @@ class plugin(Plugin):
         #@ Vars
         
 
-
+        self.settings   = {
+            "enabled"       : "0",
+            "name"          : "[240,240,0,255]",
+            "description"   : "[240,240,0,255]",
+        } 
 
 
         #@ Install settings
