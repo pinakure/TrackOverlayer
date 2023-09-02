@@ -395,6 +395,28 @@ class Preferences:
             dpg.add_button(label="Open  Preview"        , pos=(Preferences.width - 132,45), tag="preview-progress"  , callback=lambda: os.system('start '+Preferences.root.replace('/', '\\')+"\\data\\progress.html"))
 
     @staticmethod
+    def createPluginsTab():
+        from classes.plugin import Plugin
+        with dpg.tab(label="Plugins", tag="tab_plugins"):
+            with dpg.child_window():
+                plugins = Plugin.discover()
+                available_plugins = list(plugins)
+                labels = [ 
+                    dpg.add_text("Found"    , color=(255,255,0)), 
+                    dpg.add_text("Enabled"  , color=(255,255,0)), 
+                ]
+                dpg.configure_item(labels[0], pos=(   8, 8 ) )
+                dpg.configure_item(labels[1], pos=( 316, 8 ) )
+                dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=300, num_items=10, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
+                dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=300, num_items=10, pos=( 316,  32 ), callback=Plugin.disable, default_value=None)
+        
+    @staticmethod
+    def updatePluginLists():
+        from classes.plugin import Plugin
+        items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled'] == "1" ]
+        dpg.configure_item( 'enabled-plugins', items=items )        
+
+    @staticmethod
     def createOutputTab():
         with dpg.tab(label="Output", tag="tab_output"):
             with dpg.child_window():
@@ -517,6 +539,7 @@ class Preferences:
             with dpg.tab_bar():
                 Preferences.createInterfaceTab()
                 Preferences.createInputTab()
+                Preferences.createPluginsTab()
                 Preferences.createOutputTab()
         Preferences.loadCustomizations()
 

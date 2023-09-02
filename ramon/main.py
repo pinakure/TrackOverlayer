@@ -42,18 +42,29 @@ Progressbar personalization
     having to manually update or waiting for autoupdate, delaying the realtime notification 
     when one achievement gets unlocked.
 .........................
-31-8-23: 
+31-8-23 
 - RetroAchievements.org status live monitorization in order to avoid useless unlocking, by handling failing request / bad parsing scenarios
 - Plugin subsystem
 - Plugin composite overlay output (all plugins are linked to a single file through iframes, allowing to keep sound playback permissions upon reloading)
 - Plugin autodiscovery 
 - Autogenerable compile script aimed to collect all plugins and make a trustable, monolithic app locally 
 - Improved action feedback by using the title bar to report current status and avoid clearing the achievement list too early.
+---------------------------
+01-9-23
+- Recent cheevos plugin
+- Auto-updatable css styles in runtime, so any change made in preferences is reflected on plugins ( on recent only ftm )
+- Preferences plugins tab
+- Ability to enable / disable plugins (all disabled by default)
+- Moved plugin settings (debug mode) to preferences dialog
+- Ability for plugins to store and retrieve any setting seamlessly
+- Offline mode, for debugging purposes, avoiding excesive queries to retroachievements at boot and faking some data 
+- TODO: Plugin configuration auto generated tab per each plugin ( spartan but functional )
 """
 try: 
     import os, sys
-    from classes.ramon      import Ramon
-    from classes.plugin     import Plugin
+    from classes.ramon          import Ramon
+    from classes.plugin         import Plugin
+    from classes.preferences    import Preferences
 except ImportError:
     os.system('pip install requests beautifulsoup4 dearpygui pynput peewee pyinstaller')
     os.system(f'pause')
@@ -63,6 +74,7 @@ if Ramon.start():
     # load plugins
     for plugin in Ramon.plugins:
         Plugin.load( plugin )
+    Preferences.updatePluginLists()
     # build plugin overlay, if any loaded
     if len( Ramon.plugins ): 
         Plugin.compose()

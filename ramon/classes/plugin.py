@@ -101,9 +101,40 @@ class Plugin:
         self.y              = 0
         self.scale          = 1
         self.files          = []
+        self.settings       = {
+            'enabled' : "0",
+        }
         self.endpoint       = None #defines which kind of data payload will be fed from @rendering
         self.template       = 'template.html'
     
+    @staticmethod
+    def enable( sender=None, user_data=None, args=None ):
+        from dearpygui import dearpygui as dpg
+        enabled = dpg.get_item_configuration('enabled-plugins')['items']
+        if not user_data in enabled:
+            Plugin.loaded[user_data].settings['enabled'] = "1"
+            Plugin.writeConfig()
+            enabled.append( user_data )
+            dpg.configure_item('enabled-plugins', items = enabled)
+            # Re-generate overlay with enabled plugin
+            Plugin.compose()
+            # Run Plugin
+            Plugin.loaded[user_data].run()
+    
+    @staticmethod
+    def disable( sender=None, user_data=None, args=None ):
+        from dearpygui import dearpygui as dpg
+        enabled = dpg.get_item_configuration('enabled-plugins')['items']
+        if user_data in enabled:
+            Plugin.loaded[user_data].settings['enabled'] = "0"
+            Plugin.writeConfig()
+            enabled.remove( user_data )
+            dpg.configure_item('enabled-plugins', items = enabled)
+            # Re-generate overlay with enabled plugin
+            Plugin.compose()
+            # Run Plugin
+            Plugin.loaded[user_data].run()
+
     def open(self):
         with open( f"{Preferences.settings['root']}/plugins/{self.name}/{self.template}", 'r') as file:
             self.template_data = file.read()
@@ -144,14 +175,18 @@ class Plugin:
 
     def getCSS(self):
         return ''
+    
+    def run(self):
+        payload = None if not self.endpoint else Endpoints.byName[ self.endpoint ]()
+        self.render(payload)
 
     @staticmethod
     def runLoaded():
         # Feed plugin with the data corresponding to its data endpoint (that data is refreshed each time Ramon.refresh is summoned)
         for name,plugin in Plugin.loaded.items():
-            try:
-                payload = None if not plugin.endpoint else Endpoints.byName[ plugin.endpoint ]()
-                plugin.render(payload)
+            if plugin.settings['enabled']=="0": continue
+            try:                
+                plugin.run()
             except Exception as E:
                 Log.error(f"Cannot run plugin {name}", E)    
         Endpoints.autoupdate()        
@@ -195,9 +230,10 @@ class Plugin:
         #
         # Get composer css vars, html nodes and css styles
         for name, plugin in Plugin.loaded.items():
-            cvars += plugin.getCVars()
-            html  += plugin.iframe()
-            css   += plugin.cssRule()
+            if plugin.settings['enabled']=="1":
+                cvars += plugin.getCVars()
+                html  += plugin.iframe()
+                css   += plugin.cssRule()
         # Get template
         try:
             with open(f'{Preferences.settings["root"]}/plugins/overlay.html', "r") as file:
@@ -228,25 +264,58 @@ class Plugin:
         return [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f)) and not f[0]=='_']
 
     @staticmethod
+    def readConfig( ):
+        with open(f'{Preferences.settings["root"]}/plugins.cfg', "r") as file: 
+            config = file.read()
+        lines    = config.split('\n')
+        settings = {}
+        current  = None
+        for line in lines:
+            if len(line)==0:continue
+            if line[0] == '[':
+                if current and current in Plugin.loaded.keys():
+                    Plugin.loaded[current].settings = settings
+                settings = {}
+                current  = line.strip('[').strip(']')
+                continue
+            [ key, value ] = line.split('=')
+            settings[ key ] = value
+        if current and current in Plugin.loaded.keys():
+            Plugin.loaded[current].settings = settings
+            
+    @staticmethod
+    def writeConfig( ):
+        config = ''
+        for name, plugin in Plugin.loaded.items():
+            config += f'[{ name }]'+"\n"
+            settings = plugin.settings
+            for key,value in settings.items():
+                config += f'{ key }={ value }'+"\n"
+        with open(f'{Preferences.settings["root"]}/plugins.cfg', "w") as file: 
+            file.write(config)
+
+    @staticmethod
     def load( name ):
         Log.info(f"Loading Plugin '{name}'")
         try:
             Log.time()
             module_name = f'plugins.{name}.plugin'
             module = importlib.import_module( module_name, '' )
-            Plugin.loaded[ name ] = module.plugin()
-            # Install required files at data folder, if any specified in plugin.py
-            files = Plugin.loaded[ name ].files            
-            if len(files):
-                for file in files:
-                    if not os.path.exists(f'{Preferences.settings["root"]}/data/{file}'):
-                        try:
-                            Log.info(f"Copying {name} plugin required file '{file}'...")
-                            with open(f'{Preferences.root}/plugins/{name}/{file}', 'rb') as fpin:
-                                with open(f'{Preferences.root}/data/{file}', "wb") as fpout:
-                                    fpout.write(fpin.read())
-                        except Exception as E:
-                            Log.error("Cannot read/write required file", E)
+            Plugin.loaded[ name ] = module.plugin()            
+            Plugin.readConfig()
+            if Plugin.loaded[ name ].settings['enabled']=="1":
+                # Install required files at data folder, if any specified in plugin.py
+                files = Plugin.loaded[ name ].files            
+                if len(files):
+                    for file in files:
+                        if not os.path.exists(f'{Preferences.settings["root"]}/data/{file}'):
+                            try:
+                                Log.info(f"Copying {name} plugin required file '{file}'...")
+                                with open(f'{Preferences.root}/plugins/{name}/{file}', 'rb') as fpin:
+                                    with open(f'{Preferences.root}/data/{file}', "wb") as fpout:
+                                        fpout.write(fpin.read())
+                            except Exception as E:
+                                Log.error("Cannot read/write required file", E)
             Log.time(True)  
         except Exception as E:
             Log.error(f'Cannot load Plugin {name}', E)
