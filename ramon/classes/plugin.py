@@ -54,63 +54,49 @@ def parseColor(string):
 
 class Endpoints:
 
-    @staticmethod
-    def autoupdate():
-        from classes.data import Data
-        payload = """<body style="width: 100%; height:100%; overflow: hidden; """+(f"""transition: background-color 500ms ease-in-out; " >""" if Plugin.debug else '">')+f"""
-        <script>
-            document.getElementsByTagName('body')[0].style.backgroundColor = '#0f0';
-            localStorage.setItem('current-cheevo'   ,  {Endpoints.current_cheevo().replace("'", "`")  }   );
-            localStorage.setItem('cheevo-progress'  , '{Endpoints.progress()        }'  );
-            localStorage.setItem('username'         , '{Endpoints.username()        }'  );
-            localStorage.setItem('twitch-username'  , '{Endpoints.twitch_username() }'  );
-            localStorage.setItem('notifications'    , '{Endpoints.notifications()   }'  );
-            localStorage.setItem('recent'           , '{Endpoints.recent()          }'  );
-            localStorage.setItem('debug'            , '{1 if Plugin.debug else 0    }'  );
-            """+"""
-            setTimeout(function(){ location.reload(); }, 5000);
-            """+("""setTimeout(function(){ document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';},500);""" if Plugin.debug else "")+"""
-            </script></body>"""
-        try:
-            with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
-                file.write( payload )
-            Data.notifications = []
-        except Exception as E:
-            Log.error("Cannot write Autoupdate data script file", E)
-        return payload
-
-    @staticmethod
+    
     def notifications():
         from classes.data import Data
         return sane(json.dumps(Data.notifications))
     
-    @staticmethod
+    
     def current_cheevo():
         from classes.data import Data
         return sane(json.dumps( Data.cheevo ))
     
-    @staticmethod
+    
     def username():
         return Preferences.settings['username']
     
-    @staticmethod
+    
     def twitch_username():
         return Preferences.settings['twitch-username']
     
-    @staticmethod
+    
     def recent():
         from classes.data import Data
         return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Data.recent] ))
     
-    @staticmethod
+    
     def progress():
         from classes.data import Data
         return Data.progress
     
-    @staticmethod
+    
     def nop():
         return ''
-    
+
+    def getAll():
+        return {
+            'notifications'     : Endpoints.notifications(),
+            'username'          : Endpoints.username(),
+            'twitch-username'   : Endpoints.twitch_username(),
+            'current-cheevo'    : Endpoints.current_cheevo().replace("'", "`"),
+            'progress'          : Endpoints.progress(),
+            'recent'            : Endpoints.recent(),
+            'superchat'         : Endpoints.nop(),
+        }
+
     byName = {
         'notifications'     : notifications,
         'username'          : username,
@@ -152,7 +138,7 @@ class Plugin:
         }
 
 
-    @staticmethod
+    
     def updateColor( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         varname =user_data
@@ -169,7 +155,7 @@ class Plugin:
         
         plugin.run()
 
-    @staticmethod
+    
     def updateSettings( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         varname     = user_data
@@ -179,7 +165,7 @@ class Plugin:
         Plugin.writeConfig()
         plugin.run()
 
-    @staticmethod
+    
     def enable( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
@@ -193,7 +179,7 @@ class Plugin:
             # Run Plugin
             Plugin.loaded[value].run()
     
-    @staticmethod
+    
     def disable( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
@@ -216,6 +202,42 @@ class Plugin:
             file.write( self.getCSS() )
         with open( f"{Preferences.settings['root']}/data/{self.name}.html", 'w') as file:
             file.write( self.rendered )
+            
+    def getCssAutoupdateSnippet():
+        return r"""
+        function updatecss(){
+            console.log("Erasing css...");
+            var rid = parseInt(Math.random()*655356);
+            var par  = document.getElementsByTagName('head')[0];
+            var old  = document.getElementsByTagName('link')[0];
+            var link = document.createElement('link');
+            link.rel = "stylesheet";
+            link.type = "text/css";
+            link.href = `./{% name %}.css?${ rid }`;
+            par.append(link);
+            setTimeout(function(){ old.remove();}, 500);
+            setTimeout(updatecss, 1000);
+        }
+        updatecss();
+        """
+
+
+    def injectScripts(self):
+        from classes.dynamic_css import fonts
+        for i in range(0,2):
+            for key,value in {
+                'Name'       : self.name.capitalize(),
+                'name'       : self.name,
+                'update-css' : Plugin.getCssAutoupdateSnippet(),
+                'fonts'      : "\n\t\t".join([value for value in fonts.values()])
+            }.items():         
+                self.rendered = self.rendered.replace('{% '+key+' %}', str(value))        
+                
+
+    def injectSettings(self):
+        for key,value in self.settings.items():
+            if   key.endswith('-color'  ) : value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
+            self.rendered = self.rendered.replace('{% '+key+' %}', str(value))
 
     def render( self, payload='' ):
         Log.time()
@@ -229,9 +251,8 @@ class Plugin:
         self.rendered = self.rendered.replace( '<!--HTML-->', self.getHTML()    )
         self.rendered = self.rendered.replace( '/*JS*/'     , payload           )
         # Inject plugin settings in the template, Django style
-        for key,value in self.settings.items():
-            if '-color' in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
-            self.rendered = self.rendered.replace('{%'+key+'%}', str(value))
+        self.injectScripts()  # Note: These scripts can also inject variables before translation !
+        self.injectSettings()
         self.write()
         Log.time(True)
 
@@ -261,13 +282,9 @@ class Plugin:
             elif '-height'      in key: value = f'{value}px'
             elif 'pos-'         in key: value = f'{value}px'
             elif '-blur'        in key: value = f'{value}px'
-            elif '-bold'        in key:
-                if not value: continue
-                key = "font-weight"; value = "800"                
-            elif '-italic'      in key: 
-                if not value: continue
-                key = "font-style"; value = "italic"
-            elif '-font'        in key: value = f'"{value}"'#inject font face!
+            elif '-bold'        in key: value = "800" if value else "400"
+            elif '-italic'      in key: value = "italic" if value else "normal"
+            elif '-font'        in key: value = f'"{value}"'
             if not value: continue
             payload += f'--{key.ljust(30, " ")} : {value};'+"\n\t"
         payload+='\n}\n'
@@ -276,8 +293,7 @@ class Plugin:
     def run(self):
         payload = None if not self.endpoint else Endpoints.byName[ self.endpoint ]()
         self.render(payload)
-
-    @staticmethod
+    
     def runLoaded():
         # Feed plugin with the data corresponding to its data endpoint (that data is refreshed each time Ramon.refresh is summoned)
         for name,plugin in Plugin.loaded.items():
@@ -286,7 +302,7 @@ class Plugin:
                 plugin.run()
             except Exception as E:
                 Log.error(f"Cannot run plugin {name}", E)    
-        Endpoints.autoupdate()        
+        Plugin.autoupdate()        
     
     def cssRule(self):
         return f'#{self.name}'+'{'+f"""
@@ -302,13 +318,13 @@ class Plugin:
     def iframe(self):
         return f'<iframe id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
 
-    @staticmethod
+    
     def toggleDebug():
         Plugin.debug = not Plugin.debug
         Log.verbose = Plugin.debug
         Plugin.compose()
 
-    @staticmethod
+    
     def compose():
         # Generates overlay.html file:
         # This file holds an iframe per each one of the plugins, shaping their geometry from info inside each plugin.py
@@ -352,15 +368,15 @@ class Plugin:
             Log.error("Cannot write Plugin Overlay template file", E)
         #
         # Create plugin data feeder js script 
-        Endpoints.autoupdate()
+        Plugin.autoupdate()
         Log.time(True)  
 
-    @staticmethod
+    
     def discover():
         path = f'{Preferences.root}/plugins'        
         return [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f)) and not f[0]=='_']
 
-    @staticmethod
+    
     def readConfig( ):
         with open(f'{Preferences.settings["root"]}/plugins.cfg', "r") as file: 
             config = file.read()
@@ -383,7 +399,7 @@ class Plugin:
         if current and current in Plugin.loaded.keys():
             Plugin.loaded[current].settings = settings
             
-    @staticmethod
+    
     def writeConfig( ):
         config = ''
         for name, plugin in Plugin.loaded.items():
@@ -394,7 +410,35 @@ class Plugin:
         with open(f'{Preferences.settings["root"]}/plugins.cfg', "w") as file: 
             file.write(config)
 
-    @staticmethod
+    def autoupdate():
+        from classes.data   import Data
+        beat    = "setTimeout(function(){ document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';},500);"
+        reload  = "setTimeout(function(){ location.reload(); }, 5000);"
+        body    = 'transition: background-color 500ms ease-in-out;' if Plugin.debug else ''
+        ls      = { (f"""localStorage.setItem('{ plugin.name }-settings', '{ json.dumps(plugin.settings) }');"""+'\n') for name,plugin in Plugin.loaded.items()}
+        ls.update({ (f"""localStorage.setItem('{ name        }'         , '{ value                       }');"""+'\n') for name,value in Endpoints.getAll().items()})
+        payload = f'''<!DOCTYPE html>
+</head>
+    <body style="width: 100%; height:100%; overflow: hidden; {body}">
+        <script>
+            document.getElementsByTagName('body')[0].style.backgroundColor = '#0f0';
+            localStorage.setItem('debug', '{1 if Plugin.debug else 0 }'  );
+            {"".join(ls)}
+            { beat if Plugin.debug else '' }
+            {reload}
+        </script>
+    </body>
+</html>'''
+        try:
+            with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
+                file.write( payload )
+            Data.notifications = []
+        except Exception as E:
+            Log.error("Cannot write Autoupdate data script file", E)
+        return payload
+
+
+    
     def load( name ):
         Log.info(f"Loading Plugin '{name}'")
         try:

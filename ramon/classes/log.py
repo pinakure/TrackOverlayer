@@ -9,7 +9,7 @@ class Log:
     width   = 800
     height  = 600
     
-    @staticmethod
+    
     def create(parent):
         Log.parent = parent 
         with dpg.window(
@@ -31,26 +31,26 @@ class Log:
                     dpg.add_input_text(readonly=True, pos=(0,22), multiline=True, tag='log', width=Log.width - 4, height=Log.height-26)
         Log.stdout = False
 
-    @staticmethod
+    
     def show():
         dpg.show_item('log_window')         
          
-    @staticmethod
+    
     def hide():
         dpg.hide_item('log_window')
 
-    @staticmethod
+    
     def print(text):
         if Log.stdout:
             print(text, end=Log.BR)
         else:
             dpg.set_value('log', dpg.get_value('log')+text+'\n')
 
-    @staticmethod
+    
     def warning(text):
         Log.print("WARNING:\n\t"+text+"\n")
 
-    @staticmethod
+    
     def info(text):
         Log.print(f'{text}')
         if not Log.stdout:
@@ -58,14 +58,14 @@ class Log:
             # if dpg.is_dearpygui_running(): 
             #     dpg.render_dearpygui_frame()
 
-    @staticmethod
+    
     def time( finish=False ):
         if not finish:
             Log.when = time.time_ns()
         else:
             Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/10000) } msec")
 
-    @staticmethod
+    
     def error(text, exception=None):
         if not Log.stdout:
             dpg.show_item('log_window')

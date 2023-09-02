@@ -16,7 +16,7 @@ class Preferences:
     parent          = None
     data            = None
     
-    @staticmethod
+    
     def writecfg( restart=False ):
         Preferences.root = Preferences.settings['root']        
         with open(f'{Preferences.root}/config.txt', 'w') as file:
@@ -24,7 +24,7 @@ class Preferences:
                 file.write(f'{key}={value}'+"\n")
         Preferences.parent.restart = restart
 
-    @staticmethod
+    
     def loadcfg():
         defaults = {
             'version'                   : Preferences.parent.version,
@@ -189,7 +189,7 @@ class Preferences:
             Log.error("Cannot parse/load config.txt", E)
             return 
 
-    @staticmethod
+    
     def updateSettingsGMT(sender=None, user_data=None, args=None):
         Preferences.settings['gmt'] = int(dpg.get_value('gmt'))
         Preferences.data.last_activity  = (datetime.strptime(Preferences.data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
@@ -197,28 +197,28 @@ class Preferences:
         dpg.set_value('date'  , Preferences.data.last_activity.strftime("%d %b %Y, %H:%M")  )
         Preferences.writecfg( restart = False )
 
-    @staticmethod
+    
     def updateUsername(sender=None, user_data=None, args=None):
         Preferences.settings['username'] = dpg.get_value('username')
         Preferences.writecfg( restart=False)
         Preferences.parent.refresh()
 
-    @staticmethod
+    
     def updateSetting(sender=None, user_data=None, args=None):
         Preferences.settings[sender]         = dpg.get_value(sender)
         Preferences.writecfg( restart=False )
     
-    @staticmethod
+    
     def updateSettingBoolean(sender=None, user_data=None, args=None):
         Preferences.settings[sender] = dpg.get_value(sender)
         Preferences.writecfg( restart=False )
     
-    @staticmethod
+    
     def updateSettingInteger(sender=None, user_data=None, args=None):
         Preferences.settings[sender] = int(dpg.get_value(sender))
         Preferences.writecfg( restart=False )
    
-    @staticmethod
+    
     def updateSettingVideo(sender=None, user_data=None, args=None):
         Preferences.settings[sender] = int(dpg.get_value(sender))
         dpg.set_viewport_pos( (Preferences.settings['x-pos'], Preferences.settings['y-pos']) )
@@ -227,12 +227,12 @@ class Preferences:
         dpg.configure_item( 'main', width=Preferences.settings['width'], height=Preferences.settings['height'] )
         Preferences.writecfg( restart=False )
    
-    @staticmethod
+    
     def updateSettingColor(sender=None, user_data=None, args=None):
         Preferences.settings[sender] = dpg.get_value(sender)        
         Preferences.writecfg( restart=False )
    
-    @staticmethod
+    
     def createInterfaceTab():
         with dpg.tab(label="Interface", tag="tab_general"):
             with dpg.child_window():
@@ -258,7 +258,7 @@ class Preferences:
                 dpg.set_value('unlocked_cheevos', Preferences.settings['unlocked_cheevos'   ])
                 dpg.set_value('pending_cheevos' , Preferences.settings['pending_cheevos'    ])
                 
-    @staticmethod
+    
     def loadCustomization( category ):
         DynamicCSS.settings[category]['border-width'    ] = Preferences.settings[f'{category}-border-width' ]
         DynamicCSS.settings[category]['border-radius'   ] = Preferences.settings[f'{category}-border-radius']
@@ -286,7 +286,7 @@ class Preferences:
         except: 
             Log.warning(f"No 'gradient' set for {category}. Skipping variable setup.")
         
-    @staticmethod
+    
     def loadCustomizations():
         Preferences.loadCustomization('cheevos' )
         Preferences.loadCustomization('locked'  )
@@ -297,7 +297,7 @@ class Preferences:
         DynamicCSS.settings['unlocked'  ]['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
         DynamicCSS.settings['recent'    ]['active-color' ] = DynamicCSS.settings['cheevos']['active-color'  ]
         
-    @staticmethod
+    
     def updateCustomizations(sender=None, args=None, user_data=None):
         Preferences.settings['progress-hard-gradient'   ] = dpg.get_value('progress-hard-gradient'      )
         Preferences.settings['progress-upper-color'     ] = dpg.get_value('progress-upper-color'        )
@@ -343,7 +343,7 @@ class Preferences:
         Preferences.loadCustomizations()
         Preferences.writecfg( restart=False )
 
-    @staticmethod
+    
     def addCustomizationPanel(tag):
         file = {
             'cheevos'           : 'cheevos',
@@ -384,7 +384,7 @@ class Preferences:
                         createIntegerField("X"          , f'{tag}-x'            , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
                         createIntegerField("Y"          , f'{tag}-y'            , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
 
-    @staticmethod
+    
     def addProgressPanel():
         with dpg.child_window():
             dpg.add_text("Progressbar colors"           , color=(255,255,0))
@@ -399,7 +399,7 @@ class Preferences:
             dpg.add_button(label="Apply Changes"        , pos=(Preferences.width - 132,24), tag="gen-progress"      , callback=DynamicCSS.customize, user_data=Preferences.parent.css['progress'])
             dpg.add_button(label="Open  Preview"        , pos=(Preferences.width - 132,45), tag="preview-progress"  , callback=lambda: os.system('start '+Preferences.root.replace('/', '\\')+"\\data\\progress.html"))
 
-    @staticmethod
+    
     def createPluginsTab():
         from classes.plugin import Plugin
         with dpg.tab(label="Plugins", tag="tab_plugins"):
@@ -424,7 +424,7 @@ class Preferences:
                             dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 218))
                             dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 248))
 
-    @staticmethod
+    
     def populatePluginsTab():
         from classes.plugin     import Plugin, parseBool
         from classes.attribute  import Attribute
@@ -533,13 +533,13 @@ class Preferences:
                                         Attribute.label         ( 442,  54 , "Border Color", parent=window)
                                     Attribute.border_color  ( 442,  75 )
                 
-    @staticmethod
+    
     def updatePluginLists():
         from classes.plugin import Plugin
         items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled']]
         dpg.configure_item( 'enabled-plugins', items=items )        
 
-    @staticmethod
+    
     def createOutputTab():
         with dpg.tab(label="Output", tag="tab_output"):
             with dpg.child_window():
@@ -593,7 +593,7 @@ class Preferences:
                                         createIntegerField("Y"              , 'recent-y'                , callback=Preferences.updateCustomizations, min_value=-800, max_value= 800)
                                         
                                     
-    @staticmethod
+    
     def createInputTab():
         with dpg.tab(label="Input", tag="tab_input"):
             with dpg.child_window():
@@ -644,7 +644,7 @@ class Preferences:
                 dpg.configure_item('ra-app-key'             , password=True)
                 dpg.configure_item('twitch-app-key'         , password=True)
 
-    @staticmethod
+    
     def create( parent ):
         Preferences.parent = parent
         with dpg.window(
@@ -666,11 +666,11 @@ class Preferences:
                 Preferences.createOutputTab()
         Preferences.loadCustomizations()
 
-    @staticmethod
+    
     def show():
         dpg.show_item('preferences_main')
 
-    @staticmethod
+    
     def hide():
         dpg.hide_item('preferences_main')
 

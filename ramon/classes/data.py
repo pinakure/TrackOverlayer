@@ -45,7 +45,7 @@ class Data:
     parsed          = None
     logged_user     = None
 
-    @staticmethod
+    
     def parseCheevos(game):
         cheevos = []
         Log.info(f'Parsing {len(Data.cheevos_raw)} raw cheevos')
@@ -54,7 +54,7 @@ class Data:
         Log.info(f'Got {len(cheevos)} sane cheevo instances')
         return cheevos       
         
-    @staticmethod
+    
     def getRank( usersummary ):
         try:
             Log.info("Parsing User Rank...")
@@ -62,7 +62,7 @@ class Data:
         except Exception as E:
             Log.error("Cannot parse User Rank", E)
             
-    @staticmethod
+    
     def getDate( usersummary ):
         try:
             Log.info("Parsing User Last Activity Date...")
@@ -71,7 +71,7 @@ class Data:
         except Exception as E:
             Log.error("Cannot parse User Last Activity Date", E)
         
-    @staticmethod
+    
     def getScore( usersummary ):
         try:
             Log.info("Parsing User Score...")
@@ -79,7 +79,7 @@ class Data:
         except Exception as E:
             Log.error("Cannot parse User Score", E)
 
-    @staticmethod
+    
     def getGame( usersummary_raw ):
         try:
             Log.info("Getting Game data...")
@@ -93,7 +93,7 @@ class Data:
         except Exception as E:
             Log.error("Cannot parse Game Data", E)
 
-    @staticmethod
+    
     def getUserSummary():
         try:
             Log.info("Getting User Summary HTML...")
@@ -106,7 +106,7 @@ class Data:
         except Exception as E:
             Log.error("Cannot parse payload getting User Summary", E)
     
-    @staticmethod
+    
     def setActiveCheevo(index):
         Cheevo.active_index = index
         Preferences.settings['current_cheevo'] = Cheevo.active_index
@@ -114,7 +114,7 @@ class Data:
             dpg.set_value(f'cheevo[{i+1}]', False)
             dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
             
-    @staticmethod 
+     
     def getCheevos():
         import random
         try:
@@ -146,7 +146,7 @@ class Data:
     profile_url = "https://retroachievements.org/user/xxxxx"
     session   = None
 
-    @staticmethod
+    
     def login():
         try:
             if Preferences.settings['username'] == '': return False        
@@ -187,7 +187,7 @@ class Data:
             Data.session = None
             return False
 
-    @staticmethod
+    
     def getPayload():
         try:            
             # Try to get RA user profile HTML
@@ -203,7 +203,7 @@ class Data:
             Log.error("Cannot get RetroAchievements Payload", E)
             return False        
     
-    @staticmethod
+    
     def parse():
         # Try to parse profile HTML and extract metadata
         try:
@@ -217,7 +217,7 @@ class Data:
             Log.error("Cannot parse profile HTML, the structure may have be changed.", E)
             return False
 
-    @staticmethod
+    
     def query():        
         Log.info('Refreshing data...')
         Data.css = Data.parent.css  # deprecated, as CSS used is not DynamicCSS anymore in most of the plugins 
@@ -232,7 +232,7 @@ class Data:
             return False
         return Data.parse()
         
-    @staticmethod
+    
     def updatePictures():
         try:   
             width, height, depth, data = dpg.load_image(f'{Preferences.root}/data/current_cheevo.png')                
@@ -267,7 +267,7 @@ class Data:
             except Exception as E:
                 Log.error("Cannot create static texture 'current_cheevo_img'.", E)
                 
-    @staticmethod
+    
     def getCurrentCheevo( picture ):
         # try first if image is in cache
         cheevo_id = picture.split('.png')[0].split('_lock')[0]
@@ -282,7 +282,7 @@ class Data:
             data[1] = file.read()
         return data
         
-    @staticmethod
+    
     def writeCheevo():
         if Preferences.settings['username'] == '': return
         for d in Data.cheevos:
@@ -301,11 +301,11 @@ class Data:
                             picture.write(data[1] )
                         Data.updatePictures()
                 
-    @staticmethod
+    
     def getReloadSnippet():
         return """<script>function refresh(){ window.location.reload(); } setInterval(refresh, """+str(Data.reload_rate*500)+""")</script>"""
 
-    @staticmethod
+    
     def writeCheevos():
         script = Data.getReloadSnippet()
         rid = random.random()
@@ -332,7 +332,7 @@ class Data:
                     unlocked.write ('</div>')
                     Data.parent.setProgress(1.0)
         
-    @staticmethod
+    
     def writeRecent():
         script = Data.getReloadSnippet()
         rid = random.random()
@@ -354,7 +354,7 @@ class Data:
                 ''')                
             file.write('''</tbody><table>''')
 
-    @staticmethod
+    
     def getNotifications():
         notifications = []
         cheevos = (Cheevo
@@ -369,13 +369,13 @@ class Data:
             cheevo.save()
         return notifications
         
-    @staticmethod
+    
     def writeNotifications():
         notifications = Data.getNotifications()
         Data.notifications = notifications
         data = json.dumps(notifications)
         
-    @staticmethod
+    
     def write():
         if Preferences.settings['username'] == '': return
         with open(f'{Preferences.root}/data/last_activity.txt'  , 'w') as file:   file.write(Data.last_activity.strftime("%d %b %Y, %H:%M").upper() )

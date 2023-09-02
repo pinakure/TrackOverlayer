@@ -13,7 +13,7 @@ class Game(Model):
     class Meta:
         database = db
 
-    @staticmethod
+    
     def loadOrCreate(game_id):
         #query db loking for requested game
         try:
@@ -22,7 +22,7 @@ class Game(Model):
             #if game does not exist download metadata
             return Game.download(game_id)
     
-    @staticmethod
+    
     def download( game_id ):
         data    = str(requests.get(f'https://retroachievements.org/game/{game_id}').content)
         name    = data.split('block mb-1">')[1].split('</span>')[0]
@@ -53,7 +53,7 @@ class Cheevo(Model):
     def menu(self):
         return f'{self.name.ljust(Cheevo.min_width, " ")}'+"\n"+(" "*9)+f'{self.description}'
     
-    @staticmethod
+    
     def getPicture( picture_id ):
         data = requests.get( f'https://media.retroachievements.org/Badge/{picture_id}.png' ).content
         with open(f'{Cheevo.root}/data/cache/{picture_id}.png', 'wb') as file:
@@ -78,7 +78,7 @@ class Cheevo(Model):
             self.build_cache()            
         return f'<img class="{"active" if self.index == Cheevo.active_index else ""} round" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
 
-    @staticmethod
+    
     def parse( game, payload ):
         name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'")
         picture     = payload.split('img src=')[1].split('.png')[0].replace('\\\'', '') + ".png"

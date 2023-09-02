@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="./cheevocube.css"/>
         <style>
             :root {
                 /*VARS*/           
@@ -87,37 +88,7 @@
                 background-size   : 100% 100%;
                 image-rendering   : pixelated;    
             }
-        </style>
-        <script>
-            var current_face=1;
-
-            function refresh(){ 
-                faces = [ 'front', 'right', 'back', 'left']
-                current_face++;
-
-                items = [
-                    document.getElementsByClassName(faces[current_face%4]),
-                ]
-                
-                for( item in items){
-                    rid                           = parseInt(Math.random()*65535);
-                    node                          = items[item][0]
-                    node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
-                    node.children[0].src          = `current_cheevo_lock.png?${rid}`;
-                    node.children[0].style.width  = '100%';
-                    node.children[0].style.height = '100%';
-                }
-                /* Hide widget if no cheevo is selected or program is not yet ready */
-                var node = document.getElementById('cube');
-                if (localStorage.getItem('current-cheevo')){
-                    node.style.display = "inline-block";
-                } else {
-                    node.style.display = "none";
-                }
-            } 
-
-            setInterval(refresh, 3000)            
-        </script>
+        </style>        
     </head>
     <body>        
         <div class="container">
@@ -130,5 +101,73 @@
                 <div class="bottom" ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
             </div>
         </div>
+        <script>
+            var current_face    = 1;
+            var faces           = [ 'front', 'right', 'back', 'left']
+            const False         = false;
+            const True          = true;
+
+            var settings = {
+                auto : {
+                    hide : {% auto-hide %},
+                }
+            };
+
+            localStorage.setItem('cube-settings', JSON.stringify(settings));
+
+            var Cube = {
+                dom : {
+                    cube : document.getElementById('cube'),
+                },
+                updatecss : function(){
+                    console.log("Erasing css...");
+                    var rid = parseInt(Math.random()*655356);
+                    var par  = document.getElementsByTagName('head')[0];
+                    var old  = document.getElementsByTagName('link')[0];
+                    var link = document.createElement('link');
+                    link.rel = "stylesheet";
+                    link.type = "text/css";
+                    link.href = `./cheevocube.css?${ rid }`;
+                    par.append(link);
+                    setTimeout(function(){ old.remove();}, 500);                    
+                },
+
+                refresh : function(){ 
+                    Cube.updatecss()
+                    settings = JSON.parse(localStorage.getItem('cube-settings'));
+                    
+                    current_face++;
+
+                    items = [
+                        document.getElementsByClassName(faces[current_face%4]),
+                    ]
+                    
+                    for( item in items){
+                        rid                           = parseInt(Math.random()*65535);
+                        node                          = items[item][0]
+                        node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
+                        node.children[0].src          = `current_cheevo_lock.png?${rid}`;
+                        node.children[0].style.width  = '100%';
+                        node.children[0].style.height = '100%';
+                    }
+                    
+                    /* Hide widget if no cheevo is selected or program is not yet ready */
+                    if(settings.auto.hide){
+                        if (localStorage.getItem('current-cheevo')!=''){
+                            Cube.dom.cube.style.display = "inline-block";                        
+                        } else {
+                            Cube.dom.cube.style.display = "none";                        
+                        }
+                    }
+                },
+
+                start : function(){
+                    setInterval(Cube.refresh, 3000);
+                },
+            };
+
+            Cube.start();
+
+        </script>
     </body>
 </html>

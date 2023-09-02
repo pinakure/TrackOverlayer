@@ -6,7 +6,7 @@ from classes.log import Log
 class Scraper:
     picture_root = "https://thegamesdb.net/search.php?name="
 
-    @staticmethod
+    
     def getGamePicture( name ):
         try:
             response = requests.get(f'{Scraper.picture_root}{name.strip()}')

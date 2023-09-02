@@ -18,7 +18,7 @@ class HotKeys:
     alt         = False
     listener    = False
 
-    @staticmethod
+    
     def keydown(key):
         if key in [keyboard.Key.ctrl_l, keyboard.Key.ctrl_r] :
             HotKeys.ctrl = True
@@ -35,7 +35,7 @@ class HotKeys:
                 Ramon.timer = None
                 Ramon.refresh()
 
-    @staticmethod
+    
     def keyup(key):
         if key in [keyboard.Key.ctrl_l, keyboard.Key.ctrl_r] :
             HotKeys.ctrl = False
@@ -47,7 +47,7 @@ class HotKeys:
             HotKeys.shift = False
             return 
 
-    @staticmethod
+    
     def install():
         HotKeys.listener = keyboard.Listener(
             on_press=HotKeys.keydown,
@@ -64,13 +64,13 @@ class Ramon:
     timer               = None    
     plugins             = []
 
-    @staticmethod
+    
     def updateCheevoManually(sender=None, args=None, user_data=None):
         with open(f'{Data.root}/data/current_cheevo.txt', "w") as file:
             file.write(dpg.get_value('cheevo'))
         os.truncate(f'{Data.root}/data/current_cheevo.png')
 
-    @staticmethod
+    
     def updateCheevo(sender=None, args=None, user_data=None):
         Cheevo.active_index = user_data
         Data.game.current = Cheevo.active_index
@@ -82,11 +82,11 @@ class Ramon:
         Data.writeCheevo()
         Ramon.redraw()
 
-    @staticmethod
+    
     def exit():
         Data.mine = False         
 
-    @staticmethod
+    
     def createMenu():
         with dpg.menu_bar():
             with dpg.menu(label="Actions"):
@@ -106,7 +106,7 @@ class Ramon:
                     dpg.add_menu_item(label="Cheevo Page"       , tag="ra_cheevo_page"  , callback=Preferences.show     )
 
 
-    @staticmethod
+    
     def mkdir(dirname):
         if not os.path.exists(f'{Preferences.root}/{dirname}'):
             os.mkdir(f'{Preferences.root}/{dirname}')
@@ -114,7 +114,7 @@ class Ramon:
         else:
             Log.info(f"Using directory '{dirname}'")
         
-    @staticmethod 
+     
     def setupCSS():
         DynamicCSS.root = Preferences.root
         global_cheevos_css = """html, body { height: 100%; overflow-x: hidden; overflow-y: hidden; } html, img, body { background-color: rgba(0,0,0,0); padding: 0px 0px 0px 0px; line-height: 16px; } img.round { border-radius: 24px 24px 24px 24px; } img { box-shadow: 2px 2px 0px #0008; border: 2px solid #0000; } img.active { filter: brightness(1.5) hue-rotate(270deg); animation: flash 2s linear 0s infinite alternate;} @keyframes flash { from {border: 2px solid #FF0;} to   {border: 2px solid #F00;}}"""
@@ -129,7 +129,7 @@ class Ramon:
         Ramon.css['progress'] = DynamicCSS('progress' , progress_css      , cheevos_vars)
         Ramon.css['recent'  ] = DynamicCSS('recent'   , """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} hr{border: 1px solid #4808;box-shadow: 0px 4px 32px #0f0;margin: 0px 0px 0px 0px;}* { color: #8f0;text-shadow: 0px 0px 2px #0f0;font-family: 'ProggyCleanTTSZ', 'ff6'}b {color: #cf0;}"""+css_font)
 
-    @staticmethod
+    
     def start():
         Data.parent = Ramon
         Preferences.parent = Ramon
@@ -295,7 +295,7 @@ class Ramon:
             Ramon.setProgress(1.0)
         return True
         
-    @staticmethod
+    
     def setProgress(value):
         if value >= 1.0:
             dpg.hide_item('progress_overlay')
@@ -303,7 +303,7 @@ class Ramon:
             dpg.set_value('progress', value)
             dpg.show_item('progress_overlay')
 
-    @staticmethod
+    
     def createCompileScript():
         with open("./compile.bat", "w") as file:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
@@ -311,7 +311,7 @@ class Ramon:
             file.write(f'''@pyinstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe RAMon.exe'''+"\n")
         dpg.set_viewport_title('RAMon - Compiled "compile.bat" script succesfully')
 
-    @staticmethod
+    
     def render():
         import time
         if Preferences.settings['fullscreen'] : 
@@ -352,7 +352,7 @@ class Ramon:
         dpg.destroy_context()        
         Log.info("Closed succesfully")
         
-    @staticmethod
+    
     def redraw():
         Ramon.clear()
         dpg.set_value('game'  , Data.last_seen      )
@@ -377,14 +377,14 @@ class Ramon:
         dpg.set_value('unlocked', unlocked)
         dpg.set_item_pos('unlocked', (31,(26*Cheevo.global_index)))
 
-    @staticmethod
+    
     def clear():
         dpg.set_value('stdout', '')
         for i in range(0,Cheevo.max):
             dpg.hide_item(f'cheevo[{i+1}]')
         dpg.set_value('unlocked', '')
 
-    @staticmethod
+    
     def refresh(sender=None, user_data=None, args=None):
         Ramon.timer = None
         Cheevo.global_index = 0
@@ -410,6 +410,6 @@ class Ramon:
         else:
             dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')
         
-    @staticmethod
+    
     def message(text):
         dpg.set_value('stdout', dpg.get_value('stdout')+'\n'+text)
