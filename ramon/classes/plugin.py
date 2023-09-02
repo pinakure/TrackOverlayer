@@ -15,6 +15,7 @@ def sane( insane ):
     return insane.replace("'", "`").replace(r'\`', '`')
 
 def parseBool(string):
+    string = str(string)
     return string.lower() in [ 'true', '1', 'yes']
 
 def isBool(string):
@@ -125,6 +126,7 @@ class Plugin:
     loaded = {}
     width  = 1440
     debug  = False
+    rate   = 5
 
     def __init__(self):
         self.template_data  = None
@@ -144,11 +146,19 @@ class Plugin:
         self.endpoint       = None #defines which kind of data payload will be fed from @rendering
         self.template       = 'template.html'
     
+    def templateVars(self):
+        return {
+
+        }
+
+
     @staticmethod
     def updateColor( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         varname =user_data
-        plugin_name = sender.lstrip('plugin-setting-').split('-')[0]
+        plugin_name = sender.replace('plugin-setting-', '').split('-')[0]
+        # print("SENDER: "+sender)
+        # print("USRDAT: "+user_data)
         plugin = Plugin.loaded[ plugin_name ]
         value[0] = int( value[0] * 255)
         value[1] = int( value[1] * 255)
@@ -156,22 +166,25 @@ class Plugin:
         value[3] = int( value[3] * 255)
         plugin.settings[ varname ] = value
         Plugin.writeConfig()
+        
+        plugin.run()
 
     @staticmethod
     def updateSettings( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         varname     = user_data
-        plugin_name = sender.lstrip( 'plugin-setting-').split('-')[0]
+        plugin_name = sender.replace('plugin-setting-','').split('-')[0]
         plugin = Plugin.loaded[ plugin_name ]
         plugin.settings[ varname ] = value
         Plugin.writeConfig()
+        plugin.run()
 
     @staticmethod
     def enable( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
         if not value in enabled:
-            Plugin.loaded[value].settings['enabled'] = "1"
+            Plugin.loaded[value].settings['enabled'] = True
             Plugin.writeConfig()
             enabled.append( value )
             dpg.configure_item('enabled-plugins', items = enabled)
@@ -185,7 +198,7 @@ class Plugin:
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
         if value in enabled:
-            Plugin.loaded[value].settings['enabled'] = "0"
+            Plugin.loaded[value].settings['enabled'] = False
             Plugin.writeConfig()
             enabled.remove( value )
             dpg.configure_item('enabled-plugins', items = enabled)
@@ -198,7 +211,9 @@ class Plugin:
         with open( f"{Preferences.settings['root']}/plugins/{self.name}/{self.template}", 'r') as file:
             self.template_data = file.read()
 
-    def write(self):
+    def write(self):        
+        with open( f"{Preferences.settings['root']}/data/{self.name}.css", 'w') as file:
+            file.write( self.getCSS() )
         with open( f"{Preferences.settings['root']}/data/{self.name}.html", 'w') as file:
             file.write( self.rendered )
 
@@ -208,10 +223,15 @@ class Plugin:
         self.open()
         payload = '' if payload is None else payload
         self.rendered = self.template_data
+        # These 4 replaces are deprecated, remove en as soon as you replace all vars with django style scapes
         self.rendered = self.rendered.replace( '/*VARS*/'   , self.getVars()    )
         self.rendered = self.rendered.replace( '/*CSS*/'    , self.getCSS()     )
         self.rendered = self.rendered.replace( '<!--HTML-->', self.getHTML()    )
         self.rendered = self.rendered.replace( '/*JS*/'     , payload           )
+        # Inject plugin settings in the template, Django style
+        for key,value in self.settings.items():
+            if '-color' in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
+            self.rendered = self.rendered.replace('{%'+key+'%}', str(value))
         self.write()
         Log.time(True)
 
@@ -233,7 +253,25 @@ class Plugin:
         return ''
 
     def getCSS(self):
-        return ''
+        payload = ':root {\n\t'
+        for key,value in self.settings.items():
+            if   '-color'       in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
+            elif '-font-size'   in key: value = f'{value}px'
+            elif '-width'       in key: value = f'{value}px'
+            elif '-height'      in key: value = f'{value}px'
+            elif 'pos-'         in key: value = f'{value}px'
+            elif '-blur'        in key: value = f'{value}px'
+            elif '-bold'        in key:
+                if not value: continue
+                key = "font-weight"; value = "800"                
+            elif '-italic'      in key: 
+                if not value: continue
+                key = "font-style"; value = "italic"
+            elif '-font'        in key: value = f'"{value}"'#inject font face!
+            if not value: continue
+            payload += f'--{key.ljust(30, " ")} : {value};'+"\n\t"
+        payload+='\n}\n'
+        return payload
     
     def run(self):
         payload = None if not self.endpoint else Endpoints.byName[ self.endpoint ]()
@@ -243,7 +281,7 @@ class Plugin:
     def runLoaded():
         # Feed plugin with the data corresponding to its data endpoint (that data is refreshed each time Ramon.refresh is summoned)
         for name,plugin in Plugin.loaded.items():
-            if plugin.settings['enabled']=="0": continue
+            if not plugin.settings['enabled']: continue
             try:                
                 plugin.run()
             except Exception as E:
@@ -289,7 +327,7 @@ class Plugin:
         #
         # Get composer css vars, html nodes and css styles
         for name, plugin in Plugin.loaded.items():
-            if plugin.settings['enabled']=="1":
+            if plugin.settings['enabled']:
                 cvars += plugin.getCVars()
                 html  += plugin.iframe()
                 css   += plugin.cssRule()
@@ -365,7 +403,7 @@ class Plugin:
             module = importlib.import_module( module_name, '' )
             Plugin.loaded[ name ] = module.plugin()            
             Plugin.readConfig()
-            if Plugin.loaded[ name ].settings['enabled']=="1":
+            if Plugin.loaded[ name ].settings['enabled']:
                 # Install required files at data folder, if any specified in plugin.py
                 files = Plugin.loaded[ name ].files            
                 if len(files):

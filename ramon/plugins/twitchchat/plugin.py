@@ -19,11 +19,32 @@ class plugin(Plugin):
         #@ Vars
 
 
-        self.settings   = {
-            "enabled"                   : False,
+        self.settings.update({
             "perspective"               : 0,
             "angle"                     : 0,
-        } 
+            "sound"                     : True,
+            "sound-file"                : "./tick01.wav",#client will automatically try to find tick0[1-3].wav upon filename
+            'message-time'              : 5,
+            'message-count'             : 5,
+            'username-color'            : [ 255,255,0,255 ],
+            'username-font'             : 'arcade',
+            'username-font-size'        : 16,
+            'username-line-height'      : 18,
+            'username-font-bold'        : False,
+            'username-font-italic'      : False,
+            'username-shadow'           : [ 0, 0, 0, 255 ],
+            'username-shadow-pos-x'     : 1,
+            'username-shadow-pos-y'     : 1,
+            'message-color'             : [ 250,250,250,255 ],
+            'message-font'              : 'arcade',
+            'message-font-size'         : 16,
+            'message-line-height'       : 18,
+            'message-font-bold'         : False,
+            'message-font-italic'       : False,
+            'message-shadow'            : [ 0, 0, 0, 255 ],
+            'message-shadow-pos-x'      : 1,
+            'message-shadow-pos-y'      : 1,
+        })
 
         #@ Install settings
         self.files      = [

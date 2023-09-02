@@ -10,26 +10,23 @@ class plugin(Plugin):
         self.endpoint    = 'superchat'
         self.color       = '#cc0'
 
-        self.settings    = {
-            "enabled"           : 0,
+        self.settings.update({
             "username"          : "",
             "perspective"       : 0,
             "angle"             : 0,
-            "text-color"        : [240,240,0,255],
-            "text-font"         : "ff6", 
+            "text-color"        : [240,240,240,255],
+            "text-font"         : "arcade", 
             "text-pos-x"        : 10,
             "text-pos-y"        : 10,
             "text-font-size"    : 16, 
             "text-font-italic"  : False, 
             "text-font-bold"    : False, 
-            "text-shadow"       : [0,0,0,0], 
-            "text-shadow-pos-x" : 0,
-            "text-shadow-pos-y" : 0,
+            "text-shadow"       : [16,0,64,255], 
+            "text-shadow-pos-x" : 1,
+            "text-shadow-pos-y" : 1,
             "text-shadow-blur"  : 0, 
-            "text-line-height"  : 18, 
-            "text-border-width" : 18, 
-            "text-border-color" : [0,0,0,0], 
-        }
+            "text-line-height"  : 18,             
+        })
 
         #@ Composer Settings
         self.z_index     = 10

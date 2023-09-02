@@ -5,6 +5,10 @@ from classes.cheevo         import Cheevo
 from classes.dynamic_css    import DynamicCSS, fonts
 from classes.log            import Log
 
+def elegant( filthy ):
+    # TODO: move to tools
+    return filthy.replace('_', ' ').replace('-', ' ').capitalize()
+
 class Preferences:
     root            = '.'
     width           = 640
@@ -408,28 +412,31 @@ class Preferences:
                             labels = [ 
                                 dpg.add_text("Found"        , color=(255,255,0)), 
                                 dpg.add_text("Enabled"      , color=(255,255,0)), 
-                                dpg.add_text("Debug Mode"   , color=(255,255,0)), 
+                                dpg.add_text("  Debug Mode" , color=(255,255,0)), 
+                                dpg.add_text(" Reload Time" , color=(255,255,0)), 
                             ]
                             dpg.configure_item(labels[0], pos=(   8,   8 ) )
-                            dpg.configure_item(labels[1], pos=( 316,   8 ) )
+                            dpg.configure_item(labels[1], pos=( 310,   8 ) )
                             dpg.configure_item(labels[2], pos=(   8, 218 ) )
-                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=300, num_items=10, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
-                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=300, num_items=10, pos=( 316,  32 ), callback=Plugin.disable, default_value=None)
-                            dpg.add_checkbox(label="Enabled", tag="debugplugins", callback=Plugin.toggleDebug   , default_value=Plugin.debug, pos=(8, 242))
+                            dpg.configure_item(labels[3], pos=(   8, 248 ) )
+                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=290, num_items=10, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
+                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=290, num_items=10, pos=( 310,  32 ), callback=Plugin.disable, default_value=None)
+                            dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 218))
+                            dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 248))
 
     @staticmethod
     def populatePluginsTab():
-        from classes.plugin     import Plugin
+        from classes.plugin     import Plugin, parseBool
         from classes.attribute  import Attribute
         # Make a tab for every plugin' settings
         for name, plugin in Plugin.loaded.items():            
             with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
                 Attribute.parent = f'tab-window-{name}'
-                with dpg.child_window(border=False, tag=Attribute.parent, height=162, width=600) as window:
+                with dpg.child_window(border=False, tag=Attribute.parent, height=160, width=600) as window:
                     perspective = 0
                     project = False
-                    [ bwidths, bcolors, colors, types , heights, italics, bolds, posxs, posys, sposys, sposxs, blurs, shadows, sizes ] = [ {} , {} , {} , {} , {} , {} , {} , {} , {}, {}, {}, {}, {}, {} ]
-                    row     = [ 32,  32]
+                    [ bradius, bwidths, bcolors, colors, types , heights, italics, bolds, posxs, posys, sposys, sposxs, blurs, shadows, sizes ] = [ {} , {} , {} , {} , {} , {} , {} , {} , {}, {}, {}, {}, {}, {}, {} ]
+                    row     = [ 32,  32, 32]
                     columns = [  0, 105]
                     Attribute.label(8, 8, plugin.description, color=(55,155,255))
                     for name,value in plugin.settings.items():
@@ -441,12 +448,13 @@ class Preferences:
                         # the same prefix for line-height, font-size and color, then they will
                         # spawn in the same tab. 
                         if   '-border-color'    in name: bcolors[name] = value; continue     
-                        if   '-border-width'    in name: bwidths[name] = value; continue     
+                        elif '-border-width'    in name: bwidths[name] = value; continue     
+                        elif '-border-radius'   in name: bradius[name] = value; continue     
                         elif '-color'           in name: colors [name] = value; continue     
                         elif '-font-size'       in name: sizes  [name] = value; continue
                         elif '-line-height'     in name: heights[name] = value; continue
-                        elif '-font-italic'     in name: italics[name] = value; continue
-                        elif '-font-bold'       in name: bolds  [name] = value; continue
+                        elif '-font-italic'     in name: italics[name] = parseBool(value); continue
+                        elif '-font-bold'       in name: bolds  [name] = parseBool(value); continue
                         elif '-shadow-pos-x'    in name: sposxs [name] = value; continue
                         elif '-shadow-pos-y'    in name: sposys [name] = value; continue
                         elif '-pos-x'           in name: posxs  [name] = value; continue
@@ -462,16 +470,29 @@ class Preferences:
                         # general setting (placed in the upper area )
                         Attribute.plugin = plugin.name
                         # Temporal patch for projection settings
-                        if name in ['perspective', 'angle']: 
-                            Attribute.label     ( 300, row[1], name.rjust(10, ' ')   , parent=Attribute.parent+'-projection')
-                            Attribute.integer   ( 395, row[1], name, value          , parent=Attribute.parent+'-projection')
+                        if name in ['perspective', 'angle', 'pos-x', 'pos-y']: 
+                            max_value = {
+                                'perspective'   : 1600,
+                                'angle'         : 360,
+                                'pos-x'         : 9999,
+                                'pos-y'         : 9999,
+                            }
+                            negative = {
+                                'perspective'   : False,
+                                'angle'         : True,
+                                'pos-x'         : True,
+                                'pos-y'         : True,
+                            }
+                            Attribute.label     ( 300, row[1], elegant(name).rjust(12, ' ') , parent=Attribute.parent+'-projection')
+                            Attribute.integer   ( 395, row[1], name, value                  , parent=Attribute.parent+'-projection', max_value=max_value[name], negative=negative[name])
                             row[1]+=24
                         else:
-                            Attribute.label(columns[0], row[0], name.rjust(14, ' '))
-                            if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )                        
+                            Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
+                            if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )
                             elif isinstance( value, int  )  : Attribute.integer (columns[1], row[0], name, value )
                             else                            : Attribute.text    (columns[1], row[0], name, value )
                             row[0]+=24
+                            
                     
                     if not len(colors):
                         dpg.configure_item(window, height=381)
@@ -487,24 +508,27 @@ class Preferences:
                             gname = name.rstrip("-color")
                             group = f'plugin-setting-{plugin.name}-{gname}'
                             tname = f"tab-plugins-{plugin.name}-{gname}"
-                            Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys )
-                            with dpg.tab(label=gname, tag=tname):
+                            Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys, bradius )
+                            with dpg.tab( label = elegant(gname), tag = tname ):
                                 with dpg.child_window(no_scrollbar=True, height=180) as window:
                                     Attribute.color         (   3,  13 , color)
                                     if name.replace('color', 'font') in types.keys():
                                         Attribute.label         ( 220,   8 , "Font Settings", parent=window)
                                     Attribute.font          ( 220,  32 )
-                                    Attribute.font_size     ( 350,  32 )
-                                    Attribute.line_height   ( 416,  32 )
-                                    Attribute.italic        ( 482,  32 )
-                                    Attribute.bold          ( 503,  32 )
+                                    Attribute.font_size     ( 318,  32 )
+                                    Attribute.line_height   ( 360,  32 )
+                                    Attribute.italic        ( 318,   8 )
+                                    Attribute.bold          ( 339,   8 )
                                     if name.replace('color', 'shadow') in shadows.keys():
                                         Attribute.label         ( 220,  54 , "Shadow Color", parent=window)
                                     Attribute.shadow        ( 220,  75 )
-                                    Attribute.shadow_pos_x  ( 370,  75 )
-                                    Attribute.shadow_pos_y  ( 370,  95 )
-                                    Attribute.shadow_blur   ( 370, 115 )
-                                    Attribute.border_width  ( 370, 135 )
+                                    Attribute.shadow_pos_x  ( 370,  70 )
+                                    Attribute.shadow_pos_y  ( 370,  90 )
+                                    Attribute.pos_x         ( 410,  12 )
+                                    Attribute.pos_y         ( 410,  32 )
+                                    Attribute.shadow_blur   ( 370, 110 )
+                                    Attribute.border_width  ( 370, 130 )
+                                    Attribute.border_radius ( 370, 150 )
                                     if name.replace('color', 'border-color') in bcolors.keys():
                                         Attribute.label         ( 442,  54 , "Border Color", parent=window)
                                     Attribute.border_color  ( 442,  75 )
@@ -512,7 +536,7 @@ class Preferences:
     @staticmethod
     def updatePluginLists():
         from classes.plugin import Plugin
-        items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled'] == "1" ]
+        items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled']]
         dpg.configure_item( 'enabled-plugins', items=items )        
 
     @staticmethod

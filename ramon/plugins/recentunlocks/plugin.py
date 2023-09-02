@@ -22,34 +22,71 @@ class plugin(Plugin):
         #@ Vars
         
 
-        self.settings = {
-            "enabled"                   : False,
+        self.settings.update({
+            "auto-hide"                 : False,
             "perspective"               : 0,
             "angle"                     : 0,
             
-            "border-radius"             : 32,
-            "border-width"              : 8,
+            "backdrop"                  : True,
+            "backdrop-image"            : './recent-bg.png',
+
+            "row-count"                 : 5,
+           
+            "table-color"               : [ 0, 255, 255, 128 ],
+            "table-border-width"        : 2, 
+            "table-border-color"        : [255,255,255,128], 
+            "table-border-radius"       : 4,             
+            "table-shadow-blur"         : 0, 
+            "table-shadow"              : [0,0,0,0], 
+            "table-shadow-pos-x"        : 0,
+            "table-shadow-pos-y"        : 0,
+            "table-pos-x"               : 0,
+            "table-pos-y"               : 0,
+
+            "row-color"                 : [ 0, 255, 255, 128 ],
+            "row-border-width"          : 2, 
+            "row-border-color"          : [255,255,255,128], 
+            "row-border-radius"         : 4,             
+            "row-shadow-blur"           : 0, 
+            "row-shadow"                : [0,0,0,0], 
+            "row-shadow-pos-x"          : 0,
+            "row-shadow-pos-y"          : 0,
+            "row-pos-x"                 : 0,
+            "row-pos-y"                 : 0,
+            
+           
             "name-color"                : [255,255,255,255],
-            "name-font"                 : "ff6", 
+            "name-font"                 : "arcade",
             "name-font-size"            : 16, 
             "name-font-italic"          : False, 
-            "name-font-bold"            : False, 
+            "name-font-bold"            : True, 
+            "name-pos-x"                : 0,
+            "name-pos-y"                : 8,
+            "name-shadow-blur"          : 0, 
             "name-shadow"               : [0,0,0,0], 
             "name-shadow-pos-x"         : 0,
             "name-shadow-pos-y"         : 0,
-            "name-shadow-blur"          : 0, 
             "name-line-height"          : 18, 
+            "name-border-width"         : 0, 
+            "name-border-color"         : [0,0,0,0], 
+            "name-border-radius"        : 0, 
+            
             "description-color"         : [255,255,255,255],
-            "description-font"          : "ff6", 
+            "description-font"          : "arcade",
             "description-font-size"     : 16, 
             "description-font-italic"   : False, 
             "description-font-bold"     : False, 
+            "description-pos-x"         : 0,
+            "description-pos-y"         : 32,
             "description-shadow"        : [0,0,0,0], 
             "description-shadow-pos-x"  : 0,
             "description-shadow-pos-y"  : 0,
             "description-shadow-blur"   : 0, 
             "description-line-height"   : 18, 
-        } 
+            "description-border-width"  : 0, 
+            "description-border-color"  : [0,0,0,0], 
+            "description-border-radius" : 0, 
+        })
 
 
         #@ Install settings

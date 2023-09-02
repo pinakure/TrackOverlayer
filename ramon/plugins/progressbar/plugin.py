@@ -19,16 +19,44 @@ class plugin(Plugin):
         self.x           = 10
         #@ Vars
 
-        self.settings   = {
-            "enabled"                   : False,
+        self.settings.update({
+            "auto-hide"                 : True,
             "perspective"               : 0,
             "angle"                     : 0,
-        } 
+            "hard-gradient"             : False,
+            "overlay"                   : True,
+            "overlay-image"             : './progress-overlay.png',
+            "sound"                     : True,
+            "sound-file"                : './experience.png',
+            "backdrop"                  : False,
+            "backdrop-image"            : './progress-bg.png',
+            "pos-x"                     : 0,
+            "pos-y"                     : 0,
+            
+            "percent-color"             : [ 255, 255, 255, 255],
+            "percent-font"              : "arcade",
+            "percent-font-size"         : 16,
+            "percent-line-height"       : 18,
+            "percent-font-bold"         : False,
+            "percent-font-italic"       : False,
+            "percent-shadow"            : [   0,   0,   0, 255],
+            "percent-pos-x"             : int((self.width / 2) - 12),
+            "percent-pos-y"             : int((self.height/ 2) - 8),
+            "percent-shadow-pos-x"      : 1,
+            "percent-shadow-pos-y"      : 1,
+            "percent-shadow-blur"       : 0,
+
+            "up-color"                  : [ 255, 255,  0, 255 ],
+            "mid-color"                 : [ 255, 255,255, 255 ],
+            "low-color"                 : [ 255,   0,  0, 255 ],            
+            "glow-color"                : [ 255, 255,255, 255 ],            
+        })
 
 
         #@ Install settings
         self.files      = [
             'progress-overlay.png',
+            'progress-bg.png',
             'experience.wav',
         ]    
 

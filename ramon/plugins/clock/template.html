@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <link rel="stylesheet" type="text/css" href="./clock.css"/>
+    <style>
+        * {
+            font-size       : var(--digits-font-size);
+            font-family     : var(--font-family);   
+            color           : var(--digits-color);
+        }
+    </style>
+    <script>
+        const False = false;
+        const True = true;
+        var settings = {
+            analogic : {%analogic%},
+            digits   : {
+                color   : '{%digits-color%}',
+                font    : {
+                    type        : "{%digits-font%}",
+                    size        : {%digits-font-size%},
+                    bold        : {%digits-font-bold%},
+                    italic      : {%digits-font-italic%},
+                },
+                line    : {
+                    height      : {%digits-line-height%},
+                },
+                pos     : {
+                    x           : {%digits-pos-x%},
+                    y           : {%digits-pos-y%},
+                },
+                shadow  : {
+                    color       : '{%digits-shadow%}',
+                    blur        : {%digits-shadow-blur%},
+                    pos         : {
+                        x           : {%digits-shadow-pos-x%},
+                        y           : {%digits-shadow-pos-y%},
+                    },
+                },
+                border : {
+                    color       : '{%digits-border-color%}',
+                    width       : {%digits-border-width%},
+                    radius      : {%digits-border-radius%},
+                },
+            },
+        };
+        
+        localStorage.setItem('clock-settings', JSON.stringify(settings));
+        
+    </script>
+    </head>
+    <body>
+        <div class="clock" id="clock">40:40:40</div>    
+    </body>
+    <script>
+        var Clock = {
+            dom : {
+                clock : document.getElementById('clock'),
+            },
+            
+            updatecss : function(){
+                console.log("Erasing css...");
+                var rid = parseInt(Math.random()*655356);
+                var par  = document.getElementsByTagName('head')[0];
+                var old  = document.getElementsByTagName('link')[0];
+                var link = document.createElement('link');
+                link.rel = "stylesheet";
+                link.type = "text/css";
+                link.href = `./clock.css?${ rid }`;
+                par.append(link);
+                setTimeout(function(){ old.remove();}, 500);
+                setTimeout(Clock.updatecss, 1000);
+            },
+
+            start : function(){
+                Clock.updatecss();
+            },
+        };
+        
+        Clock.start();
+
+    </script>
+</html>
