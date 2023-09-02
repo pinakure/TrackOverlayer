@@ -432,8 +432,17 @@ class Preferences:
                             colors[ name ] = value
                         else:
                             # String field
-                            dpg.add_text(name, tag=f'plugin-setting-{plugin.name}-{name}-label', color=(255,255,0)),
-                            dpg.add_input_text(tag=f'plugin-setting-{plugin.name}-{name}', default_value=value, callback=Plugin.updateSettings, user_data=name)
+                            dpg.add_text(
+                                name, 
+                                tag=f'plugin-setting-{plugin.name}-{name}-label', 
+                                color=(255,255,0)
+                            ),
+                            dpg.add_input_text(
+                                tag=f'plugin-setting-{plugin.name}-{name}', 
+                                default_value=value, 
+                                callback=Plugin.updateSettings, 
+                                user_data=name
+                            )
                     if len(colors):
                         dpg.add_text("colors", tag=f'plugin-setting-{plugin.name}-colors-label', color=(255,255,0)),
                         with dpg.tab_bar(tag=f"plugin-tabs-{plugin.name}"):

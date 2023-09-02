@@ -24,6 +24,8 @@ class plugin(Plugin):
 
         self.settings   = {
             "enabled"       : "0",
+            "border-radius" : "32",
+            "border-width"  : "8",
             "name"          : "[240,240,0,255]",
             "description"   : "[240,240,0,255]",
         } 

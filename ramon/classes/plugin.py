@@ -110,21 +110,23 @@ class Plugin:
     @staticmethod
     def updateColor( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
-        name = sender.lstrip('plugin-setting-').rstrip(user_data).strip('-')
-        plugin = Plugin.loaded[name]
+        varname = sender.split('-')[-1]
+        plugin_name = sender.lstrip('plugin-setting-').split('-')[0]
+        plugin = Plugin.loaded[ plugin_name ]
         value[0] = int( value[0] * 255)
         value[1] = int( value[1] * 255)
         value[2] = int( value[2] * 255)
         value[3] = int( value[3] * 255)
-        plugin.settings[ user_data ] = value
+        plugin.settings[ varname ] = value
         Plugin.writeConfig()
 
     @staticmethod
     def updateSettings( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
-        name = sender.lstrip('plugin-setting-').rstrip(user_data).strip('-')
-        plugin = Plugin.loaded[name]
-        plugin.settings[ user_data ] = value
+        varname     = sender.split('-')[-1]
+        plugin_name = sender.lstrip('plugin-setting-').split('-')[0]
+        plugin = Plugin.loaded[ plugin_name ]
+        plugin.settings[ varname ] = value
         Plugin.writeConfig()
 
     @staticmethod
