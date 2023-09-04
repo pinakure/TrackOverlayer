@@ -223,6 +223,21 @@ class Plugin:
         updatecss();
         """
     
+    def getAutoHideSnippet():
+        return r"""
+        if({% Name %}.settings.auto.hide){
+            current_cheevo = eval(localStorage.getItem('current-cheevo')).replace('"', '');
+            if (current_cheevo!=''){
+                console.debug("AUTOHIDE: Current Cheevo found.")
+                console.log(current_cheevo)
+                {% Name %}.dom.{% name %}.style.display = "inline-block";                        
+            } else {
+                console.debug("AUTOHIDE: Current Cheevo not present.")
+                {% Name %}.dom.{% name %}.style.display = "none";                        
+            }
+        }
+        """
+    
     def aux(payload):
         from io import StringIO        
         file = StringIO(payload)
@@ -271,12 +286,14 @@ class Plugin:
         from classes.dynamic_css import fonts
         for i in range(0,2):
             for key,value in {
-                'Name'       : self.name.capitalize(),
-                'name'       : self.name,
-                'update-css' : Plugin.getCssAutoupdateSnippet(),
-                'fonts'      : "\n\t\t".join([value for value in fonts.values()]),
-                'plugin'     : "const False = false; const True = true;",
-                'load-config': self.getLoadSettingsMethod(),
+                'Name'              : self.name.capitalize(),
+                'name'              : self.name,
+                'update-css'        : Plugin.getCssAutoupdateSnippet(),
+                'fonts'             : "\n\t\t".join([value for value in fonts.values()]),
+                'plugin'            : "const False = false; const True = true; alternate='alternate'; forwards='forwards'; backwards='backwards';",
+                'load-config'       : self.getLoadSettingsMethod(),
+                'require-cheevo'    : Plugin.getAutoHideSnippet(),
+                'fullsized'         : "html { width : 100%; height : 100%; } body { width : 100%; height : 100%; top: 0px; left: 0px; } html { position: absolute; } body { position: absolute; }",
             }.items():         
                 self.rendered = self.rendered.replace('{% '+key+' %}', str(value))        
 

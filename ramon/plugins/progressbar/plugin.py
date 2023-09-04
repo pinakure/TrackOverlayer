@@ -8,50 +8,51 @@ class plugin(Plugin):
         self.name        = 'progressbar'
         self.description = 'RetroAchievements Current Game progress bar widget'
         self.endpoint    = 'progress'
-        self.color       = '#ff0'
 
         #@ Composer Settings
         self.z_index     = 10
         self.width       = 360
         self.height      = 32
         self.scale       = 1   
-        self.y           = 550
         self.x           = 10
-        #@ Vars
+        self.y           = 550
 
+        #@ Settings
         self.settings.update({
-            "auto-hide"                 : True,
-            "perspective"               : 0,
-            "angle"                     : 0,
-            "hard-gradient"             : False,
-            "overlay"                   : True,
-            "overlay-image"             : './progress-overlay.png',
-            "sound"                     : True,
-            "sound-file"                : './experience.png',
-            "backdrop"                  : False,
-            "backdrop-image"            : './progress-bg.png',
-            "pos-x"                     : 0,
-            "pos-y"                     : 0,
+            "pos-x"                     : self.x,
+            "pos-y"                     : self.y,
+            "size-x"                    : self.width,
+            "size-y"                    : self.height,
             
-            "percent-color"             : [ 255, 255, 255, 255],
-            "percent-font"              : "arcade",
-            "percent-font-size"         : 16,
-            "percent-line-height"       : 18,
+            "auto-hide"                 : True,
+            "perspective"               : 0,#TODO
+            "angle"                     : 0,#TODO
+            "bar-opacity"               : 0.65,
+            
+            "hard-gradient"             : False,
+            
+            "overlay-file"              : './progress-overlay.png',
+            "sound-file"                : './experience.png',
+            "backdrop-file"             : './progress-bg.png',
+            
+            "percent-color"             : [ 245, 255,   0, 255],
+            "percent-font"              : "vhs",
+            "percent-font-size"         : 25,
+            "percent-line-height"       : 29,
             "percent-font-bold"         : False,
             "percent-font-italic"       : False,
-            "percent-pos-x"             : int((self.width / 2) - 12),
-            "percent-pos-y"             : int((self.height/ 2) - 8),
-            "percent-shadow-blur"       : 0,
-            "percent-shadow-color"      : [   0,   0,   0, 255],
+            "percent-shadow-blur"       : 4,
+            "percent-shadow-color"      : [   0,   0, 255, 255],
             "percent-shadow-pos-x"      : 1,
             "percent-shadow-pos-y"      : 1,
+            "percent-border-color"      : [ 230, 255,   0, 255],
+            "percent-border-width"      : 1,
 
-            "up-color"                  : [ 255, 255,  0, 255 ],
-            "mid-color"                 : [ 255, 255,255, 255 ],
-            "low-color"                 : [ 255,   0,  0, 255 ],            
-            "glow-color"                : [ 255, 255,255, 255 ],            
+            "up-color"                  : [  55, 255,  0, 128 ],
+            "mid-color"                 : [ 128, 255,  0, 128 ],
+            "low-color"                 : [  64, 128,  0, 128 ],            
+            "glow-color"                : [ 255, 255,  0, 255 ],            
         })
-
 
         #@ Install settings
         self.files      = [
@@ -62,15 +63,10 @@ class plugin(Plugin):
 
     def composerVars(self):
         return {
-            'width'   : px(self.width   ),
-            'height'  : px(self.height  ),
-            'left'    : px(self.x       ),
-            'top'     : px(self.y       ),
+            'width'   : px(self.settings['size-x']  ),
+            'height'  : px(self.settings['size-y']  ),
+            'left'    : px(self.settings['pos-x']   ),
+            'top'     : px(self.settings['pos-y']   ),
             'scale'   : self.scale,
             'z-index' : self.z_index,
         }
-
-    def templateVars(self):
-        return {            
-        }
-

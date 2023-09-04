@@ -532,6 +532,8 @@ class Preferences:
                                     Attribute.shadow_pos_y  ( 370,  90 )
                                     Attribute.pos_x         ( 410,  12 )
                                     Attribute.pos_y         ( 410,  32 )
+                                    Attribute.size_x         ( 219,  12 )
+                                    Attribute.size_y         ( 219,  32 )
                                     Attribute.shadow_blur   ( 370, 110 )
                                     Attribute.border_width  ( 370, 130 )
                                     Attribute.border_radius ( 370, 150 )

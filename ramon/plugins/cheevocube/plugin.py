@@ -23,7 +23,9 @@ class plugin(Plugin):
             "pos-y"                     : self.y,
             "size-x"                    : self.width,
             "size-y"                    : self.height,
+            
             "auto-hide"                 : True,
+            
             "cube-color"                : [0,0,0,0],
             "cube-pos-x"                : 50,
             "cube-pos-y"                : 20,
@@ -34,9 +36,9 @@ class plugin(Plugin):
             "cube-shadow-pos-y"         : 0,
             "cube-border-color"         : [0,255,0,255],
             "cube-border-width"         : 2,
-            "cube-border-radius"        : 0,
+            "cube-border-radius"        : 0,#TODO
+            
             "texture-file"              : "./current_cheevo.png",
-            "glow-enable"               : True,
             "glow-file"                 : "./current_cheevo_lock.png",
             "glow-type"                 : 'alternate',
             

@@ -142,8 +142,8 @@
             </div>
         </div>
         <div class="layer">
-            <section name="name">Current-Cheevo very long and very long</section>
-            <section name="description">Current-Cheevo-description</section>
+            <section id="name"          name="name">Current-Cheevo very long and very long</section>
+            <section id="description"   name="description">Current-Cheevo-description</section>
         </div>
         
         <script>
@@ -156,6 +156,8 @@
             
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
+                    name            : document.getElementById('name'),
+                    description     : document.getElementById('description'),
                 },
 
                 {% load-config %}
@@ -176,18 +178,22 @@
                         node.children[0].style.height = '100%';
                     }
                     
-                    /* Hide widget if no cheevo is selected or program is not yet ready */
+                    {/* Hide widget if no cheevo is selected or program is not yet ready */
                     if({% Name %}.settings.auto.hide){
                         current_cheevo = eval(localStorage.getItem('current-cheevo'));
                         if (current_cheevo!=''){
                             console.debug("AUTOHIDE: Current Cheevo found.")
                             console.log(current_cheevo)
-                            {% Name %}.dom.{% name %}.style.display = "inline-block";                        
+                            {% Name %}.dom.{% name %}.style.display = "inline-block";
+                            {% Name %}.dom.description.style.display = "inline-block";
+                            {% Name %}.dom.name.style.display = "inline-block";
                         } else {
                             console.debug("AUTOHIDE: Current Cheevo not present.")
-                            {% Name %}.dom.{% name %}.style.display = "none";                        
+                            {% Name %}.dom.{% name %}.style.display = "none";
+                            {% Name %}.dom.description.style.display = "none";
+                            {% Name %}.dom.name.style.display = "none";
                         }
-                    }
+                    }}
                     setTimeout({% Name %}.update, {% Name %}.settings.update.rate*1000);
                 },
 

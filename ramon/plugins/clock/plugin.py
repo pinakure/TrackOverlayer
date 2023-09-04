@@ -1,9 +1,16 @@
 from classes.plugin import Plugin, px
 
+# TODO:
+# - Countdown mode ( useful to 20 minute challenge )
+# - Stopwatch mode ( with steps, like the app on any phone )
+# - Alarm mode ( when alarm comes in, a variable is setup and/or a sound is playerd)
+#   #
+
 class plugin(Plugin):
 
     def __init__(self):
         Plugin.__init__(self)
+
         #@ Plugin Settings
         self.name        = 'clock'
         self.description = 'Personalizable Clock Display'
@@ -23,7 +30,9 @@ class plugin(Plugin):
             "pos-y"                 : self.y,
             "size-x"                : self.width,
             "size-y"                : self.height,
+
             "analogic"              : False,
+
             "digits-color"          : [255,255,200,255],
             "digits-pos-x"          : 0,
             "digits-pos-y"          : 0,

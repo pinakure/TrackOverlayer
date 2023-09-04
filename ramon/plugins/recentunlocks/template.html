@@ -1,83 +1,157 @@
-<html>
+<!DOCTYPE html>
+<html type="plugin" version="0.3" author="smiker@m4gtracker.com">
     <head>
-        <link rel="stylesheet" type="text/css" href="../css/recent.css">
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css">
         <style>
-            :root {
-                --dummy-var : 0;
-                /*VARS*/
-            }
-            body {
-                background-color: rgba(0,0,0,0);
-            }
-
-            #recentunlocks {
-                box-sizing          : border-box;
-                padding             : 0px 0px 0px 0px;
-                margin              : 0px 0px 0px 0px;
-                background-color    : rgba(0,0,0,0);
+            {% fonts %}
+            {% fullsized %}
+            
+            * { 
+                overflow                    : hidden;
+                padding                     : 0px 0px 0px 0px;
+                margin                      : 0px 0px 0px 0px;
+                box-sizing                  : border-box;
+                border-collapse             : collapse;
+                position                    : absolute;   
             }
 
-            tr {
-                background-image    : url('recent-bg.png');
+            #output {
+                position                    : absolute;
+                top                         : 0px;
+                left                        : 0px;
+                height                      : 100%;
+                width                       : 100%;
+                border-radius               : calc( var(--table-border-radius) * 1px ) calc( var(--table-border-radius) * 1px ) calc( var(--table-border-radius) * 1px ) calc( var(--table-border-radius) * 1px ); 
+            }
+
+            #{% name %}, #output {
+                width                       : 100%;
+                height                      : 100%;
+            }
+
+            #picture {
+                border                      : var(--picture-border-width) solid var(--picture-border-color);
+                box-shadow                  : var(--picture-shadow-pos-x) var(--picture-shadow-pos-y) var(--picture-shadow-blur) var(--picture-shadow-color);
+                background-color            : var(--picture-color);
+                border-radius               : calc( var(--picture-border-radius) * 1px ) calc( var(--picture-border-radius) * 1px ) calc( var(--picture-border-radius) * 1px ) calc( var(--picture-border-radius) * 1px );
+                width                       : calc( 100% / var(--row-count) ) ;/*+ var(--picture-size-x) );*/
+                height                      : calc( 100% + var(--picture-size-y) );
+                left                        : var(--picture-pos-x);
+                top                         : var(--picture-pos-y);
+                position                    : absolute;
+            }
+            #picture img {
+                width: 100%;
+                height: 100%;
+            }
+
+            #name {     
+                width                       : var(--name-size-x);
+                height                      : var(--name-size-y);
+                left                        : var(--name-pos-x);
+                top                         : var(--name-pos-y);
+                line-height                 : var(--name-line-height );
+                font-family                 : var(--name-font );
+                font-size                   : var(--name-font-size );
+                font-weight                 : var(--name-font-bold );
+                font-style                  : var(--name-font-italic );
+                color                       : var(--name-color );
+                text-shadow                 : var(--name-shadow-pos-x) var(--name-shadow-pos-y) var(--name-shadow-blur) var(--name-shadow-color);
+                -webkit-text-stroke         : var(--name-border-width);
+                -webkit-text-stroke-color   : var(--name-border-color);
+                overflow                    : hidden; 
+                text-overflow               : ellipsis;
+                position                    : absolute;
+            }
+
+            #description {     
+                width                       : var(--description-size-x);
+                height                      : var(--description-size-y);
+                left                        : var(--description-pos-x);
+                top                         : var(--description-pos-y);
+                line-height                 : var(--description-line-height );
+                font-family                 : var(--description-font );
+                font-size                   : var(--description-font-size );
+                font-weight                 : var(--description-font-bold );
+                font-style                  : var(--description-font-italic );
+                color                       : var(--description-color );
+                text-shadow                 : var(--description-shadow-pos-x) var(--description-shadow-pos-y) var(--description-shadow-blur) var(--description-shadow-color);
+                -webkit-text-stroke         : var(--description-border-width);
+                -webkit-text-stroke-color   : var(--description-border-color);
+                overflow                    : hidden; 
+                text-overflow               : ellipsis;
+                position                    : absolute;
+            }
+               
+            .row {
+                border                      : var(--row-border-width) solid var(--row-border-color);
+                position                    : relative;
+                overflow                    : hidden;
+                background-image            : var(--backdrop-file);
+                background-size             : cover;
+                width                       : 100%;
+                height                      : calc( 100% / var(--row-count) );
+                border-radius               : calc( var(--row-border-radius) * 1px ) calc( var(--row-border-radius) * 1px ) calc( var(--row-border-radius) * 1px ) calc( var(--row-border-radius) * 1px );
+            }
+
+            hr {
+                border                      : var( --division-border-width ) solid var( --division-color );
+                width                       : 100%;
+                top                         : calc( 100% - var( --division-border-width ) );
+                height                      : var( --division-border-width );
             }
             
             /*CSS*/
 
         </style>
+    </head>
+    <body >
+        <div id="{% name %}">
+            <div id="output"></div>
+        </div>        
+        
         <script>
-            var Recent = {
+            {% plugin %}
+
+            var {% Name %} = {
 
                 parent      : null,
                 list        : [],
                 update_rate : 5, // in seconds!
                 
-                updatecss : function(){
-                    var rid = parseInt(Math.random()*655356);
-                    var par  = document.getElementsByTagName('head')[0];
-                    var old  = document.getElementsByTagName('link')[0];
-                    var link = document.createElement('link');
-                    link.rel = "stylesheet";
-                    link.type = "text/css";
-                    link.href = `../css/recent.css?${ rid }`;
-                    par.append(link);
-                    setTimeout(function(){ old.remove();}, 1000);
+                dom             : {
+                    {% name %}      : document.getElementById('{% name %}'),
+                    parent          : document.getElementById('output'),
                 },
 
+                {% load-config %}
+                
                 row : function(name, description, picture ){
-                    return `
-                    <tr>
-                        <td colspan="2">
-                            <hr/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td rowspan="2">
-                            <img style="border-radius: none !important" src="cache/${ picture }.png">
-                        </td>
-                        <td><b>${ name }</b></td>
-                    </tr>
-                    <tr>
-                        <td>${ description }</td>
-                    </tr>                        
+                    return `<div class="row">
+                    <div id="picture"><img style="border-radius: none !important" src="cache/${ picture }.png"/></div>
+                    <div id="name">${ name }</div>
+                    <hr/>
+                    <div id="description">${ description }</div>
+                    </div>
                     `;
                 },
 
                 render : function(){                    
                     var payload = '';
-                    for( r in Recent.list ){
-                        var item = Recent.list[ r ];
+                    for( r in {% Name %}.list ){
+                        var item = {% Name %}.list[ r ];
                         name        = item[0];
                         description = item[1];
                         picture     = item[2];
-                        payload    += Recent.row( name, description, picture );
+                        payload    += {% Name %}.row( name, description, picture );
                     }
-                    Recent.parent.innerHTML = payload;
+                    {% Name %}.dom.parent.innerHTML = payload;
                 },
 
                 getData: function(){
                     // Read from localStorage and clear localStorage after reading
                     if( localStorage.getItem('debug')=='1'){
-                        Recent.list = [
+                        {% Name %}.list = [
                             [ "Test cheevo", "Test Description", "01723" ],
                             [ "Test cheevo", "Test Description", "14053" ],
                             [ "Test cheevo", "Test Description", "14054" ],
@@ -87,32 +161,31 @@
                         return;
                     }
                     try {
-                        Recent.list = JSON.parse(localStorage.getItem('recent'));                        
+                        {% Name %}.list = JSON.parse(localStorage.getItem('{% name %}'));                        
                     } catch(e) {
-                        Recent.list = null;
+                        {% Name %}.list = null;
                     }
-                    if(!Recent.list) Recent.list = [];
+                    if(!{% Name %}.list) {% Name %}.list = [];
                 },
 
                 update : function(){
-                    console.log("Recent Plugin : Refresh data")
-                    Recent.updatecss();
-                    Recent.getData();
-                    Recent.render();
-                    setTimeout( Recent.update, Recent.update_rate * 1000 );
+                    console.debug("Refresh data")
+                    {% Name %}.getData();
+                    {% Name %}.render();
+                    setTimeout( {% Name %}.update, {% Name %}.settings.update.rate * 1000 );
+                    {% require-cheevo %}
                 },
 
                 start : function(){
-                    Recent.parent = document.getElementById('output');   
-                    Recent.update();
+                    {% Name %}.loadSettings();
+                    {% Name %}.settings.update = { rate : 5 };//#TODO:Move to settings
+                    {% Name %}.update();
                 },
-            };
-        </script>
-    </head>
-    <body id="recentunlocks">
-        <table>
-            <tbody id="output"></tbody>
-        </table>        
-        <script>Recent.start();</script>
+            }
+            
+            {% update-css %}
+            {% Name %}.start();
+
+        </script>    
     </body>  
 </html>
