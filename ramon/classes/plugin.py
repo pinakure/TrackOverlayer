@@ -115,6 +115,7 @@ class Plugin:
     rate   = 5
 
     def __init__(self):
+        import random
         self.template_data  = None
         self.rendered       = ''
         self.name           = 'new-plugin'
@@ -126,6 +127,7 @@ class Plugin:
         self.y              = 0
         self.scale          = 1
         self.files          = []
+        self.color          = f'rgb( { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))})' # Debugging purposes
         self.settings       = {
             'enabled' : False,
         }
@@ -151,8 +153,7 @@ class Plugin:
         value[2] = int( value[2] * 255)
         value[3] = int( value[3] * 255)
         plugin.settings[ varname ] = value
-        Plugin.writeConfig()
-        
+        Plugin.writeConfig()        
         plugin.run()
 
     
@@ -164,6 +165,7 @@ class Plugin:
         plugin.settings[ varname ] = value
         Plugin.writeConfig()
         plugin.run()
+        Plugin.compose()
 
     
     def enable( sender=None, value=None, user_data=None ):
@@ -220,8 +222,51 @@ class Plugin:
         }
         updatecss();
         """
+    
+    def aux(payload):
+        from io import StringIO        
+        file = StringIO(payload)
+        ini = {}
+        for line in file:
+            try :
+                node = ini
+                key, value = line.rstrip().split(' = ')
+                *parents, key = key.split('-')
+                for parent in parents:
+                    node[parent] = node = node.get(parent, {})
+                node[key] = value
+            except Exception as E: 
+                Log.error("Cannot translate plugin settings", E)            
+        return ini
 
+    def getLoadSettingsMethod(self):
+        #sort variables longer first
+        sorted = []
+        longest = 1
+        for key in self.settings.keys():
+            if len(key)>longest: longest = len(key)
+        for length in range(longest+1, 0, -1):
+            for key in self.settings.keys():
+                if len(key)==length: sorted.append(key)
 
+        payload = ""
+        for key in sorted:
+            parts = key.split('-')
+            o = len(parts)
+            tkey = ''
+            for i, pkey in enumerate(parts):
+                tkey += pkey
+                if i==o-1: 
+                    # dirty workaround for quotes
+                    if pkey in ["file", "font", "color"]:
+                        continue
+                    else:
+                        payload+=f'{tkey} = '+'{%_'+tkey+'_%}\n'                        
+                else:
+                    tkey+='-'
+        payload = json.dumps( Plugin.aux(payload) ).replace('"', '').replace('_', ' ')
+        return "loadSettings    : function(){\n\t\t\t\t\ttry {\n\t\t\t\t\t\t{% Name %}.settings = JSON.parse(localStorage.getItem('{% name %}-settings'));\n\t\t\t\t\t\tsettings.update.rate = 1;\n\t\t\t\t\t} catch (e){\n\t\t\t\t\t\t{% Name %}.settings = "+payload+";\n\t\t\t\t\t}\n\t\t\t\t},"
+             
     def injectScripts(self):
         from classes.dynamic_css import fonts
         for i in range(0,2):
@@ -229,13 +274,24 @@ class Plugin:
                 'Name'       : self.name.capitalize(),
                 'name'       : self.name,
                 'update-css' : Plugin.getCssAutoupdateSnippet(),
-                'fonts'      : "\n\t\t".join([value for value in fonts.values()])
+                'fonts'      : "\n\t\t".join([value for value in fonts.values()]),
+                'plugin'     : "const False = false; const True = true;",
+                'load-config': self.getLoadSettingsMethod(),
             }.items():         
                 self.rendered = self.rendered.replace('{% '+key+' %}', str(value))        
-                
 
     def injectSettings(self):
-        for key,value in self.settings.items():
+        #sort variables longer fists
+        sorted = []
+        longest = 1
+        for key in self.settings.keys():
+            if len(key)>longest: longest = len(key)
+        for length in range(longest+1, 0, -1):
+            for key in self.settings.keys():
+                if len(key)==length: sorted.append(key)
+
+        for key in sorted:
+            value = self.settings[key]
             if   key.endswith('-color'  ) : value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
             self.rendered = self.rendered.replace('{% '+key+' %}', str(value))
 
@@ -273,18 +329,30 @@ class Plugin:
     def getHTML(self):
         return ''
 
+    def translateJSVar(key, value):
+        if   '-color'       in key: value = f'[{value[0]},{value[1]},{value[2]},{value[3]}]'
+        elif '-file'        in key: value = f"`{value}`"
+        elif '-font'        in key: value = f'`{value}`'
+        return value
+
+    def translateCSSVar(key, value):
+        if   '-color'       in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
+        elif '-font-size'   in key: value = f'{value}px'
+        elif '-width'       in key: value = f'{value}px'
+        elif '-height'      in key: value = f'{value}px'
+        elif 'pos-'         in key: value = f'{value}px'
+        elif 'size-'        in key: value = f'{value}px'
+        elif '-blur'        in key: value = f'{value}px'
+        elif '-bold'        in key: value = "800" if value else "400"
+        elif '-italic'      in key: value = "italic" if value else "normal"
+        elif '-file'        in key: value = f"url('{value}')"
+        elif '-font'        in key: value = f'"{value}"'
+        return value
+
     def getCSS(self):
         payload = ':root {\n\t'
-        for key,value in self.settings.items():
-            if   '-color'       in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
-            elif '-font-size'   in key: value = f'{value}px'
-            elif '-width'       in key: value = f'{value}px'
-            elif '-height'      in key: value = f'{value}px'
-            elif 'pos-'         in key: value = f'{value}px'
-            elif '-blur'        in key: value = f'{value}px'
-            elif '-bold'        in key: value = "800" if value else "400"
-            elif '-italic'      in key: value = "italic" if value else "normal"
-            elif '-font'        in key: value = f'"{value}"'
+        for key,value in self.settings.items():            
+            value = Plugin.translateCSSVar(key, value)
             if not value: continue
             payload += f'--{key.ljust(30, " ")} : {value};'+"\n\t"
         payload+='\n}\n'
@@ -316,7 +384,7 @@ class Plugin:
         """+'}\n\t\t\t'
 
     def iframe(self):
-        return f'<iframe id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
+        return f'<iframe style="overflow: hidden;" id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
 
     
     def toggleDebug():
@@ -336,7 +404,7 @@ class Plugin:
         #
         Log.info("Merging plugins into single overlay...")
         cvars = f'--width : {Plugin.width}px;'+'\n\t\t\t\t'
-        css   = "body { border: 1px dotted #f80; }" if Plugin.debug else ''
+        css   = ".debug { display: inline-block; }" if Plugin.debug else ' .debug { display: none; }'
         html  = ""
         js    = ""
         data  = ""

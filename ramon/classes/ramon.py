@@ -60,7 +60,7 @@ class Ramon:
     height              = 900
     restart             = False    
     css                 = {}
-    version             = 0.18
+    version             = 0.24
     timer               = None    
     plugins             = []
 
@@ -145,11 +145,11 @@ class Ramon:
             Ramon.width  = h
         Ramon.plugins = Plugin.discover()
         dpg.create_context()
-        dpg.create_viewport(title="RAMon", width=Ramon.width+16, height=Ramon.height)
+        dpg.create_viewport(title="tRAckOverlayer", width=Ramon.width+16, height=Ramon.height)
         dpg.setup_dearpygui()
         with dpg.window(
             tag='main',
-            label=f"RAMon v.{Ramon.version}", 
+            label=f"tRAckOverlayer v.{Ramon.version}", 
             width=Ramon.width, 
             height=Ramon.height, 
             no_close=True, 
@@ -307,9 +307,9 @@ class Ramon:
     def createCompileScript():
         with open("./compile.bat", "w") as file:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
-            file.write(f'''@pyinstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe RAMon_debug.exe'''+"\n")
-            file.write(f'''@pyinstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe RAMon.exe'''+"\n")
-        dpg.set_viewport_title('RAMon - Compiled "compile.bat" script succesfully')
+            file.write(f'''@pyinstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
+            file.write(f'''@pyinstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
+        dpg.set_viewport_title('tRAckOverlayer - Compiled "compile.bat" script succesfully')
 
     
     def render():

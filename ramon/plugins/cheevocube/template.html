@@ -1,17 +1,50 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="./cheevocube.css"/>
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css"/>
         <style>
-            :root {
-                /*VARS*/           
-            }
-
+            {% fonts %}
+      
             body {
                 padding     : 0px 0px 0px 0px;
                 margin      : 0px 0px 0px 0px;
                 box-sizing  : 0px 0px 0px 0px;
                 overflow    : hidden;
+                font-family : var( --name-font );
+            }
+
+            section[name=name]{
+                font-family                 : var( --name-font );
+                font-size                   : var( --name-font-size );
+                font-weight                 : var( --name-font-bold );
+                font-style                  : var( --name-font-italic );
+                color                       : var( --name-color );
+                position                    : absolute;   
+                top                         : var(--name-pos-y);
+                left                        : var(--name-pos-x);
+                text-shadow                 : var(--name-shadow-pos-x) var(--name-shadow-pos-y) var(--name-shadow-blur) var(--name-shadow-color);
+                -webkit-text-stroke         : var(--name-border-width);
+                -webkit-text-stroke-color   : var(--name-border-color);
+                overflow                    : hidden; 
+                text-overflow               : ellipsis;
+                height                      : var( --description-line-height );
+                width                       : calc( var(--size-x ) - var(--name-pos-x) );
+            }
+
+            section[name=description]{
+                font-family                 : var( --description-font );
+                font-size                   : var( --description-font-size );
+                font-weight                 : var( --description-font-bold );
+                font-style                  : var( --description-font-italic );
+                color                       : var( --description-color );
+                position                    : absolute;   
+                top                         : var(--description-pos-y);
+                left                        : var(--description-pos-x);
+                text-shadow                 : var(--description-shadow-pos-x) var(--description-shadow-pos-y) var(--description-shadow-blur) var(--description-shadow-color);
+                -webkit-text-stroke         : var(--description-border-width);
+                -webkit-text-stroke-color   : var(--description-border-color);
+                overflow                    : hidden; 
+                
             }
 
             .back {
@@ -20,15 +53,15 @@
             }
 
             .container {
-                width               : var( --cheevocube-size );
-                height              : var( --cheevocube-size );
+                width               : var( --cube-size-x );
+                height              : var( --cube-size-x );
                 position            : absolute;
-                left                : var( --cheevocube-left );
-                top                 : var( --cheevocube-top );
+                left                : var( --cube-pos-x );
+                top                 : var( --cube-pos-y );
                 perspective         : 1000px; -webkit-perspective : 1000px;
             }
 
-            #cube {
+            #{% name %} {
                 width               : 100%;
                 height              : 100%;
                 position            : absolute;
@@ -36,22 +69,17 @@
                 animation           : rotatecube 12s linear infinite; -webkit-animation : rotatecube 12s linear infinite;
             }
 
-            #cube div img {
-                animation: heartbeat 2s alternate ease-in-out infinite; -webkit-animation: heartbeat 2s alternate ease-in-out infinite;
+            #{% name %} div img {
+                animation: heartbeat 2s {% glow-type %} ease-out infinite; -webkit-animation: heartbeat 2s {% glow-type %} ease-out infinite;
             }
 
-            #cube div {
-                height      : var(--cheevocube-size);
-                width       : var(--cheevocube-size);
+            #{% name %} div {
+                height      : var(--cube-size-x);
+                width       : var(--cube-size-x);
                 display     : block;
                 position    : absolute;
-                border      : none;
-                line-height : 200px;
-                text-align  : center;
-                font-size   : 50px;
-                font-weight : bold;
-                box-shadow  : 0px 0px 8px #0f0;
-                border      : 2px solid #0f0;
+                box-shadow  : 0px 0px calc( var(--cube-border-width) * 4 ) var(--cube-border-color);
+                border      : var(--cube-border-width) solid var(--cube-border-color);
             }
             @keyframes heartbeat {
                 0%  { filter: opacity(100%)             }
@@ -76,98 +104,101 @@
                 100%{ -webkit-transform: rotateY(  0deg) }
             } 
 
-            #cube .front    { -webkit-transform:                    rotateY(0deg )                      translateZ( calc( var(--cheevocube-size) / 2 ) );}
-            #cube .back     { -webkit-transform: rotateX( 180deg )                      rotateZ(180deg) translateZ( calc( var(--cheevocube-size) / 2 ) );}
-            #cube .right    { -webkit-transform:                    rotateY(  90deg )                   translateZ( calc( var(--cheevocube-size) / 2 ) );}
-            #cube .left     { -webkit-transform:                    rotateY( -90deg )                   translateZ( calc( var(--cheevocube-size) / 2 ) );}
-            #cube .top      { -webkit-transform: rotateX(  90deg )                                      translateZ( calc( var(--cheevocube-size) / 2 ) );}
-            #cube .bottom   { -webkit-transform: rotateX( -90deg )                                      translateZ( calc( var(--cheevocube-size) / 2 ) );}
-            #cube *         {
-                background-image  : url('current_cheevo.png');
-                background-repeat : no-repeat;
-                background-size   : 100% 100%;
-                image-rendering   : pixelated;    
+            #{% name %} .front    { -webkit-transform:                    rotateY(0deg )                      translateZ( calc( var(--cube-size-x) / 2 ) );}
+            #{% name %} .back     { -webkit-transform: rotateX( 180deg )                      rotateZ(180deg) translateZ( calc( var(--cube-size-x) / 2 ) );}
+            #{% name %} .right    { -webkit-transform:                    rotateY(  90deg )                   translateZ( calc( var(--cube-size-x) / 2 ) );}
+            #{% name %} .left     { -webkit-transform:                    rotateY( -90deg )                   translateZ( calc( var(--cube-size-x) / 2 ) );}
+            #{% name %} .top      { -webkit-transform: rotateX(  90deg )                                      translateZ( calc( var(--cube-size-x) / 2 ) );}
+            #{% name %} .bottom   { -webkit-transform: rotateX( -90deg )                                      translateZ( calc( var(--cube-size-x) / 2 ) );}
+            #{% name %} *         {
+                background-color    : var(--cube-color);
+                background-image    : url('{% texture-file %}');
+                background-repeat   : no-repeat;
+                background-size     : 100% 100%;
+                image-rendering     : pixelated;                 
+                overflow            : hidden;
+            }
+            .layer {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                width: 100%;
+                height: 100%;
             }
         </style>        
     </head>
-    <body>        
-        <div class="container">
-            <div id="cube">
-                <div class="front"  ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
-                <div class="back"   ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
-                <div class="right"  ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
-                <div class="left"   ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
-                <div class="top"    ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
-                <div class="bottom" ><img style="width: 100%; height: 100%;" src="current_cheevo_lock.png"/></div>
+    <body>
+
+        <div class="layer">
+            <div class="container">
+                <div id="{% name %}">
+                    <div class="front"  ><img style="width: 100%; height: 100%;" src="{% glow-file %}"/><div>A</div></div>
+                    <div class="back"   ><img style="width: 100%; height: 100%;" src="{% glow-file %}"/></div>
+                    <div class="right"  ><img style="width: 100%; height: 100%;" src="{% glow-file %}"/></div>
+                    <div class="left"   ><img style="width: 100%; height: 100%;" src="{% glow-file %}"/></div>
+                    <div class="top"    ><img style="width: 100%; height: 100%;" src="{% glow-file %}"/></div>
+                    <div class="bottom" ><img style="width: 100%; height: 100%;" src="{% glow-file %}"/></div>
+                </div>
             </div>
         </div>
+        <div class="layer">
+            <section name="name">Current-Cheevo very long and very long</section>
+            <section name="description">Current-Cheevo-description</section>
+        </div>
+        
         <script>
-            var current_face    = 1;
-            var faces           = [ 'front', 'right', 'back', 'left']
-            const False         = false;
-            const True          = true;
+            {% plugin %}
+            
+            var {% Name %} = {
 
-            var settings = {
-                auto : {
-                    hide : {% auto-hide %},
-                }
-            };
-
-            localStorage.setItem('cube-settings', JSON.stringify(settings));
-
-            var Cube = {
-                dom : {
-                    cube : document.getElementById('cube'),
-                },
-                updatecss : function(){
-                    console.log("Erasing css...");
-                    var rid = parseInt(Math.random()*655356);
-                    var par  = document.getElementsByTagName('head')[0];
-                    var old  = document.getElementsByTagName('link')[0];
-                    var link = document.createElement('link');
-                    link.rel = "stylesheet";
-                    link.type = "text/css";
-                    link.href = `./cheevocube.css?${ rid }`;
-                    par.append(link);
-                    setTimeout(function(){ old.remove();}, 500);                    
+                current_face    : 1,
+                faces           : [ 'front', 'right', 'back', 'left'],
+            
+                dom             : {
+                    {% name %}      : document.getElementById('{% name %}'),
                 },
 
-                refresh : function(){ 
-                    Cube.updatecss()
-                    settings = JSON.parse(localStorage.getItem('cube-settings'));
-                    
-                    current_face++;
+                {% load-config %}
+                
+                update         : function(){ 
+                    {% Name %}.current_face++;
 
                     items = [
-                        document.getElementsByClassName(faces[current_face%4]),
+                        document.getElementsByClassName({% Name %}.faces[{% Name %}.current_face%4]),
                     ]
                     
                     for( item in items){
                         rid                           = parseInt(Math.random()*65535);
                         node                          = items[item][0]
-                        node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
-                        node.children[0].src          = `current_cheevo_lock.png?${rid}`;
+                        node.style.backgroundImage    = `url('{% texture-file %}?${rid}')`;
+                        node.children[0].src          = `{% glow-file %}?${rid}`;
                         node.children[0].style.width  = '100%';
                         node.children[0].style.height = '100%';
                     }
                     
                     /* Hide widget if no cheevo is selected or program is not yet ready */
-                    if(settings.auto.hide){
-                        if (localStorage.getItem('current-cheevo')!=''){
-                            Cube.dom.cube.style.display = "inline-block";                        
+                    if({% Name %}.settings.auto.hide){
+                        current_cheevo = eval(localStorage.getItem('current-cheevo'));
+                        if (current_cheevo!=''){
+                            console.debug("AUTOHIDE: Current Cheevo found.")
+                            console.log(current_cheevo)
+                            {% Name %}.dom.{% name %}.style.display = "inline-block";                        
                         } else {
-                            Cube.dom.cube.style.display = "none";                        
+                            console.debug("AUTOHIDE: Current Cheevo not present.")
+                            {% Name %}.dom.{% name %}.style.display = "none";                        
                         }
                     }
+                    setTimeout({% Name %}.update, {% Name %}.settings.update.rate*1000);
                 },
 
                 start : function(){
-                    setInterval(Cube.refresh, 3000);
+                    {% Name %}.loadSettings();
+                    {% Name %}.settings.update = { rate : 5 };
+                    {% Name %}.update();
                 },
             };
-
-            Cube.start();
-
+            {% update-css %}
+            {% Name %}.start();
         </script>
     </body>
 </html>

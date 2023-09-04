@@ -54,7 +54,7 @@ class Log:
     def info(text):
         Log.print(f'{text}')
         if not Log.stdout:
-            dpg.set_viewport_title(f'RAMon - {text}')
+            dpg.set_viewport_title(f'tRAckOverlayer - {text}')
             # if dpg.is_dearpygui_running(): 
             #     dpg.render_dearpygui_frame()
 

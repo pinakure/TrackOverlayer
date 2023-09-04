@@ -8,35 +8,68 @@ class plugin(Plugin):
         self.name        = 'cheevocube'
         self.description = 'Current Achievement Rotating 3D Cube'
         self.endpoint    = 'current-cheevo'
-        self.color       = '#0f0'
 
         #@ Composer Settings
         self.z_index     = 10
         self.width       = Plugin.width
         self.height      = 256
         self.scale       = 0.35
+        self.x           = -466
+        self.y           = -80 
 
-        #@ Vars
-        self.size        = 200
-        self.x           = 48
-        self.y           = 20 
-
-
+        #@ Settings
         self.settings.update({
-            "auto-hide"                  : True,
+            "pos-x"                     : self.x,
+            "pos-y"                     : self.y,
+            "size-x"                    : self.width,
+            "size-y"                    : self.height,
+            "auto-hide"                 : True,
             "cube-color"                : [0,0,0,0],
-            "cube-shadow"               : [0,255,0,255],            
-            "cube-pos-x"                : 0,
-            "cube-pos-y"                : 0,
+            "cube-pos-x"                : 50,
+            "cube-pos-y"                : 20,
+            "cube-size-x"               : 200,
+            "cube-shadow-blur"          : 0,
+            "cube-shadow-color"         : [0,255,0,255],            
             "cube-shadow-pos-x"         : 0,
             "cube-shadow-pos-y"         : 0,
-            "cube-shadow-blur"          : 0,
             "cube-border-color"         : [0,255,0,255],
             "cube-border-width"         : 2,
             "cube-border-radius"        : 0,
-            "texture"                   : "./current_cheevo.png",
-            "glow"                      : True,
-            "glow-texture"              : "./current_cheevo_lock.png",
+            "texture-file"              : "./current_cheevo.png",
+            "glow-enable"               : True,
+            "glow-file"                 : "./current_cheevo_lock.png",
+            "glow-type"                 : 'alternate',
+            
+            "name-color"                : [0,255,0,255],
+            "name-pos-x"                : 300,
+            "name-pos-y"                : 0,
+            "name-border-color"         : [0,205,0,255],
+            "name-border-width"         : 1,
+            "name-shadow-color"         : [0,0,0,128],
+            "name-shadow-pos-x"         : 4,
+            "name-shadow-pos-y"         : 4,
+            "name-shadow-blur"          : 0,
+            "name-font"                 : 'noir-caps',
+            "name-font-bold"            : False,
+            "name-font-italic"          : False,
+            "name-font-size"            : 32,
+            "name-line-height"          : 68,
+            
+            "description-color"         : [0,255,0,255],
+            "description-pos-x"         : 300,
+            "description-pos-y"         : 68,
+            "description-border-color"  : [0,205,0,255],
+            "description-border-width"  : 1,
+            "description-shadow-color"  : [0,0,0,255],
+            "description-shadow-pos-x"  : 2,
+            "description-shadow-pos-y"  : 2,
+            "description-shadow-blur"   : 0,
+            "description-font"          : 'square',
+            "description-font-bold"     : True,
+            "description-font-italic"   : False,
+            "description-font-size"     : 54,
+            "description-line-height"   : 52,
+            
         })
 
 
@@ -48,17 +81,10 @@ class plugin(Plugin):
     def composerVars(self):
         factor = (self.scale / 2)+1
         return {
-            'width'   : px( Plugin.width ),            
-            'left'    : "calc( calc( var(--width) * var(--cheevocube-scale) ) * -0.925 )",
-            'top'     : "calc( -1 * calc( 240px * var(--cheevocube-scale) ) )",
-            'height'  : px( self.height  ),
+            'width'   : px( self.settings['size-x'] ),
+            'left'    : px( self.settings['pos-x']),
+            'top'     : px( self.settings['pos-y']),
+            'height'  : px( self.settings['size-y'] ),
             'scale'   : self.scale,
             'z-index' : self.z_index,
-        }
-
-    def templateVars(self):
-        return {
-            'size' : px(self.size),
-            'left' : px(self.x),
-            'top'  : px(self.y),
         }

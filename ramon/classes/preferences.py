@@ -435,7 +435,7 @@ class Preferences:
                 with dpg.child_window(border=False, tag=Attribute.parent, height=160, width=600) as window:
                     perspective = 0
                     project = False
-                    [ bradius, bwidths, bcolors, colors, types , heights, italics, bolds, posxs, posys, sposys, sposxs, blurs, shadows, sizes ] = [ {} , {} , {} , {} , {} , {} , {} , {} , {}, {}, {}, {}, {}, {}, {} ]
+                    [ sizexs, sizeys, bradius, bwidths, bcolors, colors, types , heights, italics, bolds, posxs, posys, sposys, sposxs, blurs, shadows, sizes ] = [ {} , {} , {} , {} , {} , {} , {} , {} , {}, {}, {}, {}, {}, {}, {}, {}, {}]
                     row     = [ 32,  32, 32]
                     columns = [  0, 105]
                     Attribute.label(8, 8, plugin.description, color=(55,155,255))
@@ -450,17 +450,19 @@ class Preferences:
                         if   '-border-color'    in name: bcolors[name] = value; continue     
                         elif '-border-width'    in name: bwidths[name] = value; continue     
                         elif '-border-radius'   in name: bradius[name] = value; continue     
+                        elif '-shadow-color'    in name: shadows[name] = value; continue
+                        elif '-shadow-pos-x'    in name: sposxs [name] = value; continue
+                        elif '-shadow-pos-y'    in name: sposys [name] = value; continue
                         elif '-color'           in name: colors [name] = value; continue     
                         elif '-font-size'       in name: sizes  [name] = value; continue
                         elif '-line-height'     in name: heights[name] = value; continue
                         elif '-font-italic'     in name: italics[name] = parseBool(value); continue
                         elif '-font-bold'       in name: bolds  [name] = parseBool(value); continue
-                        elif '-shadow-pos-x'    in name: sposxs [name] = value; continue
-                        elif '-shadow-pos-y'    in name: sposys [name] = value; continue
                         elif '-pos-x'           in name: posxs  [name] = value; continue
                         elif '-pos-y'           in name: posys  [name] = value; continue
+                        elif '-size-x'          in name: sizexs [name] = value; continue
+                        elif '-size-y'          in name: sizeys [name] = value; continue
                         elif '-shadow-blur'     in name: blurs  [name] = value; continue
-                        elif '-shadow'          in name: shadows[name] = value; continue
                         
                         # Important Note: 
                         # If a font xxx-font property is added, all the properties up in this elif chain must 
@@ -470,18 +472,22 @@ class Preferences:
                         # general setting (placed in the upper area )
                         Attribute.plugin = plugin.name
                         # Temporal patch for projection settings
-                        if name in ['perspective', 'angle', 'pos-x', 'pos-y']: 
+                        if name in ['perspective', 'angle', 'pos-x', 'pos-y', 'size-x', 'size-y']: 
                             max_value = {
                                 'perspective'   : 1600,
                                 'angle'         : 360,
-                                'pos-x'         : 9999,
-                                'pos-y'         : 9999,
+                                'pos-x'         : 2048,
+                                'pos-y'         : 2048,
+                                'size-x'        : 2048,
+                                'size-y'        : 2048,
                             }
                             negative = {
                                 'perspective'   : False,
                                 'angle'         : True,
                                 'pos-x'         : True,
                                 'pos-y'         : True,
+                                'size-x'        : True,
+                                'size-y'        : True,
                             }
                             Attribute.label     ( 300, row[1], elegant(name).rjust(12, ' ') , parent=Attribute.parent+'-projection')
                             Attribute.integer   ( 395, row[1], name, value                  , parent=Attribute.parent+'-projection', max_value=max_value[name], negative=negative[name])
@@ -508,7 +514,7 @@ class Preferences:
                             gname = name.rstrip("-color")
                             group = f'plugin-setting-{plugin.name}-{gname}'
                             tname = f"tab-plugins-{plugin.name}-{gname}"
-                            Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys, bradius )
+                            Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys, bradius, sizexs, sizeys )
                             with dpg.tab( label = elegant(gname), tag = tname ):
                                 with dpg.child_window(no_scrollbar=True, height=180) as window:
                                     Attribute.color         (   3,  13 , color)

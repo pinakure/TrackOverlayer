@@ -24,8 +24,10 @@ class Attribute:
     sposxs      = {}
     sposys      = {}
     bradius     = {}
+    sizexs      = {}
+    sizeys      = {}
 
-    def setup( groupname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs,  bcolors, bwidths, sposxs, sposys, bradius ):
+    def setup( groupname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs,  bcolors, bwidths, sposxs, sposys, bradius, sizexs, sizeys ):
         Attribute.name          = name
         Attribute.group         = group
         Attribute.groupname     = groupname
@@ -43,6 +45,8 @@ class Attribute:
         Attribute.sposxs        = sposxs
         Attribute.sposys        = sposys
         Attribute.bradius       = bradius
+        Attribute.sizexs        = sizexs
+        Attribute.sizeys        = sizeys
 
     def label( x=0, y=0, text="A label", color=(255,255,0), parent=None):
         D.add_text(
@@ -170,12 +174,12 @@ class Attribute:
         with D.tooltip(f'{Attribute.group}-font-bold'):
             D.add_text("Bold")
     def shadow( x, y ):
-        if not f'{Attribute.groupname}-shadow' in Attribute.shadows.keys(): return
+        if not f'{Attribute.groupname}-shadow-color' in Attribute.shadows.keys(): return
         D.add_color_picker(
-            tag             = f'{Attribute.group}-shadow', 
+            tag             = f'{Attribute.group}-shadow-color', 
             default_value   = (0, 0, 0, 255),
             callback        = Plugin.updateColor, 
-            user_data       = f'{Attribute.groupname}-shadow', 
+            user_data       = f'{Attribute.groupname}-shadow-color', 
             width           = 140, 
             height          = 140, 
             no_side_preview = True, 
@@ -186,9 +190,9 @@ class Attribute:
             display_type    = D.mvColorEdit_uint8,
             pos             = (x, y),
         )
-        with D.tooltip(f'{Attribute.group}-shadow'): 
+        with D.tooltip(f'{Attribute.group}-shadow-color'): 
             D.add_text("Shadow Color")
-        D.set_value(f'{Attribute.group}-shadow', Attribute.shadows[f'{Attribute.groupname}-shadow'])
+        D.set_value(f'{Attribute.group}-shadow-color', Attribute.shadows[f'{Attribute.groupname}-shadow-color'])
     
     def pos_x( x, y ):
         if not f'{Attribute.groupname}-pos-x' in Attribute.posxs.keys(): return
@@ -198,12 +202,27 @@ class Attribute:
             user_data       = f'{Attribute.groupname}-pos-x', 
             default_value   = Attribute.posxs[f'{Attribute.groupname}-pos-x'],
             pos             = (x, y),
-            max_value       = 9999,
-            min_value       = -9999,
+            max_value       = 2048,
+            min_value       = -2048,
             width           = 172,
         )
         with D.tooltip(f'{Attribute.group}-pos-x'): 
             D.add_text("Horizontal Position\n( Ctrl + Click to edit value )")
+    
+    def size_x( x, y ):
+        if not f'{Attribute.groupname}-size-x' in Attribute.sizexs.keys(): return
+        D.add_slider_int(
+            tag             = f'{Attribute.group}-size-x',
+            callback        = Plugin.updateSettings,
+            user_data       = f'{Attribute.groupname}-size-x', 
+            default_value   = Attribute.sizexs[f'{Attribute.groupname}-size-x'],
+            pos             = (x, y),
+            max_value       = 2048,
+            min_value       = -2048,
+            width           = 172,
+        )
+        with D.tooltip(f'{Attribute.group}-size-x'):
+            D.add_text("Horizontal Size\n( Ctrl + Click to edit value )")
     
     def pos_y( x, y ):
         if not f'{Attribute.groupname}-pos-y' in Attribute.posys.keys(): return
@@ -213,12 +232,27 @@ class Attribute:
             user_data       = f'{Attribute.groupname}-pos-y', 
             default_value   = Attribute.posys[f'{Attribute.groupname}-pos-y'],
             pos             = (x, y),
-            max_value       = 9999,
-            min_value       = -9999,
+            max_value       = 2048,
+            min_value       = -2048,
             width           = 172,            
         )
         with D.tooltip(f'{Attribute.group}-pos-y'): 
             D.add_text("Vertical Position\n( Ctrl + Click to edit value )")
+    
+    def size_y( x, y ):
+        if not f'{Attribute.groupname}-size-y' in Attribute.sizeys.keys(): return
+        D.add_slider_int(
+            tag             = f'{Attribute.group}-size-y',
+            callback        = Plugin.updateSettings,
+            user_data       = f'{Attribute.groupname}-size-y', 
+            default_value   = Attribute.sizeys[f'{Attribute.groupname}-size-y'],
+            pos             = (x, y),
+            max_value       = 2048,
+            min_value       = -2048,
+            width           = 172,
+        )
+        with D.tooltip(f'{Attribute.group}-size-y'):
+            D.add_text("Vertical Size\n( Ctrl + Click to edit value )")
     
     def shadow_pos_x( x, y ):
         if not f'{Attribute.groupname}-shadow-pos-x' in Attribute.sposxs.keys(): return
