@@ -46,8 +46,8 @@
             }
 
             #name {     
-                width                       : var(--name-size-x);
-                height                      : var(--name-size-y);
+                /*width                       : calc( 100% - calc( var(--picture-pos-x) + var(--picture-size-x) ) );*/
+                height                      : calc( var(--description-font-size ) + 1px );
                 left                        : var(--name-pos-x);
                 top                         : var(--name-pos-y);
                 line-height                 : var(--name-line-height );
@@ -65,8 +65,8 @@
             }
 
             #description {     
-                width                       : var(--description-size-x);
-                height                      : var(--description-size-y);
+                /*width                       : var(--size-x);*/
+                height                      : calc( var(--row-size-y) - calc( var(--name-pos-y) + var(--description-font-size) ) );
                 left                        : var(--description-pos-x);
                 top                         : var(--description-pos-y);
                 line-height                 : var(--description-line-height );
@@ -128,7 +128,7 @@
                 
                 row : function(name, description, picture ){
                     return `<div class="row">
-                    <div id="picture"><img style="border-radius: none !important" src="cache/${ picture }.png"/></div>
+                    <div id="picture"><img style="border-radius: none !important" src="cache/${ picture }"/></div>
                     <div id="name">${ name }</div>
                     <hr/>
                     <div id="description">${ description }</div>
@@ -152,17 +152,17 @@
                     // Read from localStorage and clear localStorage after reading
                     if( localStorage.getItem('debug')=='1'){
                         {% Name %}.list = [
-                            [ "Test cheevo", "Test Description", "01723" ],
-                            [ "Test cheevo", "Test Description", "14053" ],
-                            [ "Test cheevo", "Test Description", "14054" ],
-                            [ "Test cheevo", "Test Description", "14056" ],
-                            [ "Test cheevo", "Test Description", "14057" ],
+                            [ "Test cheevo 1 with a very long name", "Test Description", "01723.png" ],
+                            [ "Test cheevo 2", "Test Description", "14053.png" ],
+                            [ "Test cheevo 3", "Test Description", "14054.png" ],
+                            [ "Test cheevo 4", "Test Description", "14056.png" ],
+                            [ "Test cheevo 5", "Test Description", "14057.png" ],
                         ]
                         return;
                     }
                     {% Name %}.list = null;
                     try {
-                        {% Name %}.list = JSON.parse(localStorage.getItem('{% name %}'));                        
+                        {% Name %}.list = JSON.parse(localStorage.getItem('recent'));
                     } catch(e) {}
                     if(!{% Name %}.list) {% Name %}.list = [];
                 },
