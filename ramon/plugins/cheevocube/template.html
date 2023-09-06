@@ -142,8 +142,8 @@
             </div>
         </div>
         <div class="layer">
-            <section id="name"          name="name">Current-Cheevo very long and very long</section>
-            <section id="description"   name="description">Current-Cheevo-description</section>
+            <section id="name"          name="name">Name</section>
+            <section id="description"   name="description">Description</section>
         </div>
         
         <script>
@@ -160,7 +160,7 @@
                     description     : document.getElementById('description'),
                 },
 
-                {% load-config %}
+                {% framework %}
                 
                 update         : function(){ 
                     {% Name %}.current_face++;
@@ -178,32 +178,32 @@
                         node.children[0].style.height = '100%';
                     }
                     
+                    current_cheevo = localStorage.getItem('current-cheevo').replaceAll('"', '');
                     {/* Hide widget if no cheevo is selected or program is not yet ready */
-                    if({% Name %}.settings.auto.hide){
-                        current_cheevo = eval(localStorage.getItem('current-cheevo'));
-                        if (current_cheevo!=''){
-                            console.debug("AUTOHIDE: Current Cheevo found.")
-                            console.log(current_cheevo)
-                            {% Name %}.dom.{% name %}.style.display = "inline-block";
-                            {% Name %}.dom.description.style.display = "inline-block";
-                            {% Name %}.dom.name.style.display = "inline-block";
-                        } else {
-                            console.debug("AUTOHIDE: Current Cheevo not present.")
+                    if (current_cheevo!=''){
+                        {% Name %}.dom.{% name %}.style.display = "inline-block";
+                        {% Name %}.dom.description.style.display = "inline-block";
+                        {% Name %}.dom.name.style.display = "inline-block";
+                        {% Name %}.dom.name.innerHTML = current_cheevo.split('\n')[0];
+                        {% Name %}.dom.description.innerHTML = current_cheevo.split('\n')[1];
+                    } else {
+                        {% Name %}.dom.name.innerHTML = "---";
+                        {% Name %}.dom.description.innerHTML = "---";
+                        if({% Name %}.settings.auto.hide){
                             {% Name %}.dom.{% name %}.style.display = "none";
                             {% Name %}.dom.description.style.display = "none";
-                            {% Name %}.dom.name.style.display = "none";
+                            {% Name %}.dom.name.style.display = "none";                            
                         }
                     }}
-                    setTimeout({% Name %}.update, {% Name %}.settings.update.rate*1000);
                 },
 
                 start : function(){
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 5 };
+                    {% Name %}.messageHandler();
                     {% Name %}.update();
                 },
             };
-            {% update-css %}
             {% Name %}.start();
         </script>
     </body>

@@ -19,23 +19,23 @@ class plugin(Plugin):
 
         #@ Settings
         self.settings.update({
-            "username"              : "",
             "perspective"           : 0,
             "angle"                 : 0,
+            "chars-per-line"        : 25,
             "pos-x"                 : self.x,
             "pos-y"                 : self.y,
             "text-color"            : [240,240,240,255],
             "text-font"             : "arcade", 
-            "text-pos-x"            : 10,
-            "text-pos-y"            : 10,
-            "text-font-size"        : 16, 
+            "text-font-size"        : 10, 
             "text-font-italic"      : False, 
             "text-font-bold"        : False, 
             "text-shadow-blur"      : 0, 
             "text-shadow-color"     : [16,0,64,255], 
-            "text-shadow-pos-x"     : 1,
-            "text-shadow-pos-y"     : 1,
+            "text-shadow-pos-x"     : 2,
+            "text-shadow-pos-y"     : 2,
             "text-line-height"      : 18,             
+            "text-border-color"     : [0,0,0,0],  
+            "text-border-width"     : 0,  
         })
 
         #@ Install settings

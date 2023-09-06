@@ -3,6 +3,7 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
+        from classes.preferences import Preferences
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'twitchchat'
@@ -24,6 +25,7 @@ class plugin(Plugin):
             "angle"                     : 0,
             "sound"                     : True,
             "sound-file"                : "./tick01.wav",#client will automatically try to find tick0[1-3].wav upon filename
+            "user"                      : Preferences.settings['twitch-username'],
             'message-time'              : 5,
             'message-count'             : 5,
             'username-color'            : [ 255,255,0,255 ],
@@ -32,7 +34,7 @@ class plugin(Plugin):
             'username-line-height'      : 18,
             'username-font-bold'        : False,
             'username-font-italic'      : False,
-            'username-shadow'           : [ 0, 0, 0, 255 ],
+            'username-shadow-color'     : [ 0, 0, 0, 255 ],
             'username-shadow-pos-x'     : 1,
             'username-shadow-pos-y'     : 1,
             'message-color'             : [ 250,250,250,255 ],
@@ -41,7 +43,7 @@ class plugin(Plugin):
             'message-line-height'       : 18,
             'message-font-bold'         : False,
             'message-font-italic'       : False,
-            'message-shadow'            : [ 0, 0, 0, 255 ],
+            'message-shadow-color'      : [ 0, 0, 0, 255 ],
             'message-shadow-pos-x'      : 1,
             'message-shadow-pos-y'      : 1,
         })

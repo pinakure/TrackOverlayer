@@ -75,9 +75,9 @@
                 height: 100%;
             }
             #theonlybar {
-                filter: opacity({% bar-opacity %});
-                width:50%;
-                height: 100%;
+                filter          : opacity({% bar-opacity %});
+                width           : 0%;
+                height          : 100%;
                 background-image: linear-gradient(180deg, var(--up-color) ,var(--mid-color) ,var(--low-color) );
             }
         </style>
@@ -94,62 +94,63 @@
             
             var {% Name %} = {
 
+                progress        : "0%",
+                last_progress   : "0%",
+                sfx             : null,
+
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
                     bar             : document.getElementById('theonlybar'),
+                    pc              : document.getElementById('pc'),
                 },
 
-                {% load-config %}
+                {% framework %}
 
                 update : function(){ 
                     document.getElementById('pc').className="percent";
-                    setProgress(localStorage.getItem('cheevo-progress'))                    
+                    {% Name %}.progress         = localStorage.getItem('progress');
+                    {% Name %}.last_progress    = localStorage.getItem('last-progress');
+                    //console.log({% Name %}.progress,{% Name %}.last_progress);
+                    {% Name %}.dom.bar.style.transitionProperty = 'none';
+                    {% Name %}.dom.bar.style.width = {% Name %}.last_progress;
+                    {% Name %}.dom.bar.style.transitionProperty = 'width';
+                    {% Name %}.dom.pc.innerHTML = {% Name %}.last_progress;
+                    if( {% Name %}.progress != {% Name %}.last_progress ){
+                        {% Name %}.dom.bar.style.width = {% Name %}.last_progress;
+                        
+                        setTimeout(function(){
+                            if( parseInt({% Name %}.progress) > parseInt({% Name %}.last_progress)) {
+                                {% Name %}.dom.bar.className = 'completion glow';
+                                try {
+                                    {% Name %}.sfx.play();
+                                } catch(e){
+                                    {% Name %}.send('print', "Cannot play sound {% sound-file %}")
+                                }
+                            }                
+                            {% Name %}.dom.pc.className="percent fadeout";
+                            {% Name %}.dom.bar.style.transitionProperty = 'width';
+                            {% Name %}.dom.bar.style.width = {% Name %}.progress;
+                            setTimeout(function(){
+                                {% Name %}.dom.pc.innerHTML={% Name %}.progress;                                
+                                localStorage.setItem('last-progress', {% Name %}.progress );
+                                localStorage.setItem('progress'     , {% Name %}.progress );
+                                {% Name %}.dom.bar.className = 'completion';                                
+                            }, 3000);
+                        }, 1000);                     
+                    } 
+                    /* Hide widget if no cheevo is selected or program is not yet ready */
+                    {% require-cheevo %}
                 },
 
                 start : function(){
+                    {% Name %}.sfx = new Audio('{% sound-file %}');                                    
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 5 };
+                    {% Name %}.messageHandler();
                     {% Name %}.update();
                 },
             };
-
-            
-            function setProgress(progress){
-                var last_progress = localStorage.getItem('cheevo-last-progress');
-                localStorage.setItem('cheevo-last-progress', progress);
-                {% Name %}.dom.bar.style.width = last_progress;
-                if(progress != last_progress){
-                    {% Name %}.dom.bar.style.transitionProperty = '';
-                    {% Name %}.dom.bar.style.width = last_progress;
-                    document.getElementById('pc').innerHTML=last_progress;
-                    
-                    setTimeout(function(){
-                        if( parseInt(progress) > parseInt(last_progress)) {
-                            audio = new Audio('./{% sound.file %}');
-                            audio.play();
-                            if( {% Name %}.settings.glow )
-                                {% Name %}.dom.bar.className = 'completion glow';
-                        }                
-                        document.getElementById('pc').className="percent fadeout";
-                        {% Name %}.dom.bar.style.transitionProperty = 'width';
-                        {% Name %}.dom.bar.style.width = progress;
-                        setTimeout(function(){
-                            document.getElementById('pc').innerHTML=progress;
-                            
-                            {% Name %}.dom.bar.className = 'completion';
-                            setTimeout({% Name %}.update, 3000)
-                        }, 3000);
-                    }, 1000);                     
-                } else setTimeout({% Name %}.update, 3000)
-                /* Hide widget if no cheevo is selected or program is not yet ready */
-                {% require-cheevo %}
-            }
-            
-            {% update-css %}
-            {% Name %}.start();
-
-            setProgress('/*JS*/');    
-            setProgress(50);    
+            {% Name %}.start();            
         </script>
     </body>
 </html>

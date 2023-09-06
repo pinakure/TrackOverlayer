@@ -44,6 +44,7 @@ class Preferences:
             'username'                  : '',
             'password'                  : '',
             'twitch-username'           : '',
+            'twitch-password'           : '',
             'root'                      : '.',
             'gmt'                       : 2,
             'twitch-app-key'            : '',
@@ -609,8 +610,10 @@ class Preferences:
                 dpg.add_text( "API Key"         , tag="twitch-app-key-label", color=(255,255,0) )
                 dpg.add_text( "Use API"         , tag="twitch-use-api-label", color=(255,255,0) )
                 dpg.add_text( "IRC Channel"     , tag="twitch-username-label",color=(255,255,0) )
+                dpg.add_text( "IRC Password"    , tag="twitch-password-label",color=(255,255,0) )
                 createStringField (''           , 'twitch-app-key'                              )
                 createStringField (''           , 'twitch-username'                             )
+                createStringField (''           , 'twitch-password'                             )
                 createBooleanField(''           , 'twitch-use-api'                              )
                 dpg.add_text( "RetroAchievements",tag="ra-label"            , color=(205,255,0) )
                 dpg.add_text( "API Key"         , tag="ra-app-key-label"    , color=(255,255,0) )
@@ -634,6 +637,8 @@ class Preferences:
                 dpg.configure_item('twitch-use-api'         , pos=( columns[1],   y ));y+=24
                 dpg.configure_item('twitch-username-label'  , pos=( columns[0],   y ));y+=24
                 dpg.configure_item('twitch-username'        , pos=( columns[0],   y ));y+=24
+                dpg.configure_item('twitch-password-label'  , pos=( columns[0],   y ));y+=24
+                dpg.configure_item('twitch-password'        , pos=( columns[0],   y ));y+=24
                 y+=24
                 dpg.configure_item('ra-label'               , pos=(          8,   y ));y+=24
                 dpg.configure_item('ra-app-key-label'       , pos=( columns[0],   y ))
@@ -651,6 +656,7 @@ class Preferences:
                 dpg.configure_item('password'               , password=True)
                 dpg.configure_item('ra-app-key'             , password=True)
                 dpg.configure_item('twitch-app-key'         , password=True)
+                dpg.configure_item('twitch-password'        , password=True)
 
     
     def create( parent ):

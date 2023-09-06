@@ -124,7 +124,7 @@
                     parent          : document.getElementById('output'),
                 },
 
-                {% load-config %}
+                {% framework %}
                 
                 row : function(name, description, picture ){
                     return `<div class="row">
@@ -160,32 +160,27 @@
                         ]
                         return;
                     }
+                    {% Name %}.list = null;
                     try {
                         {% Name %}.list = JSON.parse(localStorage.getItem('{% name %}'));                        
-                    } catch(e) {
-                        {% Name %}.list = null;
-                    }
+                    } catch(e) {}
                     if(!{% Name %}.list) {% Name %}.list = [];
                 },
 
                 update : function(){
-                    console.debug("Refresh data")
                     {% Name %}.getData();
                     {% Name %}.render();
-                    setTimeout( {% Name %}.update, {% Name %}.settings.update.rate * 1000 );
                     {% require-cheevo %}
                 },
 
                 start : function(){
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 5 };//#TODO:Move to settings
+                    {% Name %}.messageHandler();
                     {% Name %}.update();
                 },
             }
-            
-            {% update-css %}
             {% Name %}.start();
-
         </script>    
     </body>  
 </html>

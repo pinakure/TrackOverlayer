@@ -87,7 +87,7 @@ if Ramon.start():
         from dearpygui import dearpygui as D
         Preferences.show()
         D.set_value('preferences-tabs', 'tab_plugins')
-        D.set_value('plugin-tabs'     , 'tab_plugins-rpgchat')
+        D.set_value('plugin-tabs'     , 'tab_plugins-recentunlocks')
         Plugin.debug = Preferences.settings['debug']
         # D.set_value('plugin-preferences-tabs', 'plugin-tabs')
         # D.set_value('plugin-tabs')

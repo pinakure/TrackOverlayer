@@ -62,11 +62,11 @@ class Endpoints:
     
     def current_cheevo():
         from classes.data import Data
-        return sane(json.dumps( Data.cheevo ))
-    
+        from classes.plugin import Plugin        
+        return sane(json.dumps( Data.cheevo if not Plugin.debug else "Test cheevo\nTest description"))
     
     def username():
-        return Preferences.settings['username']
+        return Preferences.settings['username'] 
     
     
     def twitch_username():
@@ -80,7 +80,17 @@ class Endpoints:
     
     def progress():
         from classes.data import Data
-        return Data.progress
+        from classes.plugin import Plugin
+        if Plugin.debug: 
+            import random
+            Data.progress = f'{str(int(random.random()*100))}%'
+        return Data.progress 
+    
+    def last_progress():
+        from classes.data import Data
+        lp = Data.last_progress if Data.last_progress != '' else Data.progress
+        Data.last_progress = Data.progress
+        return lp
     
     
     def nop():
@@ -93,6 +103,7 @@ class Endpoints:
             'twitch-username'   : Endpoints.twitch_username(),
             'current-cheevo'    : Endpoints.current_cheevo().replace("'", "`"),
             'progress'          : Endpoints.progress(),
+            #'last-progress'     : Endpoints.last_progress(),
             'recent'            : Endpoints.recent(),
             'superchat'         : Endpoints.nop(),
         }
@@ -103,6 +114,7 @@ class Endpoints:
         'twitch-username'   : twitch_username,
         'current-cheevo'    : current_cheevo,
         'progress'          : progress,
+        #'last-progress'     : last_progress,
         'recent'            : recent,
         'superchat'         : nop,
     }
@@ -226,13 +238,10 @@ class Plugin:
     def getAutoHideSnippet():
         return r"""
         if({% Name %}.settings.auto.hide){
-            current_cheevo = eval(localStorage.getItem('current-cheevo')).replace('"', '');
+            current_cheevo = localStorage.getItem('current-cheevo').replaceAll('"', '');
             if (current_cheevo!=''){
-                console.debug("AUTOHIDE: Current Cheevo found.")
-                console.log(current_cheevo)
                 {% Name %}.dom.{% name %}.style.display = "inline-block";                        
             } else {
-                console.debug("AUTOHIDE: Current Cheevo not present.")
                 {% Name %}.dom.{% name %}.style.display = "none";                        
             }
         }
@@ -253,6 +262,66 @@ class Plugin:
             except Exception as E: 
                 Log.error("Cannot translate plugin settings", E)            
         return ini
+    
+    def getFrameworkMethods(self):
+        return self.getLoadSettingsMethod() + r"""
+                
+                standalone : true,
+
+                send  : function(msg, data=[]){
+                    window.parent.postMessage(`{% name %}|${msg}|${JSON.stringify(data)}`, '*');
+                },
+
+                log   : {
+                    print : function(text){
+                        window.parent.postMessage(`{% name %}|print|${text}`, '*');
+                    },
+                    clear : function(text){
+                        window.parent.postMessage("|log-clear|", '*');
+                    }
+                },
+
+                messageHandler : function(){
+                    // 'Event coming from parent' handler 
+                    window.addEventListener('message', function(e) {
+                        try{ message = e.data.split('|')[0]; } catch(e){ {% name %}.log.print(`Malformed message: ${e.data}`); return; }
+                        try{ data = JSON.parse(e.data.split('|')[1]); } catch(e){data = null;}
+                        switch( message ){
+                            
+                            case 'update-css':
+                                var rid = parseInt(Math.random()*655356);
+                                var par  = document.getElementsByTagName('head')[0];
+                                var old  = document.getElementsByTagName('link')[0];
+                                var link = document.createElement('link');
+                                link.rel = "stylesheet";
+                                link.type = "text/css";
+                                link.href = `./{% name %}.css?${ rid }`;
+                                par.append(link);
+                                {% Name %}.log.print("style updated");
+                                return;
+
+                            case 'update-settings':
+                                {% Name %}.settings = data;
+                                {% Name %}.log.print("settings updated");
+                                {% Name %}.send('request-data');
+                                return;
+                                
+                            case 'update-data':
+                                {% Name %}.standalone = false;
+                                {% Name %}.update();
+                                {% Name %}.log.print("data updated");
+                                return;
+                            
+                            default:
+                                try { 
+                                    {% Name %}.handleMessage( message, data );
+                                } catch(e){
+                                    {% Name %}.log.print(`Error ${e}`);
+                                }
+                        }
+                    });
+                },
+                """
 
     def getLoadSettingsMethod(self):
         #sort variables longer first
@@ -284,16 +353,23 @@ class Plugin:
              
     def injectScripts(self):
         from classes.dynamic_css import fonts
+        from dearpygui import dearpygui as dpg
+        print(Plugin.debug)            
+                
         for i in range(0,2):
             for key,value in {
                 'Name'              : self.name.capitalize(),
                 'name'              : self.name,
-                'update-css'        : Plugin.getCssAutoupdateSnippet(),
-                'fonts'             : "\n\t\t".join([value for value in fonts.values()]),
+                'fullsized'         : "html { width : 100%; height : 100%; } body { width : 100%; height : 100%; top: 0px; left: 0px; } html { position: absolute; } body { position: absolute; }",
+                'framework'         : self.getFrameworkMethods(),
                 'plugin'            : "const False = false; const True = true; alternate='alternate'; forwards='forwards'; backwards='backwards';",
+                'debug'             : 'true' if Plugin.debug else 'false',
+                'password'          : dpg.get_value('twitch-password'),
+                # deprecated
+                'fonts'             : "\n\t\t".join([value for value in fonts.values()]),
+                'update-css'        : Plugin.getCssAutoupdateSnippet() if Plugin.debug else '',
                 'load-config'       : self.getLoadSettingsMethod(),
                 'require-cheevo'    : Plugin.getAutoHideSnippet(),
-                'fullsized'         : "html { width : 100%; height : 100%; } body { width : 100%; height : 100%; top: 0px; left: 0px; } html { position: absolute; } body { position: absolute; }",
             }.items():         
                 self.rendered = self.rendered.replace('{% '+key+' %}', str(value))        
 
@@ -383,7 +459,7 @@ class Plugin:
         # Feed plugin with the data corresponding to its data endpoint (that data is refreshed each time Ramon.refresh is summoned)
         for name,plugin in Plugin.loaded.items():
             if not plugin.settings['enabled']: continue
-            try:                
+            try:    
                 plugin.run()
             except Exception as E:
                 Log.error(f"Cannot run plugin {name}", E)    
@@ -407,6 +483,8 @@ class Plugin:
     def toggleDebug():
         Plugin.debug = not Plugin.debug
         Log.verbose = Plugin.debug
+        Preferences.settings['debug'] = Plugin.debug
+        Plugin.runLoaded()
         Plugin.compose()
 
     
@@ -497,7 +575,6 @@ class Plugin:
 
     def autoupdate():
         from classes.data   import Data
-        beat    = "setTimeout(function(){ document.getElementsByTagName('body')[0].style.backgroundColor = '#0000';},500);"
         reload  = "setTimeout(function(){ location.reload(); }, 5000);"
         body    = 'transition: background-color 500ms ease-in-out;' if Plugin.debug else ''
         ls      = { (f"""localStorage.setItem('{ plugin.name }-settings', '{ json.dumps(plugin.settings) }');"""+'\n') for name,plugin in Plugin.loaded.items()}
@@ -509,7 +586,7 @@ class Plugin:
             document.getElementsByTagName('body')[0].style.backgroundColor = '#0f0';
             localStorage.setItem('debug', '{1 if Plugin.debug else 0 }'  );
             {"".join(ls)}
-            { beat if Plugin.debug else '' }
+            window.parent.postMessage('auto-update|auto-update|', '*');
             {reload}
         </script>
     </body>

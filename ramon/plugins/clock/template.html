@@ -23,7 +23,7 @@
         </style>        
     </head>
     <body style="overflow:hidden;">
-        <div class="{% name %}" id="{% name %}">40:40:40</div>    
+        <div class="{% name %}" id="{% name %}">00:00:00</div>    
         <script>
             {% plugin %}
 
@@ -32,27 +32,44 @@
                 //       when a set alarm is reach', for example
                 mode            : 'clock',
                 alarm           : '12:00:00',
-
+                
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
                 },
 
-                {% load-config %}
+                {% framework %}
                 
                 update          : function(){
                     var date = new Date;
-                    {% Name %}.dom.{% name %}.innerHTML = `${date}`.split('GMT')[0].split(' ')[4];
-                    // Call again for the update function after a second, like any clock...
-                    setTimeout({% Name %}.update, {% Name %}.settings.update.rate*1000);
+                    {% Name %}.dom.{% name %}.innerHTML = `${date}`.split('GMT')[0].split(' ')[4];                    
+                    if( {% Name %}.standalone ) { setTimeout({% Name %}.update, 1000);}
                 },
 
                 start : function(){
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 1 };
-                    {% Name %}.update();                
+                    //{% Name %}.messageHandler();
+                    
+                    window.addEventListener( 'message', function(e){ 
+                        if(e.data.split('|')[0]=='update-css'){
+                            var rid = parseInt(Math.random()*655356);
+                            var par  = document.getElementsByTagName('head')[0];
+                            var old  = document.getElementsByTagName('link')[0];
+                            var link = document.createElement('link');
+                            link.rel = "stylesheet";
+                            link.type = "text/css";
+                            link.href = `./{% name %}.css?${ rid }`;
+                            par.append(link);
+                            {% Name %}.log.print("style updated");
+                        }
+                    });
+                        
+                    window.addEventListener( 'load', function(e){ 
+                        {% Name %}.update();
+                    });
+                    
                 },
             };
-            {% update-css %}        
             {% Name %}.start();
         </script>
     </body>

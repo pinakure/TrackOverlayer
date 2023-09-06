@@ -31,6 +31,7 @@ class Data:
     last_activityr  = ''
     last_activity   = None
     progress        = ''
+    last_progress   = ''
     stats           = ''
     cheevo          = ''
     cheevos_raw     = []
@@ -121,6 +122,7 @@ class Data:
             rid = random.random()
             Log.info("Updating cheevo info...")
             stats = str(Data.parsed.body.find('div', attrs={'class':'userpage recentlyplayed'}))
+            #Data.last_progress = Data.progress
             try:
                 Log.info("Getting progress HTML")
                 progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 

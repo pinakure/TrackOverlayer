@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css">
         <style>
+            {% fonts %}
+
             :root {
                 /*VARS*/           
             }
@@ -53,18 +56,27 @@
                 animation-fill-mode: forwards;
                 animation-iteration-count: 1;
             }
+            
+            .blink {
+                animation-name: blink;
+                animation-duration: 500ms;
+                animation-timing-function: steps(2,jump-none);
+                animation-fill-mode: forwards;
+                animation-iteration-count: infinite;
+            }
+
             button {
                 /* display: none; */
-                filter  : opacity(0);
-                position: absolute; 
-                bottom  : 8px;
-                right   : 8px;
-                border  : none;      
-                width   : 16px;          
-                height  : 16px;          
-                max-width   : 16px;          
-                max-height  : 16px;   
-                
+                filter      : opacity(0);
+                position    : absolute; 
+                bottom      : 0px;
+                right       : 0px;
+                border      : none;      
+                width       : 20px;          
+                height      : 22px;          
+                background  : none;
+                max-width   : 20px;          
+                max-height  : 22px;                   
             }
             #wrapper {
                 display: inline-block; 
@@ -83,6 +95,11 @@
             }
             
             @keyframes fadeout {
+                from { filter: opacity(1); }
+                to   { filter: opacity(0); }               
+            }
+
+            @keyframes blink {
                 from { filter: opacity(1); }
                 to   { filter: opacity(0); }               
             }
@@ -115,67 +132,194 @@
                100%{clip-path: polygon(0% 0%, 100% 0%, 100%  50%, 0%  50%);filter: opacity(1);}
             }            
 
-        </style>
-        <script>
-            var Chat = {
-                pictgt : null,
-                target : null,
-                button : null,
-                usrpic : 'https://static-cdn.jtvnw.net/jtv_user_pictures/30c1196b-441f-4081-a48e-2e5d96912c3b-profile_image-70x70.png',
-
-                start : function(username){
-                    Chat.target = document.getElementById('chat');
-                    Chat.pictgt = document.getElementById('pic');
-                    Chat.button = document.getElementById('button');
-                    Chat.show();                    
-                },
-
-                show : function(){
-                    Chat.target.className = "visible";
-                    Chat.pictgt.className = "visible";                    
-                    Chat.pictgt.src = Chat.usrpic;                    
-                    setTimeout( Chat.open, 1000);
-                },
-                
-                open : function(){
-                    Chat.target.style.animationName="open";
-                    setTimeout( Chat.ready, 1000)
-                }, 
-                
-                ready : function(){
-                    Chat.button.style.display='inline block';
-                    Chat.button.className = "visible";
-                }, 
-                
-                continue : function(){
-                    Chat.button.style.display='none';
-                    Chat.close()
-                },
-                
-                close : function(){
-                    Chat.target.style.animationName="close";
-                    setTimeout( Chat.hide, 1000)
-                }, 
-
-                hide : function(){
-                    Chat.target.style.animationName="";
-                    Chat.target.className = "hidden";
-                    Chat.pictgt.className = "hidden";
-                    Chat.button.className = "hidden";
-                },
-
+            .line { 
+                color           : var(--text-color);
+                font-family     : var(--text-font);
+                font-size       : var(--text-font-size);
+                line-height     : var(--text-line-height);
+                font-weight     : var(--text-font-bold);
+                font-style      : var(--text-font-italic);
+                left            : 8px;
+                position        : absolute;
+                border          : var(--text-border-width) solid var(--text-border-color);
+                text-shadow     : var(--text-shadow-pos-x) var(--text-shadow-pos-y) var(--text-shadow-blur) var(--text-shadow-color);
             }
-        </script>
+            .line[index="1"] { 
+                top : 88px;
+            }
+            .line[index="2"] { 
+                top : 125px;
+            }
+            .line[index="3"] { 
+                top : calc( 129px + calc( 129px - 99px) );
+            }
+
+
+        </style>        
     </head>
     <body>     
         <!--HTML-->
         <div id="wrapper">            
             <img id="pic" style="top: 8px" src="" width="72" height="72">
             <img id="chat" src="rpgchat.png" width="320" height="160">
-            <button  id="button" type="button" onclick="Chat.continue()"></button>
+            <button  id="button" type="button" onclick="{% Name %}.continue()">
+                <img width="100%" height="100%" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAMCAYAAABbayygAAAAB3RJTUUH5wkGCDALqWkC9AAAABd0RVh0U29mdHdhcmUAR0xEUE5HIHZlciAzLjRxhaThAAAACHRwTkdHTEQzAAAAAEqAKR8AAAAEZ0FNQQAAsY8L/GEFAAAABmJLR0QA/wD/AP+gvaeTAAAAYklEQVR4nGN49+7//0uXnv9/6vuXAR9mYgACLS0JBs6FTP/ftr76z4ALgEz88weBcdmAoRCXBpwKkTUQpRBkKtCF/wlaDVaETSGGAiBGsRqXArhnQJL4FMAVggk8ClAUEoMBLCQ/vNwtjMYAAAAASUVORK5CYII=">
+            </button>
+            <div class="line" id="line_1" index="1"></div>
+            <div class="line" id="line_2" index="2"></div>
+            <div class="line" id="line_3" index="3"></div>
         </div>
         <script>
-            Chat.start(/*JS*/);
+            {% plugin %}
+
+            var {% Name %} = {
+
+                hidden : true,
+
+                buffer : [],
+
+                messages : [],
+                
+                bufer_index : 0,
+                line        : null,
+                line_index  : 0,
+                emit_speed  : 125,
+
+                dom : {
+                    target : document.getElementById('chat'),
+                    pictgt : document.getElementById('pic'),
+                    button : document.getElementById('button'),
+                    lines  : [
+                        document.getElementById('line_1'),
+                        document.getElementById('line_2'),
+                        document.getElementById('line_3'),
+                    ]
+                },
+
+                usrpic : 'https://static-cdn.jtvnw.net/jtv_user_pictures/30c1196b-441f-4081-a48e-2e5d96912c3b-profile_image-70x70.png',
+
+                {% framework %}
+
+                show : function(){
+                    {% Name %}.hidden = false;
+                    {% Name %}.dom.lines[0].className = "line visible";
+                    {% Name %}.dom.lines[1].className = "line visible";
+                    {% Name %}.dom.target.className = "visible";
+                    {% Name %}.dom.pictgt.className = "visible";                    
+                    {% Name %}.dom.pictgt.src = {% Name %}.usrpic;
+                    setTimeout( {% Name %}.open, 1000);
+                },
+
+                open : function(){
+                    {% Name %}.dom.target.style.animationName="open";
+                    setTimeout( {% Name %}.emit, 1000);
+                }, 
+                
+                emit : function(){
+                    if ( !{% Name %}.line ){
+                        {% Name %}.line = {% Name %}.buffer[ {% Name %}.buffer_index ];
+                        {% Name %}.line_index=0;
+                    }
+                    {% Name %}.dom.lines[({% Name %}.buffer_index)>=1?1:0].innerHTML = {% Name %}.line.substring(0, {% Name %}.line_index).toUpperCase();
+                    //{% Name %}.dom.lines[1].innerHTML = "message of the second line".toUpperCase();;
+                    if( {% Name %}.line_index < {% Name %}.line.length ){
+                        {% Name %}.line_index++;
+                        setTimeout( {% Name %}.emit, {% Name %}.emit_speed);
+                    } else {
+                        {% Name %}.buffer_index++;
+                        if(({% Name %}.buffer_index>=2)&&({% Name %}.buffer_index<{% Name %}.buffer.length)){
+                            {% Name %}.dom.lines[0].innerHTML = {% Name %}.dom.lines[1].innerHTML;
+                            {% Name %}.dom.lines[1].innerHTML = "";
+                        }
+                        {% Name %}.line = null;
+                        if( {% Name %}.buffer_index < {% Name %}.buffer.length ){
+                            setTimeout( {% Name %}.emit, {% Name %}.emit_speed);
+                        } else {
+                            setTimeout( {% Name %}.ready, 1000);
+                        } 
+                    }
+                },
+                
+                ready : function(){
+                    setTimeout(function(){{% Name %}.dom.button.className = "blink"}, 500);
+                }, 
+                
+                continue : function(){
+                    {% Name %}.dom.button.className = "hidden";
+                    setTimeout( {% Name %}.close, 500)
+                },
+
+                close : function(){
+                    {% Name %}.dom.target.style.animationName="close";
+                    setTimeout( {% Name %}.hide, 1000);
+                    {% Name %}.dom.lines[0].innerHTML = "";
+                    {% Name %}.dom.lines[1].innerHTML = "";                                       
+                }, 
+
+                hide : function(){
+                    {% Name %}.dom.target.style.animationName="";
+                    {% Name %}.dom.target.className = "hidden";
+                    {% Name %}.dom.pictgt.className = "hidden";
+                    {% Name %}.dom.button.className = "hidden";
+                    {% Name %}.dom.lines[0].className = "line hidden";
+                    {% Name %}.dom.lines[1].className = "line hidden";
+                    {% Name %}.dom.lines[2].className = "line hidden";
+                    setTimeout( function(){ {% Name %}.hidden = true; {% Name %}.update();}, 1000)                    
+                },  
+
+                handleMessage : function(message, data){                    
+                    data = JSON.parse(data);
+                    switch(message){
+                        case 'print':
+                            {% Name %}.messages[{% Name %}.messages.length] = data.data;
+                            debugger
+                            break;
+                    }
+                },           
+
+                feed : function(){
+                    msg = null;
+                    {% Name %}.settings.line_count = {% chars-per-line %};
+                    if( {% Name %}.messages.length > 0){
+                        msg = {% Name %}.messages[0];
+                        {% Name %}.messages.splice(0,1);
+                        ibuffer = msg.split('\n');
+                        obuffer = [];
+                        for(item in ibuffer){
+                            line = ibuffer[ item ];
+                            limit = {% Name %}.settings.line_count;
+                            while( line.length > {% Name %}.settings.line_count ){
+                                if( line[limit]!=' ') limit--;
+                                else {
+                                    obuffer[ obuffer.length ] = line.substring( 0, limit);
+                                    line = line.substring( limit);
+                                }
+                            }
+                            if( line.length )
+                            obuffer[obuffer.length] = line;
+                        }
+                        {% Name %}.buffer_index = 0;
+                        {% Name %}.buffer = obuffer;
+                        {% Name %}.line = null;
+                        {% Name %}.line_index = 0;
+                    }
+                    return msg != null;
+                },
+                
+                update : function(){
+                    if( {% Name %}.hidden ){
+                        if( {% Name %}.feed() ) {% Name %}.show();                    
+                    }
+                },
+                
+                start : function(){
+                    {% Name %}.loadSettings();
+                    {% Name %}.settings.update = { rate : 5 };//#TODO:Move to settings
+                    {% Name %}.messageHandler();
+                    {% Name %}.update();
+                },
+            };
+            {% Name %}.start();        
         </script>
     </body>
 </html>

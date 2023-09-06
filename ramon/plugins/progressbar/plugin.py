@@ -32,7 +32,7 @@ class plugin(Plugin):
             "hard-gradient"             : False,
             
             "overlay-file"              : './progress-overlay.png',
-            "sound-file"                : './experience.png',
+            "sound-file"                : './experience.wav',
             "backdrop-file"             : './progress-bg.png',
             
             "percent-color"             : [ 245, 255,   0, 255],
