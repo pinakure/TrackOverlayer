@@ -1,7 +1,7 @@
 <table style="border: none !important; width:100%;">
     <tr>
         <td width="64">
-            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/icon.png?raw=true" width="32" height="32"/>
+            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/icon.png?raw=true" width="64" height="64"/>
         </td>
         <td><h3>tRAckOverlayer</h3></td>
     <tr>
