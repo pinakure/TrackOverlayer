@@ -5,8 +5,7 @@
     <tr>
     </tr>
     <tr>
-        <td width="64"></td>
-        <td><h4>A retroachievement user data tracker who likes overlays too much</h4></td>
+         <td><h4>A retroachievement user data tracker who likes overlays too much</h4></td>
     </tr>
     <tr>
         <td>
