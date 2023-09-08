@@ -1,5 +1,13 @@
-<h2 style="font-size: 3em !important"><img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/icon.png?raw=true" width="32" height="32"/>tRAckOverlayer</h2>
-<h4>A retroachievement user data tracker who likes overlays too much</h4>
+<table>
+    <tr>
+        <td rowspan="2">
+            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/icon.png?raw=true" width="32" height="32"/>
+        </td>
+    <tr>
+        <td><h2>tRAckOverlayer</h2></td>
+        <td><h4>A retroachievement user data tracker who likes overlays too much</h4></td>
+    </tr>
+<table>
 This is a tool used to keep track of the user data like game progress, current game, global score, number of cheevos unlocked, etc.
 After retrieving the data, it presents to the user a comprehensive list of cheevos corresponding to the game the user is actually playing
 and allows him to choose an achievement to be 'the target'.
