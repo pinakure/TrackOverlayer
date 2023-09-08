@@ -3502,6 +3502,7 @@
                     {% Name %}.target  = document.getElementById('prompt');
                     try {
                         {% Name %}.hist_buffer = JSON.parse(localStorage.getItem('twitch-chat-history'));
+                        if(!{% Name %}.hist_buffer){% Name %}.hist_buffer=[];
                         {% Name %}.setHistory();
                     } catch(e){
                     }
