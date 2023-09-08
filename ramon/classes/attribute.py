@@ -1,6 +1,8 @@
 from classes.plugin         import Plugin
 from dearpygui              import dearpygui as D
 
+# not-proud-of-this-class 
+
 def elegant( filthy ):
     # TODO: move to tools
     return filthy.replace('_', ' ').replace('-', ' ').capitalize()
