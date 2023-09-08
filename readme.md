@@ -20,4 +20,9 @@ The tool will generate a custom overlay HTML file onto the different displayable
 all those details can be modified using CSS or tweaking them in the preferences menu.
         </td>
     </tr>
+        <td width="64"></td>
+        <td>
+            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/interface.png?raw=true" width="32" height="32"/>
+        </td>
+    </tr>
 <table>
