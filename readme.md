@@ -22,7 +22,7 @@ all those details can be modified using CSS or tweaking them in the preferences 
     </tr>
         <td width="64"></td>
         <td>
-            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/interface.png?raw=true" width="32" height="32"/>
+            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/interface.png?raw=true" width="1044" height="1343"/>
         </td>
     </tr>
 <table>
