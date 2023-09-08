@@ -1,4 +1,4 @@
-<table style="border: none">
+<table style="border: none !important; width:100%;">
     <tr>
         <td width="64">
             <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/icon.png?raw=true" width="32" height="32"/>
