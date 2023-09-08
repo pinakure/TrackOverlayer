@@ -1,39 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html type="plugin" version="0.?" author="smiker@m4gtracker.com">
     <head>
-        <title>Fly Simulator</title>
-        <script src="vpu.js"></script>
-        <script src="simulation.js"></script>
-        <script src="fly.js"></script>
-        <script src="swarm.js"></script>
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css">
+        <title>{% Name %}</title>
+    <!--vpu.js
+        The Vfx Processing Unit, a pixelart canvas handling class       
+    --> <script src="files/flysim/vpu.js"></script>
+    <!--simulation.js
+        Simulation data object container
+    --> <script src="files/flysim/simulation.js"></script>
+    <!--fly.js
+        Fly entity class, with its methods and attributes
+    --> <script src="files/flysim/fly.js"></script>
+    <!--swarm.js
+        Handler class to manage all instanced flies and stablish simple interaction rules, then store the data as simulation object
+    --> <script src="files/flysim/swarm.js"></script>
         <style>
-            html {
-                width: 100%;
-                height: 100%;
-                padding: 0px 0px 0px 0px;
-                margin: 0px 0px 0px 0px;
-            }
-            body {
-                width: 100%;
-                height: 100%;
-                padding: 0px 0px 0px 0px;
-                margin: 0px 0px 0px 0px;
-            }
-            canvas {
-                width: 100%;
-                height: 100%;
-                image-rendering: pixelated;
-                background: #101010;
+            {% fullsized %}
+
+            canvas, body {
+                overflow        : hidden;
+                width           : 100%;
+                height          : 100%;
+                image-rendering : pixelated;
+                background      : var(--backdrop-color);
             }
         </style>
     </head>
     <body>
-        <canvas id="canvas" width="320" height="240"></canvas>
+        <canvas id="canvas" noid="{% name %}" width="320" height="240"></canvas>        
+        
+        <script>
+            {% plugin %}
+        
+            var {% Name %} = {
+        
+                dom : {
+                    {% name %}      : document.getElementById('canvas'),
+                },
+
+                {% framework %}
+                
+       
+                update : function(){
+                },
+                
+                start : function(){
+                    {% Name %}.loadSettings();
+                    {% Name %}.messageHandler();
+                    {% Name %}.update();       
+                    VPU.init();
+                    Swarm.init();
+                    setInterval(function(){Swarm.loop()}, Swarm.update_speed);
+                    setInterval(function(){Swarm.render()}, Swarm.redraw_speed);
+                }
+            }
+            {% Name %}.start()
+        </script>
     </body>
-    <script>
-        VPU.init();
-        Swarm.init();
-        setInterval(function(){Swarm.loop()}, Swarm.update_speed);
-        setInterval(function(){Swarm.render()}, Swarm.redraw_speed);
-    </script>
 </html>

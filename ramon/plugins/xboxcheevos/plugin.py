@@ -8,7 +8,6 @@ class plugin(Plugin):
         self.name        = 'xboxcheevos'
         self.description = 'XBox Achievement Notifications'
         self.endpoint    = 'notifications'
-        self.color       = '#00f'
 
         #@ Composer Settings
         self.z_index     = 30
@@ -17,9 +16,7 @@ class plugin(Plugin):
         self.scale       = 1
         self.picture_size= 80
         
-        #@ Vars
-        
-
+        #@ Settings
         self.settings.update({
             "perspective"               : 0,
             "angle"                     : 0,
@@ -58,9 +55,6 @@ class plugin(Plugin):
             'up-color'                  : [192, 192, 192, 255],
             'low-color'                 : [122, 122, 122, 255],
         })
-
-
-
 
         #@ Install settings
         self.files      = [

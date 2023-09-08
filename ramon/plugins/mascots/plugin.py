@@ -5,8 +5,8 @@ class plugin(Plugin):
     def __init__(self):
         Plugin.__init__(self)
         #@ Plugin Settings
-        self.name        = 'flysim'
-        self.description = 'Fly Simulator, JFF doodle'
+        self.name        = 'mascots'
+        self.description = 'Mascots related to current game autodisplay'
         self.endpoint    = None
         
         #@ Composer Settings
@@ -20,7 +20,8 @@ class plugin(Plugin):
             'pos-x'                     : 0,
             'pos-y'                     : 0,
             'size-x'                    : self.width,
-            'size-y'                    : self.height,            
+            'size-y'                    : self.height,
+            'mascots'                   : '[]',
         })
 
 

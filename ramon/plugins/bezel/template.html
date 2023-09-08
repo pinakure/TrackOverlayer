@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html type="plugin" version="0.?" author="smiker@m4gtracker.com">
+    <head>
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css">
+        <title>{% Name %}</title>
+        <style>
+            {% fullsized %}
+
+            html {
+                width           : 100%;
+                height          : 100%;
+                overflow        : hidden;
+            }
+            body {
+                width           : 100%;
+                height          : 100%;
+                overflow        : hidden;
+                image-rendering : pixelated;
+                pointer-events  : none;                
+                background-image: var(--backdrop-file);
+                background-size : 100% 100%;
+            }
+        </style>
+    </head>
+    <body id="{% name %}">
+        <script>
+            {% plugin %}
+
+            var {% Name %} = {
+                
+                dom : {
+                    {% name %} : document.getElementById('{% name %}'),                    
+                },
+
+                {% framework %}
+                
+                update : function(){
+                },
+                
+                start : function(){
+                    {% Name %}.loadSettings();
+                    {% Name %}.messageHandler();
+                    {% Name %}.update();       
+                }
+            }
+            {% Name %}.start()
+        </script>
+    </body>
+</html>

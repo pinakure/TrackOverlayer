@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                padding     : 0px 0px 0px 0px;
+                margin      : 0px 0px 0px 0px;
+                box-sizing  : 0px 0px 0px 0px;
+                overflow    : hidden;
+            }
+
+            .back {
+                /* Fix back face to be facing us */
+                transform : rotatex(180deg); -webkit-transform:rotatex(180deg);
+            }
+
+            .container {
+                width               : 256px;
+                height              : 256px;
+                position            : absolute;
+                left                : calc( 50% - 128px );
+                top                 : calc( 50% - 128px );
+                perspective         : 1000px; -webkit-perspective : 1000px;
+            }
+
+            #cube {
+                width               : 256px;
+                height              : 256px;
+                top                 : 0px;
+                left                : 0px;
+                position            : absolute;
+                transform-style     : preserve-3d; -webkit-transform-style: preserve-3d;
+                animation           : rotatecube 12s linear infinite; -webkit-animation : rotatecube 12s linear infinite;
+            }
+
+            #cube div img {
+                animation: heartbeat 2s alternate ease-in-out infinite; -webkit-animation: heartbeat 2s alternate ease-in-out infinite;
+            }
+
+            #cube div {
+                height      : 256px;
+                width       : 256px;
+                display     : block;
+                position    : absolute;
+                border      : none;
+                line-height : 200px;
+                text-align  : center;
+                font-size   : 50px;
+                font-weight : bold;
+                /*box-shadow  : 0px 0px 8px #000;*/
+                border      : none;
+            }
+            @keyframes heartbeat {
+                0%  { filter: opacity(100%)             }
+                100%{ filter: opacity(0%)               }
+            }
+            @-webkit-keyframes heartbeat {
+                0%  { filter: opacity(100%)             }
+                100%{ filter: opacity(0%)               }
+            }
+            @keyframes rotatecube {
+                0%  { -webkit-transform: rotateY(360deg) }
+                25% { -webkit-transform: rotateY(270deg) }
+                50% { -webkit-transform: rotateY(180deg) }
+                75% { -webkit-transform: rotateY( 90deg) }
+                100%{ -webkit-transform: rotateY(  0deg) }
+            } 
+            @-webkit-keyframes rotatecube {
+                0%  { -webkit-transform: rotateY(360deg) }
+                25% { -webkit-transform: rotateY(270deg) }
+                50% { -webkit-transform: rotateY(180deg) }
+                75% { -webkit-transform: rotateY( 90deg) }
+                100%{ -webkit-transform: rotateY(  0deg) }
+            } 
+
+            #cube .left     { z-index: 0px; top: 0px; left: 0px;  width : 32px; }
+            #cube .right    { z-index: 0px; top: 0px; right: 0px; width : 32px; }
+            
+            #cube .front     { z-index: -32px; top: 0px; left: calc( 50% - 128px ); width : 256px; }
+            #cube .back      { z-index: 32px; top: 0px; left: calc( 50% - 128px ); width : 256px; }
+            
+            #cube .front    {  -webkit-transform:                    rotateY(0deg )                      translateZ( 16px );}
+            #cube .back     {  -webkit-transform: rotateX( 180deg )                      rotateZ(180deg) translateZ( 16px );}
+            #cube .right    {  -webkit-transform:                    rotateY(  90deg )                   translateZ( 16px );}
+            #cube .left     {  -webkit-transform:                    rotateY( -90deg )                   translateZ( 16px );}
+            #cube *         {
+                background-image  : url('current_cheevo.png');
+                background-repeat : no-repeat;
+                background-size   : 100% 100%;
+                image-rendering   : pixelated;    
+            }
+        </style>
+        <script>
+            var current_face=1;
+
+            function refresh(){ 
+                faces = [ 'front', 'right', 'back', 'left']
+                current_face++;
+
+                items = [
+                    document.getElementsByClassName(faces[current_face%4]),
+                ]
+                
+                for( item in items){
+                    rid                           = parseInt(Math.random()*65535);
+                    node                          = items[item][0]
+            //        node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
+            //        node.children[0].src          = `current_cheevo_lock.png?${rid}`;
+                    node.children[0].style.width  = '100%';
+                    node.children[0].style.height = '100%';
+                }                
+            } 
+
+            setInterval(refresh, 3000)            
+        </script>
+    </head>
+    <body>        
+        <div class="container">
+            <div id="cube">
+                <div class="front"  style="background-image:url('./cart-front.png') !important"></div>
+                <div class="back"   style="background-image:url('./cart-front.png') !important"></div>
+                <div class="right"  style="background-image:url('./cart-side.png') !important"></div>
+                <div class="left"   style="background-image:url('./cart-side.png') !important"></div>
+                <div class="top"    style="display: none"></div>
+                <div class="bottom" style="display: none"></div>
+            </div>
+        </div>
+    </body>
+</html>

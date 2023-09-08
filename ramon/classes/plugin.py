@@ -602,9 +602,73 @@ class Plugin:
                 file.write( payload )
             Ramon.data.notifications = []
         except Exception as E:
-            Log.error("Cannot write Autoupdate data script file", E)
+            Log.error("PLUGIN : Cannot write Autoupdate data script file", E)
         return payload
 
+    #HACK: repeated code (first reference at Ramon.mkdir )
+    def mkdir(dirname):
+        if not os.path.exists(f'{Preferences.root}/{dirname}'):
+            os.mkdir(f'{Preferences.root}/{dirname}')
+            Log.info(f"PLUGIN : Created directory '{dirname}'")
+        else:
+            Log.info(f"PLUGIN : Using directory '{dirname}'")
+    
+    def copyDir(self, dirname):
+        # Recursively copy a given directory
+        if not os.path.exists( dirname ):return False        
+        dirfiles    = os.listdir( dirname )
+        # select all child dirs but leave out those beginning with '.' 
+        
+        dirs = [ x  for x in dirfiles if os.path.isdir(f'{dirname}/{x}') and x[0] != '.']
+        # before copying any file of this dir, copy child dirs if any
+        for dir in dirs:
+            self.copyDir(f'{dirname}/{dir}')
+        # select all files but leave out those beginning with '.'
+        files = [ x for x in dirfiles if os.path.isfile(f'{dirname}/{x}') and x[0] != '.' ]
+        # finally copy the files
+        if len(files):
+            for file in files:
+                if not self.copy(f'{dirname}/{file}'):
+                    return False
+        return True
+
+    def install( self ):
+        # Add files under 'files' directory in each plugin to be automatically detected
+        file_path   = f'{Preferences.root}/plugins/{self.name}/files'
+        if os.path.exists(file_path):
+            if not self.copyDir( file_path ):
+                return False
+            
+        # Copy files declared in plugin.py definition
+        if len(self.files):
+            for file in self.files:
+                if not self.copy( f'{Preferences.root}/plugins/{self.name}/{file}' ):
+                    return False
+        return True
+    
+    def copy( self, filename):
+        # If initial filename is in a directory structure
+        part = filename.split(f'plugins/{self.name}/')[1].split('/')
+        file = part[-1]
+        dirs = part[0:-1]
+        dir_accumulated = f'{Preferences.root}/data' 
+        if len(dirs):
+            # Make sure it exist before trying to copy any file into.
+            # Always create the files in data as fsroot
+            for dir in dirs:
+                dir_accumulated += f'/{dir}'
+                Plugin.mkdir( dir_accumulated )
+        outfile = f'{ dir_accumulated }/{ file }' 
+        if os.path.exists(outfile): return True
+        try:
+            Log.info(f"Copying {self.name} plugin required file '{filename}'...")
+            with open( filename , 'rb') as fpin:
+                with open( outfile, "wb") as fpout:
+                    fpout.write(fpin.read())
+            return True
+        except Exception as E:
+            Log.error(f"{ self.name } : Failed to copy required file", E)
+            return False
 
     
     def load( name ):
@@ -617,17 +681,10 @@ class Plugin:
             Plugin.readConfig()
             if Plugin.loaded[ name ].settings['enabled']:
                 # Install required files at data folder, if any specified in plugin.py
-                files = Plugin.loaded[ name ].files            
-                if len(files):
-                    for file in files:
-                        if not os.path.exists(f'{Preferences.settings["root"]}/data/{file}'):
-                            try:
-                                Log.info(f"Copying {name} plugin required file '{file}'...")
-                                with open(f'{Preferences.root}/plugins/{name}/{file}', 'rb') as fpin:
-                                    with open(f'{Preferences.root}/data/{file}', "wb") as fpout:
-                                        fpout.write(fpin.read())
-                            except Exception as E:
-                                Log.error("Cannot read/write required file", E)
+                if not Plugin.loaded[ name ].install():
+                    Log.error(f"Cannot install required files for plugin { Plugin.loaded[ name ] }")
+                    Plugin.loaded[ name ].enabled = False
+                
             Log.time(True)  
         except Exception as E:
             Log.error(f'Cannot load Plugin {name}', E)
