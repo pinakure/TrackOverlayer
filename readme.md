@@ -1,12 +1,13 @@
-<table>
+<table style="border: none">
     <tr>
-        <td rowspan="2">
+        <td width="64">
             <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/icon.png?raw=true" width="32" height="32"/>
         </td>
-    <tr>
         <td><h2>tRAckOverlayer</h2></td>
+    <tr>
     </tr>
     <tr>
+        <td width="64"></td>
         <td><h4>A retroachievement user data tracker who likes overlays too much</h4></td>
     </tr>
 <table>
