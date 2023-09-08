@@ -5,6 +5,8 @@
         </td>
     <tr>
         <td><h2>tRAckOverlayer</h2></td>
+    </tr>
+    <tr>
         <td><h4>A retroachievement user data tracker who likes overlays too much</h4></td>
     </tr>
 <table>
