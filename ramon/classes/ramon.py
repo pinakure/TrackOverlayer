@@ -63,34 +63,37 @@ class Ramon:
     version             = 0.24
     timer               = None    
     plugins             = []
-
+    data                = None
+    run                 = True
     
     def updateCheevoManually(sender=None, args=None, user_data=None):
-        with open(f'{Data.root}/data/current_cheevo.txt', "w") as file:
+        with open(f'{Ramon.data.root}/data/current_cheevo.txt', "w") as file:
             file.write(dpg.get_value('cheevo'))
-        os.truncate(f'{Data.root}/data/current_cheevo.png')
+        os.truncate(f'{Ramon.data.root}/data/current_cheevo.png')
 
     
     def updateCheevo(sender=None, args=None, user_data=None):
         Cheevo.active_index = user_data
-        Data.game.current = Cheevo.active_index
+        Ramon.data.game.current = Cheevo.active_index
         Preferences.settings['current_cheevo'] = Cheevo.active_index
-        Data.game.save()
+        Ramon.data.game.save()
         for i in range(0,Cheevo.max):
             dpg.set_value(f'cheevo[{i+1}]', False)
         dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
-        Data.writeCheevo()
+        Ramon.data.writeCheevo()
+        Plugin.runLoaded()
+        Plugin.compose()
         Ramon.redraw()
 
     
     def exit():
-        Data.mine = False         
+        Ramon.run = False         
 
     
     def createMenu():
         with dpg.menu_bar():
             with dpg.menu(label="Actions"):
-                dpg.add_menu_item(label="Redump                "   , callback=Data.write)
+                dpg.add_menu_item(label="Redump                "   , callback=Ramon.data.write)
                 dpg.add_menu_item(label="Refresh               "   , callback=Ramon.refresh)
                 dpg.add_menu_item(label="Create Compile Script "   , callback=Ramon.createCompileScript)
                 dpg.add_menu_item(label="Exit                  "   , callback=Ramon.exit  )
@@ -131,10 +134,11 @@ class Ramon:
 
     
     def start():
-        Data.parent = Ramon
         Preferences.parent = Ramon
-        HotKeys.install()
         Preferences.loadcfg()
+        Ramon.data  = Data(Ramon)
+        HotKeys.install()
+        #Preferences.loadcfg()
         Ramon.mkdir('css')
         Ramon.mkdir('data')
         Ramon.mkdir('data/cache')
@@ -269,7 +273,7 @@ class Ramon:
                     color=Preferences.settings['unlocked_cheevos'],
                     pos=(31,row_height*Cheevo.global_index)
                 )
-            Data.updatePictures()
+            Ramon.data.updatePictures()
             with dpg.window(
                 modal=True, 
                 label="Caching pictures...",
@@ -291,7 +295,7 @@ class Ramon:
         dpg.set_viewport_small_icon(f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon(f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_pos( (Preferences.settings['x-pos'], Preferences.settings['y-pos']))
-        if not Preferences.settings['username'] or len(Data.cheevos) == 0:
+        if not Preferences.settings['username'] or len(Ramon.data.cheevos) == 0:
             Ramon.setProgress(1.0)
         return True
         
@@ -321,7 +325,7 @@ class Ramon:
         dpg.render_dearpygui_frame()        
         Ramon.refresh()        
         # ---------------------------------------- LOOP START ---------------------------------------
-        while dpg.is_dearpygui_running() and Data.mine and not Ramon.restart:
+        while dpg.is_dearpygui_running() and Ramon.run and not Ramon.restart:
             dpg.render_dearpygui_frame()
             if Preferences.settings['auto_update'] and not Ramon.timer:
                 Ramon.timer = Timer( Preferences.settings['auto_update_rate']*60, Ramon.refresh )
@@ -355,22 +359,22 @@ class Ramon:
     
     def redraw():
         Ramon.clear()
-        dpg.set_value('game'  , Data.last_seen      )
-        dpg.set_value('rank'  , Data.site_rank      )
-        dpg.set_value('score' , Data.score          )
-        dpg.set_value('date'  , Data.last_activity.strftime("%d %b %Y, %H:%M")  )
-        dpg.set_value('cheevo', Data.cheevo         )
+        dpg.set_value('game'  , Ramon.data.last_seen      )
+        dpg.set_value('rank'  , Ramon.data.site_rank      )
+        dpg.set_value('score' , Ramon.data.score          )
+        dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
+        dpg.set_value('cheevo', Ramon.data.cheevo         )
         payload  = ''
         unlocked = ''
-        Data.recent = []
-        for d in Data.cheevos:
+        Ramon.data.recent = []
+        for d in Ramon.data.cheevos:
             if d.locked: 
                 payload += d.menu() + "\n"
                 dpg.show_item(f'cheevo[{d.index}]')
                 dpg.set_item_label(f'cheevo[{d.index}]', d.name)
             else:
-                if len(Data.recent) < 5: 
-                    Data.recent.append(d)
+                if len(Ramon.data.recent) < 5: 
+                    Ramon.data.recent.append(d)
                 unlocked += '* '+ d.menu() + "\n"
                 
         dpg.set_value('stdout'  , payload)
@@ -383,33 +387,31 @@ class Ramon:
         for i in range(0,Cheevo.max):
             dpg.hide_item(f'cheevo[{i+1}]')
         dpg.set_value('unlocked', '')
-
     
     def refresh(sender=None, user_data=None, args=None):
         Ramon.timer = None
         Cheevo.global_index = 0
         
         if Preferences.settings['offline']:
-            Data.last_activity = datetime.strptime(Preferences.settings['last_date'], "%d %b %Y, %H:%M")
-            Data.last_seen     = Preferences.settings['last_game']
-            Data.site_rank     = Preferences.settings['rank']
-            Data.score         = Preferences.settings['score']
+            Ramon.data.last_activity = datetime.strptime(Preferences.settings['last_date'], "%d %b %Y, %H:%M")
+            Ramon.data.last_seen     = Preferences.settings['last_game']
+            Ramon.data.site_rank     = Preferences.settings['rank']
+            Ramon.data.score         = Preferences.settings['score']
             Ramon.redraw()
-            Data.write()
+            Ramon.data.write()
             Plugin.runLoaded()
             dpg.set_value('stdout','Offline mode, disable to get live data from RetroAchievements.org')
             return False
 
-        if Data.query():
+        if Ramon.data.query():
             Ramon.clear()
-            dpg.set_value('stdout','Requesting Data...')
+            dpg.set_value('stdout','Requesting data...')
             Ramon.redraw()
-            Data.write()
+            Ramon.data.write()
             Plugin.runLoaded()
             return True
         else:
             dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')
-        
     
     def message(text):
         dpg.set_value('stdout', dpg.get_value('stdout')+'\n'+text)

@@ -71,7 +71,7 @@ try:
     from classes.preferences    import Preferences
     from pathlib                import Path
 except ImportError:
-    os.system('pip install requests beautifulsoup4 dearpygui pynput peewee pyinstaller')
+    os.system('pip install requests requests_toolbelt beautifulsoup4 dearpygui pynput peewee pyinstaller')
     os.system(f'pause')
     exit()
 

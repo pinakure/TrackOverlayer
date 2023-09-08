@@ -54,16 +54,17 @@ def parseColor(string):
 
 class Endpoints:
 
+    debug = False
     
     def notifications():
-        from classes.data import Data
-        return sane(json.dumps(Data.notifications))
+        from classes.ramon import Ramon
+        return sane(json.dumps(Ramon.data.notifications))
     
     
     def current_cheevo():
-        from classes.data import Data
+        from classes.ramon import Ramon
         from classes.plugin import Plugin        
-        return sane(json.dumps( Data.cheevo if not Plugin.debug else "Test cheevo\nTest description"))
+        return sane(json.dumps( Ramon.data.cheevo if not Plugin.debug else "Test cheevo\nTest description"))
     
     def username():
         return Preferences.settings['username'] 
@@ -74,22 +75,22 @@ class Endpoints:
     
     
     def recent():
-        from classes.data import Data
-        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Data.recent] ))
+        from classes.ramon import Ramon
+        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Ramon.data.recent] ))
     
     
     def progress():
-        from classes.data import Data
+        from classes.ramon import Ramon
         from classes.plugin import Plugin
         if Plugin.debug: 
             import random
-            Data.progress = f'{str(int(random.random()*100))}%'
-        return Data.progress 
+            Ramon.data.progress = f'{str(int(random.random()*100))}%'
+        return Ramon.data.progress 
     
     def last_progress():
-        from classes.data import Data
-        lp = Data.last_progress if Data.last_progress != '' else Data.progress
-        Data.last_progress = Data.progress
+        from classes.ramon import Ramon
+        lp = Ramon.data.last_progress if Ramon.data.last_progress != '' else Ramon.data.progress
+        Ramon.data.last_progress = Ramon.data.progress
         return lp
     
     
@@ -351,6 +352,9 @@ class Plugin:
         payload = json.dumps( Plugin.aux(payload) ).replace('"', '').replace('_', ' ')
         return "loadSettings    : function(){\n\t\t\t\t\ttry {\n\t\t\t\t\t\t{% Name %}.settings = JSON.parse(localStorage.getItem('{% name %}-settings'));\n\t\t\t\t\t\tsettings.update.rate = 1;\n\t\t\t\t\t} catch (e){\n\t\t\t\t\t\t{% Name %}.settings = "+payload+";\n\t\t\t\t\t}\n\t\t\t\t},"
              
+    def getPluginList():
+        return 'plugins: {'+",".join([f"{x}:undefined" for x in Plugin.loaded.keys() if Plugin.loaded[x].settings['enabled']])+"},"
+
     def injectScripts(self):
         from classes.dynamic_css import fonts
         from dearpygui import dearpygui as dpg
@@ -482,6 +486,7 @@ class Plugin:
     
     def toggleDebug():
         Plugin.debug = not Plugin.debug
+        Endpoints.debug = Plugin.debug
         Log.verbose = Plugin.debug
         Preferences.settings['debug'] = Plugin.debug
         Plugin.runLoaded()
@@ -518,10 +523,11 @@ class Plugin:
             Log.error("Cannot read Plugin Overlay template file", E)
         #
         # Inject payloads 
-        data = data.replace( '/*VARS*/'   , cvars )
-        data = data.replace( '/*CSS*/'    , css   )
-        data = data.replace( '<!--HTML-->', html  )
-        data = data.replace( '/*JS*/'     , js    )
+        data = data.replace( '/*VARS*/'     , cvars )
+        data = data.replace( '/*CSS*/'      , css   )
+        data = data.replace( '<!--HTML-->'  , html  )
+        data = data.replace( '/*JS*/'       , js    )
+        data = data.replace( '{% plugins %}', Plugin.getPluginList())
         #
         # Dump data into rendered template
         try:
@@ -574,7 +580,7 @@ class Plugin:
             file.write(config)
 
     def autoupdate():
-        from classes.data   import Data
+        from classes.ramon   import Ramon
         reload  = "setTimeout(function(){ location.reload(); }, 5000);"
         body    = 'transition: background-color 500ms ease-in-out;' if Plugin.debug else ''
         ls      = { (f"""localStorage.setItem('{ plugin.name }-settings', '{ json.dumps(plugin.settings) }');"""+'\n') for name,plugin in Plugin.loaded.items()}
@@ -594,7 +600,7 @@ class Plugin:
         try:
             with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
                 file.write( payload )
-            Data.notifications = []
+            Ramon.data.notifications = []
         except Exception as E:
             Log.error("Cannot write Autoupdate data script file", E)
         return payload

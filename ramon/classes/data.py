@@ -8,6 +8,7 @@ from classes.log            import Log
 from classes.plugin         import Plugin
 from classes.scraper        import Scraper
 
+#todo: move to helper module, when it exists....
 def ascii(string):
     table = {
         'ū' : 'u',
@@ -21,94 +22,117 @@ def ascii(string):
         string = string.replace(key, value)
     return str(string)
 
-class Data:
-    parent          = None
-    echo            = False
-    score           = ''
-    site_rank       = ''
-    last_seen_full  = ''
-    last_seen       = ''
-    last_activityr  = ''
-    last_activity   = None
-    progress        = ''
-    last_progress   = ''
-    stats           = ''
-    cheevo          = ''
-    cheevos_raw     = []
-    cheevos         = []
-    mine            = True
-    notifications   = []
-    recent          = []
-    reload_rate     = 60
-    css             = {}
-    game            = None
-    game_id         = 0
-    parsed          = None
-    logged_user     = None
+class Data(Scraper):
 
-    
-    def parseCheevos(game):
+    def __init__(self, parent):
+        username = Preferences.settings[ 'username' ]
+        password = Preferences.settings[ 'password' ]
+
+        Scraper.__init__(self, 
+            protocol        = "https", 
+            host            = "retroachievements.org", 
+            port            = None, 
+            needs_login     = True, 
+            form_boundary   = True,
+            login_form_url  = 'login', 
+            login_post_url  = 'login', 
+            login_username  = username,
+            login_password  = password,
+            target_url      = f"user/{ username }",
+            login_fields    = {
+                'User'      : username,
+                'password'  : password,
+            },
+            login_tokens    = [ '_token'    , '_method'                     ],
+            cookies   = [ 'XSRF-TOKEN', 'retroachievements_session'   ],
+        )
+        self.parent         = parent        
+        self.echo           = False
+        self.score          = ''
+        self.site_rank      = ''
+        self.last_seen_full = ''
+        self.last_seen      = ''
+        self.last_activityr = ''
+        self.last_activity  = None
+        self.progress       = ''
+        self.last_progress  = ''
+        self.stats          = ''
+        self.cheevo         = ''
+        self.cheevos_raw    = []
+        self.cheevos        = []
+        self.mine           = True
+        self.notifications  = []
+        self.recent         = []
+        self.reload_rate    = 60
+        self.game           = None
+        self.game_id        = 0
+        
+        
+        
+    # below is un-refactored methods...
+    # pretty much still
+
+    def parseCheevos(self, game):
         cheevos = []
-        Log.info(f'Parsing {len(Data.cheevos_raw)} raw cheevos')
-        for c in Data.cheevos_raw:
+        Log.info(f'Parsing {len(self.cheevos_raw)} raw cheevos')
+        for c in self.cheevos_raw:
             cheevos.append( Cheevo.parse( game, c ) )
         Log.info(f'Got {len(cheevos)} sane cheevo instances')
         return cheevos       
         
     
-    def getRank( usersummary ):
+    def getRank( self, usersummary ):
         try:
             Log.info("Parsing User Rank...")
-            Data.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
+            self.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
         except Exception as E:
             Log.error("Cannot parse User Rank", E)
             
     
-    def getDate( usersummary ):
+    def getDate( self, usersummary ):
         try:
             Log.info("Parsing User Last Activity Date...")
-            Data.last_activityr = usersummary.split('Last Activity: ')[1].split('Account')[0]
-            Data.last_activity  = (datetime.strptime(Data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
+            self.last_activityr = usersummary.split('Last Activity: ')[1].split('Account')[0]
+            self.last_activity  = (datetime.strptime(self.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
         except Exception as E:
             Log.error("Cannot parse User Last Activity Date", E)
         
     
-    def getScore( usersummary ):
+    def getScore( self, usersummary ):
         try:
             Log.info("Parsing User Score...")
-            Data.score = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
+            self.score = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
         except Exception as E:
             Log.error("Cannot parse User Score", E)
 
     
-    def getGame( usersummary_raw ):
+    def getGame( self, usersummary_raw ):
         try:
             Log.info("Getting Game data...")
-            # Log.info(Data.payload)  
             gamepart = str(usersummary_raw).split('retroachievements.org/game/')[1]
             # Log.info(gamepart)           
-            Data.game_id = int(gamepart.split('"')[0])
-            Data.game    = Game.loadOrCreate(Data.game_id)   
-            Data.last_seen_full = usersummary_raw.text.split('Last seen  in  ')[1].split('[')[0]
-            Data.last_seen      = Data.last_seen_full.split('(')[0]              
+            self.game_id = int(gamepart.split('"')[0])
+            self.game    = Game.loadOrCreate(self.game_id)   
+            self.last_seen_full = usersummary_raw.text.split('Last seen  in  ')[1].split('[')[0]
+            self.last_seen      = self.last_seen_full.split('(')[0]              
         except Exception as E:
             Log.error("Cannot parse Game Data", E)
 
     
-    def getUserSummary():
+    def getUserSummary(self):
         try:
             Log.info("Getting User Summary HTML...")
-            usersummary_raw     = Data.parsed.body.find('div', attrs={'class':'usersummary'})
+            usersummary_raw     = self.parsed.body.find('div', attrs={'class':'usersummary'})
             usersummary         = usersummary_raw.text
-            Data.getScore(usersummary)
-            Data.getRank(usersummary)
-            Data.getDate(usersummary)
-            Data.getGame(usersummary_raw)
+            self.getScore(usersummary)
+            self.getRank(usersummary)
+            self.getDate(usersummary)
+            self.getGame(usersummary_raw)
         except Exception as E:
             Log.error("Cannot parse payload getting User Summary", E)
     
     
-    def setActiveCheevo(index):
+    def setActiveCheevo(self, index):
         Cheevo.active_index = index
         Preferences.settings['current_cheevo'] = Cheevo.active_index
         for i in range(0,Cheevo.max):
@@ -116,126 +140,63 @@ class Data:
             dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
             
      
-    def getCheevos():
+    def getCheevos(self):
         import random
         try:
             rid = random.random()
             Log.info("Updating cheevo info...")
-            stats = str(Data.parsed.body.find('div', attrs={'class':'userpage recentlyplayed'}))
-            #Data.last_progress = Data.progress
+            stats = str(self.parsed.body.find('div', attrs={'class':'userpage recentlyplayed'}))
+            #self.last_progress = self.progress
             try:
                 Log.info("Getting progress HTML")
                 progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
                 Log.info("Getting progress")
-                Data.progress  = progress_html.split('width:')[1].split('"')[0] if not Plugin.debug else f'{int(random.random()*100)}%'
+                self.progress  = progress_html.split('width:')[1].split('"')[0] if not Plugin.debug else f'{int(random.random()*100)}%'
             except:
-                Data.progress  = '0%'
+                self.progress  = '0%'
                 dpg.set_value('stdout', 'Asuming no achievements, since no progressbar was found.')
                 return True
             Log.info("Getting metadata")
-            Data.stats = stats.split('<div class="mb-5">')[1].split('</div>')[0]
+            self.stats = stats.split('<div class="mb-5">')[1].split('</div>')[0]
             Log.info("Getting cheevos raw data")
-            Data.cheevos_raw    = Data.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
+            self.cheevos_raw    = self.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
             Log.info("Parsing cheevos")
-            Data.cheevos        = Data.parseCheevos(Data.game)
-            for d in Data.cheevos:
+            self.cheevos        = self.parseCheevos(self.game)
+            for d in self.cheevos:
                 if d.index == Cheevo.active_index:
-                    Data.cheevo = d.name + "\n" + d.description
+                    self.cheevo = d.name + "\n" + d.description
         except Exception as E:
             Log.error("Cannot parse Updated Cheevo information", E)
 
-    login_url = "https://retroachievements.org/request/auth/login.php"
-    profile_url = "https://retroachievements.org/user/xxxxx"
-    session   = None
-
-    
-    def login():
-        try:
-            if Preferences.settings['username'] == '': return False        
-            # Avoid double login, but keep ability to re-login if username changes during execution
-            if Data.session and Data.logged_user == Preferences.settings['username']: return True
-            Data.profile_url = f"https://retroachievements.org/user/{Preferences.settings['username']}"
-            Log.info("Logging in...")
-            Data.session = requests.Session()
-            headers = {
-                'Host': 'retroachievements.org',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                'Accept-Language': 'es-ES,es;q=0.9',
-                'Accept-Encoding': 'gzip, deflate',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Origin': 'https://retroachievements.org',
-                'Referer': Data.profile_url,
-            }
-            Data.session.headers.update(headers)
-            # Login page request.
-            # Extract payload data from login page.
-            response = Data.session.get( Data.profile_url )
-            soup  = BeautifulSoup(response.text, features='html.parser')
-            token = soup.find('input').get('value')            
-            # Add data in payload.
-            form_data = {
-                'u': Preferences.settings['username'],
-                'p': Preferences.settings['password'],
-                '_token': token,                
-            }                
-            # Request for login.
-            login_response = Data.session.post(Data.login_url, data=form_data)
-            # print(login_response.status_code, response.text)
-            return login_response.status_code==200
-        
-        except Exception as E:
-            Log.error("Cannot log in in retro arch", E)
-            Data.session = None
+    def getPayload(self):
+        # Try to get RA user profile HTML
+        self.request( self.url(f'user/{ self.login_username }'), filename="profile" )
+        if not self.response_text:
+            Log.error("Cannot get RA Payload")
             return False
-
-    
-    def getPayload():
-        try:            
-            # Try to get RA user profile HTML
-            Data.payload = Data.session.get(f'https://www.retroachievements.org/user/{Preferences.settings["username"]}').text
-            if not Data.payload:
-                Log.error("Cannot get RA Payload")
-                return False
-            # Dump copy of profile HTML at data/profile.html
-            with open(f"{ Preferences.settings[ 'root' ] }/profile.html", "wb" ) as file:
-                file.write( Data.payload.encode('utf-8') )
-            return True
-        except Exception as E:
-            Log.error("Cannot get RetroAchievements Payload", E)
-            return False        
+        return True
     
     
-    def parse():
+    def parse(self):
         # Try to parse profile HTML and extract metadata
         try:
-            Data.parsed = BeautifulSoup( Data.payload, features='html.parser' )
-            Data.getUserSummary()
-            Data.setActiveCheevo( Data.game.current )
-            Data.getCheevos()
-            dpg.set_viewport_title(f'tRAckOverlayer - { f"{Data.progress}  -  {len([cheevo for cheevo in Data.cheevos if not cheevo.locked])}/{len(Data.cheevos)}" if Data.game else "No game"}')
+            Scraper.parse(self)
+            self.parsed = BeautifulSoup( self.response_text, features='html.parser' )
+            self.getUserSummary()
+            self.setActiveCheevo( self.game.current )
+            self.getCheevos()
+            dpg.set_viewport_title(f'tRAckOverlayer - { f"{self.progress}  -  {len([cheevo for cheevo in self.cheevos if not cheevo.locked])}/{len(self.cheevos)}" if self.game else "No game"}')
             return True
         except Exception as E:
             Log.error("Cannot parse profile HTML, the structure may have be changed.", E)
             return False
-
     
-    def query():        
-        Log.info('Refreshing data...')
-        Data.css = Data.parent.css  # deprecated, as CSS used is not DynamicCSS anymore in most of the plugins 
-        Preferences.data = Data     # deprecated, as it is a Static class and does not need to be double referenced
-        # Try to log in in RA
-        if not Data.login():
-            Log.error("Login failed")
-            return False
-        Data.logged_user = Preferences.settings['username']            
-        if not Data.getPayload():
-            Log.error("Cannot parse get profile HTML")
-            return False
-        return Data.parse()
-        
+    def query(self):
+        self.login_username = Preferences.settings['username']
+        self.target_url     = self.url(f"user/{ self.login_username }" )
+        return self.get()
     
-    def updatePictures():
+    def updatePictures(self):
         try:   
             width, height, depth, data = dpg.load_image(f'{Preferences.root}/data/current_cheevo.png')                
         except Exception as E:
@@ -261,7 +222,7 @@ class Data:
                     parent='main',
                     tag='current_cheevo_image', 
                     texture_tag="current_cheevo_img",
-                    pos=(Data.parent.width-width,69),
+                    pos=(self.parent.width-width,69),
                     width=40,
                     height=40,
                 )
@@ -270,7 +231,7 @@ class Data:
                 Log.error("Cannot create static texture 'current_cheevo_img'.", E)
                 
     
-    def getCurrentCheevo( picture ):
+    def getCurrentCheevo( self, picture ):
         # try first if image is in cache
         cheevo_id = picture.split('.png')[0].split('_lock')[0]
         if not os.path.exists(f'{Preferences.root}/data/cache/{picture}'):
@@ -285,31 +246,31 @@ class Data:
         return data
         
     
-    def writeCheevo():
+    def writeCheevo(self):
         if Preferences.settings['username'] == '': return
-        for d in Data.cheevos:
+        for d in self.cheevos:
             if d.index == Cheevo.active_index:
                 with open(f'{Preferences.root}/data/current_cheevo.txt' , 'w') as file:   
                     file.write(str(d.name))
                     file.write('\n')
                     file.write(str(d.description))
-                    Data.cheevo = d.name + "\n" + d.description
+                    self.cheevo = d.name + "\n" + d.description
                     # get achievement picture
-                    data = Data.getCurrentCheevo( d.picture )
+                    data = self.getCurrentCheevo( d.picture )
                     if len(data)>0:
                         with open(f"{Preferences.root}/data/current_cheevo.png", 'wb') as picture:
                             picture.write(data[0] )
                         with open(f"{Preferences.root}/data/current_cheevo_lock.png", 'wb') as picture:
                             picture.write(data[1] )
-                        Data.updatePictures()
+                        self.updatePictures()
                 
     
-    def getReloadSnippet():
-        return """<script>function refresh(){ window.location.reload(); } setInterval(refresh, """+str(Data.reload_rate*500)+""")</script>"""
+    def getReloadSnippet(self):
+        return """<script>function refresh(){ window.location.reload(); } setInterval(refresh, """+str(self.reload_rate*500)+""")</script>"""
 
     
-    def writeCheevos():
-        script = Data.getReloadSnippet()
+    def writeCheevos(self):
+        script = self.getReloadSnippet()
         rid = random.random()
         with open(f'{Preferences.root}/data/cheevos.html'         , 'w') as file:   
             with open(f'{Preferences.root}/data/cheevos_locked.html'  , 'w') as locked:   
@@ -321,8 +282,8 @@ class Data:
                     locked.write   ( '<div class="table">')
                     unlocked.write ( '<div class="table">')
                     count = 0
-                    for d in Data.cheevos:
-                        Data.parent.setProgress( count / len(Data.cheevos) )
+                    for d in self.cheevos:
+                        self.parent.setProgress( count / len(self.cheevos) )
                         file.write( ascii(str(d)) + '\n' )
                         if d.locked:
                             locked.write( ascii(str(d)) + '\n' )
@@ -332,16 +293,16 @@ class Data:
                     file.write     ('</div>')
                     locked.write   ('</div>')
                     unlocked.write ('</div>')
-                    Data.parent.setProgress(1.0)
+                    self.parent.setProgress(1.0)
         
     
-    def writeRecent():
-        script = Data.getReloadSnippet()
+    def writeRecent(self):
+        script = self.getReloadSnippet()
         rid = random.random()
         with open(f'{Preferences.root}/data/recent.html'        , 'w') as file:   
             file.write(f'''<link rel="stylesheet" type="text/css" href="../css/recent.css?{rid}">''')
             file.write(f'''{script}<table><tbody>''')
-            for r in Data.recent:
+            for r in self.recent:
                 file.write(f'''
                             <tr><td colspan="2"><hr/></td></tr>
                             <tr>
@@ -357,12 +318,12 @@ class Data:
             file.write('''</tbody><table>''')
 
     
-    def getNotifications():
+    def getNotifications(self):
         notifications = []
         cheevos = (Cheevo
                 .select()
                 .join(Game)
-                .where(Cheevo.game==Data.game, Cheevo.locked==False, Cheevo.notified==False)
+                .where(Cheevo.game==self.game, Cheevo.locked==False, Cheevo.notified==False)
                 .order_by(Cheevo.index.asc())
             )
         for cheevo in cheevos:
@@ -372,19 +333,19 @@ class Data:
         return notifications
         
     
-    def writeNotifications():
-        notifications = Data.getNotifications()
-        Data.notifications = notifications
+    def writeNotifications(self):
+        notifications = self.getNotifications()
+        self.notifications = notifications
         data = json.dumps(notifications)
         
     
-    def write():
+    def write(self):
         if Preferences.settings['username'] == '': return
-        with open(f'{Preferences.root}/data/last_activity.txt'  , 'w') as file:   file.write(Data.last_activity.strftime("%d %b %Y, %H:%M").upper() )
-        with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(Data.last_seen     ))
-        with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(Data.site_rank     )
-        with open(f'{Preferences.root}/data/score.txt'          , 'w') as file:   file.write(Data.score         )        
-        Data.writeNotifications()
-        Data.writeCheevo()
-        Data.writeCheevos()
-        Data.writeRecent()
+        with open(f'{Preferences.root}/data/last_activity.txt'  , 'w') as file:   file.write(self.last_activity.strftime("%d %b %Y, %H:%M").upper() )
+        with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(self.last_seen     ))
+        with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(self.site_rank     )
+        with open(f'{Preferences.root}/data/score.txt'          , 'w') as file:   file.write(self.score         )        
+        self.writeNotifications()
+        self.writeCheevo()
+        self.writeCheevos()
+        self.writeRecent()
