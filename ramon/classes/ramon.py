@@ -326,29 +326,36 @@ class Ramon:
         # ----------------------------------------- LOOP END ----------------------------------------
         # ---------------------------------------- DEINIT START -------------------------------------
         # First of all Remove any timer left so it wont try to run on missing ui elements
-        if Ramon.timer:
-            Ramon.timer.cancel()
-            Ramon.timer = None
-        # Begin deinitialization, begin dumping the log 
-        with open('ramon.log', "w") as file:
-            file.write(dpg.get_value('log'))
-        # Unbind messages from log to see them while ui is deinitializedlog             
-        Log.stdout = True
-        # Store window position and shape at exit
-        pos  = dpg.get_viewport_pos()
-        size = (dpg.get_viewport_width(), dpg.get_viewport_height() )
-        Preferences.settings['x-pos'] = pos[0]
-        Preferences.settings['y-pos'] = pos[1]
-        Preferences.settings['width'] = size[0]-16
-        Preferences.settings['height'] = size[1]
-        Preferences.writecfg()
-        Log.info("Settings stored")
-        # Unitialize UI library
-        dpg.remove_alias("main") 
-        dpg.delete_item('main')
-        dpg.destroy_context()        
-        Log.info("Closed succesfully")
+        return Ramon.exit()
         
+    def exit():
+        try:
+            if Ramon.timer:
+                Ramon.timer.cancel()
+                Ramon.timer = None
+            # Begin deinitialization, begin dumping the log 
+            with open('ramon.log', "w") as file:
+                file.write(dpg.get_value('log'))
+            # Unbind messages from log to see them while ui is deinitializedlog             
+            Log.stdout = True
+            # Store window position and shape at exit
+            pos  = dpg.get_viewport_pos()
+            size = (dpg.get_viewport_width(), dpg.get_viewport_height() )
+            Preferences.settings['x-pos'] = pos[0]
+            Preferences.settings['y-pos'] = pos[1]
+            Preferences.settings['width'] = size[0]-16
+            Preferences.settings['height'] = size[1]
+            Preferences.writecfg()
+            Log.info("Settings stored")
+            # Unitialize UI library
+            dpg.remove_alias("main") 
+            dpg.delete_item('main')
+            dpg.destroy_context()        
+            Log.info("Closed succesfully")       
+            return True
+        except Exception as E:
+            Log.error("Error during deinitialization", E)
+            return False
     
     def redraw():
         Ramon.clear()
