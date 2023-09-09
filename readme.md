@@ -5,11 +5,11 @@
     <tr>
     </tr>
     <tr>
-         <td><h4>A retroachievement user data tracker who likes overlays too much</h4></td>
+         <td><h4>A retroachievement user data tracker which likes overlays too much</h4></td>
     </tr>
     <tr>
         <td>
-        This is a tool used to keep track of the user data like game progress, current game, global score, number of cheevos unlocked, etc.
+        This is a tool used to keep track of the user data like game progress, current game, global score, number of cheevos unlocked...
 After retrieving the data, it presents to the user a comprehensive list of cheevos corresponding to the game the user is actually playing
 and allows him to choose an achievement to be 'the target'.<br/>
 The tool will generate a custom overlay HTML file onto which each one of the different displayable elements will be inserted at their corresponding position,
