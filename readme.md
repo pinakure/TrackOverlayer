@@ -16,8 +16,7 @@ The tool will generate a custom overlay HTML file onto which each one of the dif
 with customizable parameters and styles which can be modified using CSS or tweaking them in the preferences menu.
         </td>
     </tr>
-         <td>
-            
+         <td>             
         </td>
     </tr>
 <table>
