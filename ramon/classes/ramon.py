@@ -89,6 +89,13 @@ class Ramon:
     def exit():
         Ramon.run = False         
 
+    def openWeb(sender, args, type):
+        if   type == 'overlay'      : web = f"{Preferences.settings['root']}/data/overlay.html"
+        elif type == 'twitch-chat'  : web = f"https://www.twitch.tv/popout/{Preferences.settings['twitch-username']}/chat?popout="
+        elif type == 'ra-user'      : web = f"https://retroachievements.org/user/{Preferences.settings['username']}"
+        elif type == 'ra-game'      : web = f"https://retroachievements.org/game/{Ramon.data.game.id}"
+        elif type == 'ra-cheevo'    : web = f"https://retroachievements.org/achievement/{Ramon.data.the_cheevo.id}"
+        os.system(f'start {web}')
     
     def createMenu():
         with dpg.menu_bar():
@@ -101,12 +108,13 @@ class Ramon:
                 dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )
                 dpg.add_menu_item(label="Log"               , tag="view_log"    , callback=Log.show             )
             with dpg.menu(label="Links"):
+                dpg.add_menu_item(label="TO Overlay"           , tag="overlay-link" , callback=Ramon.openWeb, user_data="overlay"  )
                 with dpg.menu(label="Twitch"):
-                    dpg.add_menu_item(label="Chat"              , tag="twitch_chat" , callback=Preferences.show     )
+                    dpg.add_menu_item(label="Chat"              , tag="twitch_chat" , callback=Ramon.openWeb, user_data="twitch-chat"  )
                 with dpg.menu(label="RetroAchievements"):
-                    dpg.add_menu_item(label="User Profile"      , tag="ra_user_profile" , callback=Preferences.show     )
-                    dpg.add_menu_item(label="Game Profile"      , tag="ra_game_profile" , callback=Preferences.show     )
-                    dpg.add_menu_item(label="Cheevo Page"       , tag="ra_cheevo_page"  , callback=Preferences.show     )
+                    dpg.add_menu_item(label="User Profile"      , tag="ra_user_profile" , callback=Ramon.openWeb, user_data="ra-user"     )
+                    dpg.add_menu_item(label="Game Profile"      , tag="ra_game_profile" , callback=Ramon.openWeb, user_data="ra-game"     )
+                    dpg.add_menu_item(label="Cheevo Page"       , tag="ra_cheevo_page"  , callback=Ramon.openWeb, user_data="ra-cheevo"   )
 
 
     

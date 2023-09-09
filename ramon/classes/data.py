@@ -64,6 +64,7 @@ class Data(Scraper):
         self.progress       = ''
         self.last_progress  = ''
         self.stats          = ''
+        self.the_cheevo     = None
         self.cheevo         = ''
         self.cheevos_raw    = []
         self.cheevos        = []
@@ -171,6 +172,7 @@ class Data(Scraper):
             self.cheevos        = self.parseCheevos(self.game)
             for d in self.cheevos:
                 if d.index == Cheevo.active_index:
+                    self.the_cheevo = d
                     self.cheevo = d.name + "\n" + d.description
         except Exception as E:
             Log.error("Cannot parse Updated Cheevo information", E)

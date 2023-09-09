@@ -321,6 +321,27 @@
                 },
             };
             {% Name %}.start();        
+
+            /*
+            import { Client, Intents } from "discord.js";
+            const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+
+            client.once("ready", () => {
+            console.log("Discord client ready ✅.");
+            // Access your server data thanks to your GuildID
+            const server = client.guilds.cache.get(process.env.GUILD_ID!)!;
+            // Access your channel thanks to its channelId
+            const channel = client.channels.cache.get(process.env.MY_CHANNEL_ID!) as TextChannel;
+            
+            const message = channel.lastMessage;
+            console.log(message.content);
+            
+            // Store inside a db, send through the network to another application...
+            });
+            client.login(process.env.DISCORD_TOKEN);
+            */
+
+
         </script>
     </body>
 </html>
