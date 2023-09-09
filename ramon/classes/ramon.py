@@ -5,7 +5,6 @@ from pynput                 import keyboard
 from classes.data           import Data
 from classes.cheevo         import Cheevo
 from classes.preferences    import Preferences
-from classes.dynamic_css    import DynamicCSS
 from classes.log            import Log
 from classes.plugin         import Plugin
 from threading              import Timer

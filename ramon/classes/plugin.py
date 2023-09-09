@@ -367,7 +367,7 @@ class Plugin:
         return 'plugins: {'+",".join([f"{x}:undefined" for x in Plugin.loaded.keys() if Plugin.loaded[x].settings['enabled']])+"},"
 
     def injectScripts(self):
-        from classes.dynamic_css import fonts
+        from classes.fonts import fonts
         from dearpygui import dearpygui as dpg
                 
         for i in range(0,2):

@@ -146,7 +146,7 @@ class Attribute:
         )
 
     def font( x, y):
-        from classes.dynamic_css import fonts
+        from classes.fonts import fonts
         if not f'{Attribute.groupname}-font' in Attribute.types.keys(): return
         D.add_combo(
             tag             = f'{Attribute.group}-font',
