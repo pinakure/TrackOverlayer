@@ -17,7 +17,7 @@ with customizable parameters and styles which can be modified using CSS or tweak
         </td>
     </tr>
          <td>
-            <img style="display:inline-block" src="https://github.com/pinakure/yt-obs/blob/main/doc/interface.png?raw=true" width="1044" height="1343"/>
+            
         </td>
     </tr>
 <table>
