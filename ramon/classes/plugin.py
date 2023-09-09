@@ -179,6 +179,17 @@ class Plugin:
         Plugin.writeConfig()
         plugin.run()
         Plugin.compose()
+    
+    def updateComboSettings( sender=None, value=None, user_data=None ):
+        from dearpygui import dearpygui as dpg
+        setname     = user_data.split(':')[0]
+        varname     = user_data.split(':')[1]
+        plugin_name = sender.replace('plugin-setting-','').split('-')[0]
+        plugin = Plugin.loaded[ plugin_name ]
+        plugin.settings[ varname ] = f'{setname}:{value}'
+        Plugin.writeConfig()
+        plugin.run()
+        Plugin.compose()
 
     
     def enable( sender=None, value=None, user_data=None ):
@@ -608,10 +619,11 @@ class Plugin:
     #HACK: repeated code (first reference at Ramon.mkdir )
     def mkdir(dirname):
         if not os.path.exists(f'{Preferences.root}/{dirname}'):
+            #Log.info(f"PLUGIN : Created directory '{dirname}'")
             os.mkdir(f'{Preferences.root}/{dirname}')
-            Log.info(f"PLUGIN : Created directory '{dirname}'")
         else:
-            Log.info(f"PLUGIN : Using directory '{dirname}'")
+            #Log.info(f"PLUGIN : Using directory '{dirname}'")
+            pass
     
     def copyDir(self, dirname):
         # Recursively copy a given directory

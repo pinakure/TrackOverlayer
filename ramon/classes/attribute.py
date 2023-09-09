@@ -1,4 +1,5 @@
 from classes.plugin         import Plugin
+#from classes.collections    import Collections
 from dearpygui              import dearpygui as D
 
 # not-proud-of-this-class 
@@ -85,6 +86,24 @@ class Attribute:
             pos             = (x, y),
         )
     
+    def combo( x, y, name, value, parent=None):
+        exec(f'from plugins.{Attribute.plugin} import plugin as {Attribute.plugin}')
+        items = eval(f'{Attribute.plugin}.plugin.{value.split(":")[0]}.keys()')
+        items = list(items)
+        # items = list([f'{value.split(":")[0]}:{x}' for x in items])
+        slider = D.add_combo(
+            tag             = f'plugin-setting-{Attribute.plugin}-{name}',
+            default_value   = value.split(':')[1],
+            items           = items,
+            callback        = Plugin.updateComboSettings, 
+            user_data       = f'{value.split(":")[0]}:{name}',
+            width           = 180,
+            pos             = (x, y), 
+            parent          = parent if parent is not None else Attribute.parent,
+        )
+        # with D.tooltip(slider): 
+        #     D.add_text("Ctrl + Click to edit value")
+        
     def integer( x, y, name, value, parent=None, negative=False, max_value=128):
         slider = D.add_slider_int(
             tag             = f'plugin-setting-{Attribute.plugin}-{name}',

@@ -11,8 +11,8 @@ def elegant( filthy ):
 
 class Preferences:
     root            = '.'
-    width           = 640
-    height          = 480
+    width           = 1024#640
+    height          = 600#480
     parent          = None
     data            = None
     
@@ -417,23 +417,41 @@ class Preferences:
                                 dpg.add_text(" Reload Time" , color=(255,255,0)), 
                             ]
                             dpg.configure_item(labels[0], pos=(   8,   8 ) )
-                            dpg.configure_item(labels[1], pos=( 310,   8 ) )
-                            dpg.configure_item(labels[2], pos=(   8, 218 ) )
-                            dpg.configure_item(labels[3], pos=(   8, 248 ) )
-                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=290, num_items=10, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
-                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=290, num_items=10, pos=( 310,  32 ), callback=Plugin.disable, default_value=None)
-                            dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 218))
-                            dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 248))
+                            dpg.configure_item(labels[1], pos=( 500,   8 ) )
+                            dpg.configure_item(labels[2], pos=(   8, 400 ) )
+                            dpg.configure_item(labels[3], pos=(   8, 424 ) )
+                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=484, num_items=20, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
+                            with dpg.tooltip('available-plugins'):
+                                dpg.add_text("Click a plugin to enable it")
+                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=484, num_items=20, pos=( 500,  32 ), callback=Plugin.disable, default_value=None)
+                            with dpg.tooltip('enabled-plugins'):
+                                dpg.add_text("Click a plugin to disable it")
+                            dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 400))
+                            dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
 
     
     def populatePluginsTab():
+        class cfg:
+            class range:
+                pos_x   = [-1440, 1440]
+                pos_y   = [-1080, 1080]
+                size_x  = [-1440, 1440]
+                size_y  = [-1080, 1440]
+                zoom    = [ 1   ,  100]
+
+            class main:
+                height  = 282
+            class detail:
+                height  = 220
+                extra   = 68
+        
         from classes.plugin     import Plugin, parseBool
         from classes.attribute  import Attribute
         # Make a tab for every plugin' settings
         for name, plugin in Plugin.loaded.items():            
             with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
                 Attribute.parent = f'tab-window-{name}'
-                with dpg.child_window(border=False, tag=Attribute.parent, height=160, width=600) as window:
+                with dpg.child_window(border=False, tag=Attribute.parent, height=cfg.main.height) as window:
                     perspective = 0
                     project = False
                     [ sizexs, sizeys, bradius, bwidths, bcolors, colors, types , heights, italics, bolds, posxs, posys, sposys, sposxs, blurs, shadows, sizes ] = [ {} , {} , {} , {} , {} , {} , {} , {} , {}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -498,6 +516,7 @@ class Preferences:
                             if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )
                             elif isinstance( value, int  )  : Attribute.integer (columns[1], row[0], name, value )
                             elif isinstance( value, float)  : Attribute.decimal (columns[1], row[0], name, value )
+                            elif ':' in value               : Attribute.combo   (columns[1], row[0], name, value )
                             else                            : Attribute.text    (columns[1], row[0], name, value )
                             row[0]+=24
                             
@@ -510,7 +529,9 @@ class Preferences:
                 # If this point is reached means colors were detected, so we will generate a tab with specific 
                 # font related settings for each detected color type variable with a font associated
                 #  
-                with dpg.child_window( no_scrollbar=True, pos=(8,192), height=220):
+                detail_height   = cfg.detail.height
+                extra           = cfg.detail.extra
+                with dpg.child_window( no_scrollbar=True, pos=(8,Preferences.height - extra - detail_height), height=detail_height):
                     with dpg.tab_bar(tag=f"plugin-tabs-{plugin.name}"):
                         for name, color in colors.items():
                             gname = name.rstrip("-color")
@@ -534,8 +555,8 @@ class Preferences:
                                     Attribute.shadow_pos_y  ( 370,  90 )
                                     Attribute.pos_x         ( 410,  12 )
                                     Attribute.pos_y         ( 410,  32 )
-                                    Attribute.size_x         ( 219,  12 )
-                                    Attribute.size_y         ( 219,  32 )
+                                    Attribute.size_x        ( 219,  12 )
+                                    Attribute.size_y        ( 219,  32 )
                                     Attribute.shadow_blur   ( 370, 110 )
                                     Attribute.border_width  ( 370, 130 )
                                     Attribute.border_radius ( 370, 150 )
