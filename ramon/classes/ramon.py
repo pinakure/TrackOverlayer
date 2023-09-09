@@ -118,32 +118,13 @@ class Ramon:
             pass
             #Log.info(f"Using directory '{dirname}'")
         
-     
-    def setupCSS():
-        DynamicCSS.root = Preferences.root
-        global_cheevos_css = """html, body { height: 100%; overflow-x: hidden; overflow-y: hidden; } html, img, body { background-color: rgba(0,0,0,0); padding: 0px 0px 0px 0px; line-height: 16px; } img.round { border-radius: 24px 24px 24px 24px; } img { box-shadow: 2px 2px 0px #0008; border: 2px solid #0000; } img.active { filter: brightness(1.5) hue-rotate(270deg); animation: flash 2s linear 0s infinite alternate;} @keyframes flash { from {border: 2px solid #FF0;} to   {border: 2px solid #F00;}}"""
-        cheevos_vars = {
-            
-        }
-        gradient = "#00668a, #069cd1 6%, #069cd1 50% ,#00668a 50%, #069cd1"
-        progress_css = """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} .completion-hardcore { height: 100% !important; background-image: linear-gradient(180deg, """+gradient+""") !important; }"""
-        Ramon.css['cheevos' ] = DynamicCSS('cheevos'  , global_cheevos_css, cheevos_vars)
-        Ramon.css['locked'  ] = DynamicCSS('locked'   , global_cheevos_css, cheevos_vars)
-        Ramon.css['unlocked'] = DynamicCSS('unlocked' , global_cheevos_css, cheevos_vars)
-        Ramon.css['progress'] = DynamicCSS('progress' , progress_css      , cheevos_vars)
-        Ramon.css['recent'  ] = DynamicCSS('recent'   , """body { background-color: rgba(0,0,0,0) !important ;background: rgba(0,0,0,0) !important; border: none !important;padding: 0px 0px 0px 0px !important;margin: 0px 0px 0px 0px !important;overflow: hidden;height: 100% !important;} hr{border: 1px solid #4808;box-shadow: 0px 4px 32px #0f0;margin: 0px 0px 0px 0px;}* { color: #8f0;text-shadow: 0px 0px 2px #0f0;font-family: 'ProggyCleanTTSZ', 'ff6'}b {color: #cf0;}"""+css_font)
-
-    
     def start():
         Preferences.parent = Ramon
         Preferences.loadcfg()
         Ramon.data  = Data(Ramon)
         HotKeys.install()
-        #Preferences.loadcfg()
-        Ramon.mkdir('css')
         Ramon.mkdir('data')
         Ramon.mkdir('data/cache')
-        Ramon.setupCSS()
         if Preferences.settings['vertical']:
             w, h = Ramon.width,Ramon.height
             Ramon.height = w
@@ -398,21 +379,16 @@ class Ramon:
             Ramon.data.last_seen     = Preferences.settings['last_game']
             Ramon.data.site_rank     = Preferences.settings['rank']
             Ramon.data.score         = Preferences.settings['score']
-            Ramon.redraw()
-            Ramon.data.write()
-            Plugin.runLoaded()
-            dpg.set_value('stdout','Offline mode, disable to get live data from RetroAchievements.org')
-            return False
-
+            
         if Ramon.data.query():
             Ramon.clear()
-            dpg.set_value('stdout','Requesting data...')
             Ramon.redraw()
             Ramon.data.write()
             Plugin.runLoaded()
+            dpg.set_viewport_title('tRAckOverlayer - '+("Offline Mode" if Preferences.settings["offline"] else "Ready"))
             return True
         else:
-            dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')
+            dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')        
     
     def message(text):
         dpg.set_value('stdout', dpg.get_value('stdout')+'\n'+text)

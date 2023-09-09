@@ -8,6 +8,13 @@ from classes.log            import Log
 from classes.plugin         import Plugin
 from classes.scraper        import Scraper
 
+def readfile(filename):
+    try:
+        with open(filename, "r") as file:
+            return file.read()
+    except:
+        return ""
+
 #todo: move to helper module, when it exists....
 def ascii(string):
     table = {
@@ -181,7 +188,6 @@ class Data(Scraper):
         # Try to parse profile HTML and extract metadata
         try:
             Scraper.parse(self)
-            self.parsed = BeautifulSoup( self.response_text, features='html.parser' )
             self.getUserSummary()
             self.setActiveCheevo( self.game.current )
             self.getCheevos()
@@ -194,6 +200,10 @@ class Data(Scraper):
     def query(self):
         self.login_username = Preferences.settings['username']
         self.target_url     = self.url(f"user/{ self.login_username }" )
+        if Preferences.settings['offline']:
+            Log.info("DATA : Faking request to retroachievements")
+            self.response_text = readfile(f'{Preferences.settings["root"]}/data/profile.html')
+            return self.parse()
         return self.get()
     
     def updatePictures(self):

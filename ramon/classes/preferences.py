@@ -5,9 +5,64 @@ from classes.cheevo         import Cheevo
 from classes.dynamic_css    import DynamicCSS, fonts
 from classes.log            import Log
 
+
+class cfg:
+    class range:
+        pos_x   = [-1440, 1440]
+        pos_y   = [-1080, 1080]
+        size_x  = [-1440, 1440]
+        size_y  = [-1080, 1440]
+        zoom    = [ 1   ,  100]
+
+    class main:
+        height  = 282
+    class detail:
+        height  = 220
+        extra   = 68
+
+        
 def elegant( filthy ):
     # TODO: move to tools
     return filthy.replace('_', ' ').replace('-', ' ').capitalize()
+
+[ 
+    sizexs, 
+    sizeys, 
+    bradius,
+    bwidths, 
+    bcolors, 
+    colors, 
+    types , 
+    heights, 
+    italics, 
+    bolds, 
+    posxs, 
+    posys, 
+    sposys, 
+    sposxs, 
+    blurs, 
+    shadows, 
+    sizes ,
+] = [ 
+    {} , 
+    {} , 
+    {} , 
+    {} , 
+    {} , 
+    {} , 
+    {} , 
+    {} , 
+    {}, 
+    {}, 
+    {}, 
+    {}, 
+    {}, 
+    {}, 
+    {}, 
+    {}, 
+    {},
+]
+    
 
 class Preferences:
     root            = '.'
@@ -56,55 +111,6 @@ class Preferences:
             'pending_cheevos'           : [0,255,255],
             'unlocked_cheevos'          : [64, 128,0],
             'current_cheevo'            : 1,
-
-            'progress-upper-color'      : [255,255,0],
-            'progress-lower-color'      : [0,255,255],
-            'progress-hard-gradient'    : True,
-            'progress-overlay-text'     : False,
-            
-            'cheevos-border-radius'     : 16,
-            'cheevos-border-width'      : 3,
-            'cheevos-border-color'      : [255,255,255],
-            'cheevos-active-color'      : [255,255,  0],
-            'cheevos-shadow'            : True,
-            'cheevos-3d'                : False,
-            'cheevos-perspective'       : 800,
-            'cheevos-rotation'          : 45,
-            'cheevos-x'                 : 10, 
-            'cheevos-y'                 : 170,
-            
-            'locked-border-radius'      : 16,
-            'locked-border-width'       : 3,
-            'locked-border-color'       : [255,255,255],
-            'locked-shadow'             : True,
-            'locked-3d'                 : False,
-            'locked-perspective'        : 800,
-            'locked-rotation'           : 45,
-            'locked-x'                  : 10, 
-            'locked-y'                  : 170,
-            
-            'unlocked-border-radius'    : 16,
-            'unlocked-border-width'     : 3,
-            'unlocked-border-color'     : [255,255,255],
-            'unlocked-shadow'           : True,
-            'unlocked-3d'               : False,
-            'unlocked-perspective'      : 800,
-            'unlocked-rotation'         : 45,
-            'unlocked-x'                : 10, 
-            'unlocked-y'                : 170,
-
-            'recent-border-radius'      : 4,
-            'recent-border-width'       : 0,
-            'recent-font-glow'          : True,
-            'recent-border-color'       : [255,255,255],
-            'recent-font-color'         : [0,255,255],
-            'recent-font-size'          : 16,
-            'recent-font'               : 'ff6',
-            'recent-3d'                 : True,
-            'recent-perspective'        : 800,
-            'recent-rotation'           : 45,
-            'recent-x'                  : 10, 
-            'recent-y'                  : 170,
         }
         Preferences.settings = defaults
         Preferences.root     = Preferences.settings['root']
@@ -134,54 +140,11 @@ class Preferences:
             json_fields = [
                 'x-pos'                     ,
                 'y-pos'                     ,
-                #----------------------------
                 'gmt'                       ,
                 'auto_update_rate'          ,
                 'pending_cheevos'           ,
                 'unlocked_cheevos'          ,
-                'current_cheevo'            ,
-                #----------------------------
-                'cheevos-border-radius'     ,
-                'cheevos-border-width'      ,
-                'cheevos-border-color'      ,
-                'cheevos-active-color'      ,
-                #----------------------------
-                'locked-border-radius'      ,
-                'locked-border-width'       ,
-                'locked-border-color'       ,
-                #----------------------------                
-                'unlocked-border-radius'    ,
-                'unlocked-border-width'     ,
-                'unlocked-border-color'     ,
-                #----------------------------
-                'recent-border-radius'      ,
-                'recent-border-width'       ,
-                'recent-border-color'       ,
-                'recent-font-color'         ,  
-                #----------------------------
-                'progress-upper-color'      ,
-                'progress-lower-color'      ,
-                #----------------------------
-                'recent-perspective'        ,
-                'recent-rotation'           ,
-                'recent-x'                  ,
-                'recent-y'                  ,
-                #----------------------------
-                'locked-perspective'        ,
-                'locked-rotation'           ,
-                'locked-x'                  ,
-                'locked-y'                  ,
-                #----------------------------
-                'unlocked-perspective'      ,
-                'unlocked-rotation'         ,
-                'unlocked-x'                ,
-                'unlocked-y'                ,
-                #----------------------------
-                'cheevos-perspective'       ,
-                'cheevos-rotation'          ,
-                'cheevos-x'                 ,
-                'cheevos-y'                 ,
-                #----------------------------
+                'current_cheevo'            ,                
             ]
             for field in json_fields:                
                 Preferences.settings[field] = json.loads( str(Preferences.settings[field]) )
@@ -261,6 +224,7 @@ class Preferences:
                 
     
     def loadCustomization( category ):
+        return
         DynamicCSS.settings[category]['border-width'    ] = Preferences.settings[f'{category}-border-width' ]
         DynamicCSS.settings[category]['border-radius'   ] = Preferences.settings[f'{category}-border-radius']
         DynamicCSS.settings[category]['border-color'    ] = Preferences.settings[f'{category}-border-color' ]
@@ -289,6 +253,7 @@ class Preferences:
         
     
     def loadCustomizations():
+        return
         Preferences.loadCustomization('cheevos' )
         Preferences.loadCustomization('locked'  )
         Preferences.loadCustomization('unlocked')
@@ -300,6 +265,7 @@ class Preferences:
         
     
     def updateCustomizations(sender=None, args=None, user_data=None):
+        return
         Preferences.settings['progress-hard-gradient'   ] = dpg.get_value('progress-hard-gradient'      )
         Preferences.settings['progress-upper-color'     ] = dpg.get_value('progress-upper-color'        )
         Preferences.settings['progress-lower-color'     ] = dpg.get_value('progress-lower-color'        )
@@ -346,6 +312,7 @@ class Preferences:
 
     
     def addCustomizationPanel(tag):
+        return
         file = {
             'cheevos'           : 'cheevos',
             'locked'            : 'cheevos_locked',
@@ -387,6 +354,7 @@ class Preferences:
 
     
     def addProgressPanel():
+        return
         with dpg.child_window():
             dpg.add_text("Progressbar colors"           , color=(255,255,0))
             createBooleanField('Overlay Percentage'     , 'progress-overlay-text'    , callback=Preferences.updateCustomizations)
@@ -430,22 +398,38 @@ class Preferences:
                             dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
 
     
-    def populatePluginsTab():
-        class cfg:
-            class range:
-                pos_x   = [-1440, 1440]
-                pos_y   = [-1080, 1080]
-                size_x  = [-1440, 1440]
-                size_y  = [-1080, 1440]
-                zoom    = [ 1   ,  100]
 
-            class main:
-                height  = 282
-            class detail:
-                height  = 220
-                extra   = 68
-        
-        from classes.plugin     import Plugin, parseBool
+    def capturePluginItemSetting(name, value):
+        from classes.plugin     import parseBool
+        # Skip corrupt or malformed settings
+        if name in ['enabled', '']: return True
+        # Process settings which always come grouped, such as                         
+        # - Item color, font, line height
+        # These will be placed in individual tabs grouped, to do so use 
+        # the same prefix for line-height, font-size and color, then they will
+        # spawn in the same tab. 
+        if   '-border-color'    in name: bcolors[name] = value; return True     
+        elif '-border-width'    in name: bwidths[name] = value; return True     
+        elif '-border-radius'   in name: bradius[name] = value; return True     
+        elif '-shadow-color'    in name: shadows[name] = value; return True
+        elif '-shadow-pos-x'    in name: sposxs [name] = value; return True
+        elif '-shadow-pos-y'    in name: sposys [name] = value; return True
+        elif '-color'           in name: colors [name] = value; return True     
+        elif '-font-size'       in name: sizes  [name] = value; return True
+        elif '-line-height'     in name: heights[name] = value; return True
+        elif '-font-italic'     in name: italics[name] = parseBool(value); return True
+        elif '-font-bold'       in name: bolds  [name] = parseBool(value); return True
+        elif '-pos-x'           in name: posxs  [name] = value; return True
+        elif '-pos-y'           in name: posys  [name] = value; return True
+        elif '-size-x'          in name: sizexs [name] = value; return True
+        elif '-size-y'          in name: sizeys [name] = value; return True
+        elif '-shadow-blur'     in name: blurs  [name] = value; return True
+        elif '-font'            in name: types  [name] = value; return True                        
+        return False
+
+
+    def populatePluginsTab():
+        from classes.plugin     import Plugin        
         from classes.attribute  import Attribute
         # Make a tab for every plugin' settings
         for name, plugin in Plugin.loaded.items():            
@@ -453,40 +437,12 @@ class Preferences:
                 Attribute.parent = f'tab-window-{name}'
                 with dpg.child_window(border=False, tag=Attribute.parent, height=cfg.main.height) as window:
                     perspective = 0
-                    project = False
-                    [ sizexs, sizeys, bradius, bwidths, bcolors, colors, types , heights, italics, bolds, posxs, posys, sposys, sposxs, blurs, shadows, sizes ] = [ {} , {} , {} , {} , {} , {} , {} , {} , {}, {}, {}, {}, {}, {}, {}, {}, {}]
+                    project = False                    
                     row     = [ 32,  32, 32]
                     columns = [  0, 105]
                     Attribute.label(8, 8, plugin.description, color=(55,155,255))
                     for name,value in plugin.settings.items():
-                        # Skip corrupt or malformed settings
-                        if name in ['enabled', '']: continue
-                        # Process settings which always come grouped, such as 
-                        # - Item color, font, line height
-                        # These will be placed in individual tabs grouped, to do so use 
-                        # the same prefix for line-height, font-size and color, then they will
-                        # spawn in the same tab. 
-                        if   '-border-color'    in name: bcolors[name] = value; continue     
-                        elif '-border-width'    in name: bwidths[name] = value; continue     
-                        elif '-border-radius'   in name: bradius[name] = value; continue     
-                        elif '-shadow-color'    in name: shadows[name] = value; continue
-                        elif '-shadow-pos-x'    in name: sposxs [name] = value; continue
-                        elif '-shadow-pos-y'    in name: sposys [name] = value; continue
-                        elif '-color'           in name: colors [name] = value; continue     
-                        elif '-font-size'       in name: sizes  [name] = value; continue
-                        elif '-line-height'     in name: heights[name] = value; continue
-                        elif '-font-italic'     in name: italics[name] = parseBool(value); continue
-                        elif '-font-bold'       in name: bolds  [name] = parseBool(value); continue
-                        elif '-pos-x'           in name: posxs  [name] = value; continue
-                        elif '-pos-y'           in name: posys  [name] = value; continue
-                        elif '-size-x'          in name: sizexs [name] = value; continue
-                        elif '-size-y'          in name: sizeys [name] = value; continue
-                        elif '-shadow-blur'     in name: blurs  [name] = value; continue
-                        
-                        # Important Note: 
-                        # If a font xxx-font property is added, all the properties up in this elif chain must 
-                        # exist in order to avoid exceptions. Always implement these properties grouping them.
-                        elif '-font'            in name: types  [name] = value; continue                        
+                        if Preferences.capturePluginItemSetting( name, value ): continue
                         # If setting is not a part specific attribute, then try to parse it as a
                         # general setting (placed in the upper area )
                         Attribute.plugin = plugin.name
@@ -701,8 +657,7 @@ class Preferences:
                 Preferences.createInterfaceTab()
                 Preferences.createInputTab()
                 Preferences.createPluginsTab()
-                Preferences.createOutputTab()
-        Preferences.loadCustomizations()
+        
 
     
     def show():
