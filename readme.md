@@ -22,7 +22,7 @@ with customizable parameters and styles which can be modified using CSS or tweak
     </tr>
 <table>
 <h4>How to Install</h4>
-<a href="">Open installation flow chart</a>
+<a href="https://raw.githubusercontent.com/pinakure/yt-obs/main/doc/how-to-install.svg">Open installation flow chart</a>
 
 <h4>Getting started</h4>
 <a href="">Open getting started flow chart</a>
