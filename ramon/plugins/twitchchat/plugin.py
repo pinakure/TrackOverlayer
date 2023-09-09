@@ -24,7 +24,7 @@ class plugin(Plugin):
             "perspective"               : 0,
             "angle"                     : 0,
             "sound"                     : True,
-            "sound-file"                : "./tick01.wav",#client will automatically try to find tick0[1-3].wav upon filename
+            "sound-file"                : "./files/twitchchat/tick01.wav",#client will automatically try to find tick0[1-3].wav upon filename
             "user"                      : Preferences.settings['twitch-username'],
             'message-time'              : 5,
             'message-count'             : 5,
@@ -47,13 +47,6 @@ class plugin(Plugin):
             'message-shadow-pos-x'      : 1,
             'message-shadow-pos-y'      : 1,
         })
-
-        #@ Install settings
-        self.files      = [
-            'tick01.wav',
-            'tick02.wav',
-            'tick03.wav',
-        ]    
 
     def composerVars(self):
         return {

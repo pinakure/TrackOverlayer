@@ -21,7 +21,7 @@ class plugin(Plugin):
             "perspective"               : 0,
             "angle"                     : 0,
             'sound'                     : True,
-            'sound-file'                : 'xbox.wav',
+            'sound-file'                : 'files/xboxcheevos/xbox.wav',
             'style'                     : 'xbox',
             'display-time'              : 3,
             'pos-x'                     : 0,
@@ -55,13 +55,6 @@ class plugin(Plugin):
             'up-color'                  : [192, 192, 192, 255],
             'low-color'                 : [122, 122, 122, 255],
         })
-
-        #@ Install settings
-        self.files      = [
-            'xbox.wav',
-        ]
-
-
 
     def composerVars(self):
         return {

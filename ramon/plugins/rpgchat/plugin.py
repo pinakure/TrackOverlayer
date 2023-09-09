@@ -38,13 +38,6 @@ class plugin(Plugin):
             "text-border-width"     : 0,
         })
 
-        #@ Install settings
-        self.files      = [
-            'rpgchat.png',
-        ]      
-
-
-
     def composerVars(self):
         factor = (self.scale / 2)+1
         return {

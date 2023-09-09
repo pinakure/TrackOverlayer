@@ -1,12 +1,15 @@
-import json, os 
-from datetime               import datetime, timedelta
+import json
 from dearpygui              import dearpygui as dpg
 from classes.cheevo         import Cheevo
-from classes.fonts          import fonts
 from classes.log            import Log
+from classes.tools          import elegant 
 
-
+# plugin preferences config globals
 class cfg:
+    
+    width   = 1024#640
+    height  = 600#480
+
     class range:
         pos_x   = [-1440, 1440]
         pos_y   = [-1080, 1080]
@@ -20,11 +23,7 @@ class cfg:
         height  = 220
         extra   = 68
 
-        
-def elegant( filthy ):
-    # TODO: move to tools
-    return filthy.replace('_', ' ').replace('-', ' ').capitalize()
-
+# field collectors
 [ 
     sizexs, 
     sizeys, 
@@ -61,142 +60,65 @@ def elegant( filthy ):
     {}, 
     {}, 
     {},
-]
-    
+]    
 
 class Preferences:
     root            = '.'
-    width           = 1024#640
-    height          = 600#480
+    width           = cfg.width
+    height          = cfg.height
     parent          = None
     data            = None
     
+    defaults = {
+        'last_game'                 : 'TestGame',
+        'last_date'                 : '01 Jan 2000, 00:00',
+        'rank'                      : '1 / 50,000',
+        'debug'                     : False,
+        'score'                     : '999999',
+        'width'                     : 1440,
+        'height'                    :  900,
+        'x-pos'                     :    0,
+        'y-pos'                     :    0,
+        'auto_update'               : True,
+        'auto_update_rate'          : 1,
+        'fullscreen'                : False,
+        'vertical'                  : False,
+        'username'                  : '',
+        'password'                  : '',
+        'twitch-username'           : '',
+        'twitch-password'           : '',
+        'root'                      : '.',
+        'gmt'                       : 2,
+        'twitch-app-key'            : '',
+        'twitch-use-api'            : False,
+        'ra-use-api'                : False,
+        'ra-app-key'                : '',
+        'offline'                   : False,
+        'simple_ui'                 : False,
+        'pending_cheevos'           : [0,255,255],
+        'unlocked_cheevos'          : [64, 128,0],
+        'current_cheevo'            : 1,
+    }
     
-    def writecfg( restart=False ):
-        Preferences.root = Preferences.settings['root']        
-        with open(f'{Preferences.root}/config.txt', 'w') as file:
-            for key,value in Preferences.settings.items():
-                file.write(f'{key}={value}'+"\n")
-        Preferences.parent.restart = restart
+    def create( parent ):
+        Preferences.parent = parent
+        with dpg.window(
+            tag='preferences_main',
+            label="Preferences", 
+            width=Preferences.width, 
+            height=Preferences.height, 
+            no_collapse=True, 
+            no_resize=True,
+            modal = True,
+            show = False,
+            on_close=lambda:dpg.hide_item('preferences_main'),
+            pos=((Preferences.parent.width / 2) - (Preferences.width / 2),(Preferences.parent.height / 2) - (Preferences.height / 2))
+        ):
+            with dpg.tab_bar(tag="preferences-tabs"):
+                Preferences.createInterfaceTab()
+                Preferences.createInputTab()
+                Preferences.createPluginsTab()
 
-    
-    def loadcfg():
-        defaults = {
-            'version'                   : Preferences.parent.version,
-            'last_game'                 : 'TestGame',
-            'last_date'                 : '01 Jan 2000, 00:00',
-            'rank'                      : '1 / 50,000',
-            'debug'                     : False,
-            'score'                     : '999999',
-            'width'                     : 1440,
-            'height'                    :  900,
-            'x-pos'                     :    0,
-            'y-pos'                     :    0,
-            'auto_update'               : True,
-            'auto_update_rate'          : 1,
-            'fullscreen'                : False,
-            'vertical'                  : False,
-            'username'                  : '',
-            'password'                  : '',
-            'twitch-username'           : '',
-            'twitch-password'           : '',
-            'root'                      : '.',
-            'gmt'                       : 2,
-            'twitch-app-key'            : '',
-            'twitch-use-api'            : False,
-            'ra-use-api'                : False,
-            'ra-app-key'                : '',
-            'offline'                   : False,
-            'simple_ui'                 : False,
-            'pending_cheevos'           : [0,255,255],
-            'unlocked_cheevos'          : [64, 128,0],
-            'current_cheevo'            : 1,
-        }
-        Preferences.settings = defaults
-        Preferences.root     = Preferences.settings['root']
-        
-        try:
-            with open(f'{Preferences.root}/config.txt', 'r') as file:
-                data = file.read().split('\n')
-                for setting in data:
-                    if len(setting)==0:continue
-                    parts = setting.split('=')
-                    Preferences.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]
-            try:
-                if Preferences.settings['version'] == Preferences.parent.version:
-                    Log.info(f"Found version {Preferences.settings['version']} config file")
-            except:
-                Log.warning("Configuration file was invalid. Generating new one.")
-                root = Preferences.settings['root']
-                username = Preferences.settings['username']
-                Preferences.settings = defaults
-                Preferences.settings['root'     ] = root
-                Preferences.settings['username' ] = username
-            Preferences.root                            = Preferences.settings['root']
-            Preferences.parent.width                    = int(Preferences.settings['width' ]) - (4 if Preferences.settings['fullscreen'] else 0)
-            Preferences.parent.height                   = int(Preferences.settings['height'])
-            Preferences.settings['width']               = Preferences.parent.width
-            Preferences.settings['height']              = Preferences.parent.height
-            json_fields = [
-                'x-pos'                     ,
-                'y-pos'                     ,
-                'gmt'                       ,
-                'auto_update_rate'          ,
-                'pending_cheevos'           ,
-                'unlocked_cheevos'          ,
-                'current_cheevo'            ,                
-            ]
-            for field in json_fields:                
-                Preferences.settings[field] = json.loads( str(Preferences.settings[field]) )
-            Cheevo.active_index = Preferences.settings['current_cheevo']
-        except Exception as E:
-            Log.error("Cannot parse/load config.txt", E)
-            return 
-
-    
-    def updateSettingsGMT(sender=None, user_data=None, args=None):
-        Preferences.settings['gmt'] = int(dpg.get_value('gmt'))
-        Preferences.data.last_activity  = (datetime.strptime(Preferences.data.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
-        with open(f'{Preferences.root}/data/last_activity.txt'  , 'w') as file:   file.write(Preferences.data.last_activity.strftime("%d %b %Y, %H:%M").upper() )
-        dpg.set_value('date'  , Preferences.data.last_activity.strftime("%d %b %Y, %H:%M")  )
-        Preferences.writecfg( restart = False )
-
-    
-    def updateUsername(sender=None, user_data=None, args=None):
-        Preferences.settings['username'] = dpg.get_value('username')
-        Preferences.writecfg( restart=False)
-        Preferences.parent.refresh()
-
-    
-    def updateSetting(sender=None, user_data=None, args=None):
-        Preferences.settings[sender]         = dpg.get_value(sender)
-        Preferences.writecfg( restart=False )
-    
-    
-    def updateSettingBoolean(sender=None, user_data=None, args=None):
-        Preferences.settings[sender] = dpg.get_value(sender)
-        Preferences.writecfg( restart=False )
-    
-    
-    def updateSettingInteger(sender=None, user_data=None, args=None):
-        Preferences.settings[sender] = int(dpg.get_value(sender))
-        Preferences.writecfg( restart=False )
-   
-    
-    def updateSettingVideo(sender=None, user_data=None, args=None):
-        Preferences.settings[sender] = int(dpg.get_value(sender))
-        dpg.set_viewport_pos( (Preferences.settings['x-pos'], Preferences.settings['y-pos']) )
-        dpg.set_viewport_width( Preferences.settings['width'] +16 )
-        dpg.set_viewport_height( Preferences.settings['height'] )
-        dpg.configure_item( 'main', width=Preferences.settings['width'], height=Preferences.settings['height'] )
-        Preferences.writecfg( restart=False )
-   
-    
-    def updateSettingColor(sender=None, user_data=None, args=None):
-        Preferences.settings[sender] = dpg.get_value(sender)        
-        Preferences.writecfg( restart=False )
-   
-    
     def createInterfaceTab():
         with dpg.tab(label="Interface", tag="tab_general"):
             with dpg.child_window():
@@ -222,163 +144,6 @@ class Preferences:
                 dpg.set_value('unlocked_cheevos', Preferences.settings['unlocked_cheevos'   ])
                 dpg.set_value('pending_cheevos' , Preferences.settings['pending_cheevos'    ])
   
-    def createPluginsTab():
-        from classes.plugin import Plugin
-        with dpg.tab(label="Plugins", tag="tab_plugins"):
-            with dpg.child_window():
-                with dpg.tab_bar(tag="plugin-tabs"):
-                    with dpg.tab(label="General", tag="tab_plugins-general"):
-                        with dpg.child_window():
-                            plugins = Plugin.discover()
-                            available_plugins = list(plugins)
-                            labels = [ 
-                                dpg.add_text("Found"        , color=(255,255,0)), 
-                                dpg.add_text("Enabled"      , color=(255,255,0)), 
-                                dpg.add_text("  Debug Mode" , color=(255,255,0)), 
-                                dpg.add_text(" Reload Time" , color=(255,255,0)), 
-                            ]
-                            dpg.configure_item(labels[0], pos=(   8,   8 ) )
-                            dpg.configure_item(labels[1], pos=( 500,   8 ) )
-                            dpg.configure_item(labels[2], pos=(   8, 400 ) )
-                            dpg.configure_item(labels[3], pos=(   8, 424 ) )
-                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=484, num_items=20, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
-                            with dpg.tooltip('available-plugins'):
-                                dpg.add_text("Click a plugin to enable it")
-                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=484, num_items=20, pos=( 500,  32 ), callback=Plugin.disable, default_value=None)
-                            with dpg.tooltip('enabled-plugins'):
-                                dpg.add_text("Click a plugin to disable it")
-                            dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 400))
-                            dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
-
-    
-
-    def capturePluginItemSetting(name, value):
-        from classes.plugin     import parseBool
-        # Skip corrupt or malformed settings
-        if name in ['enabled', '']: return True
-        # Process settings which always come grouped, such as                         
-        # - Item color, font, line height
-        # These will be placed in individual tabs grouped, to do so use 
-        # the same prefix for line-height, font-size and color, then they will
-        # spawn in the same tab. 
-        if   '-border-color'    in name: bcolors[name] = value; return True     
-        elif '-border-width'    in name: bwidths[name] = value; return True     
-        elif '-border-radius'   in name: bradius[name] = value; return True     
-        elif '-shadow-color'    in name: shadows[name] = value; return True
-        elif '-shadow-pos-x'    in name: sposxs [name] = value; return True
-        elif '-shadow-pos-y'    in name: sposys [name] = value; return True
-        elif '-color'           in name: colors [name] = value; return True     
-        elif '-font-size'       in name: sizes  [name] = value; return True
-        elif '-line-height'     in name: heights[name] = value; return True
-        elif '-font-italic'     in name: italics[name] = parseBool(value); return True
-        elif '-font-bold'       in name: bolds  [name] = parseBool(value); return True
-        elif '-pos-x'           in name: posxs  [name] = value; return True
-        elif '-pos-y'           in name: posys  [name] = value; return True
-        elif '-size-x'          in name: sizexs [name] = value; return True
-        elif '-size-y'          in name: sizeys [name] = value; return True
-        elif '-shadow-blur'     in name: blurs  [name] = value; return True
-        elif '-font'            in name: types  [name] = value; return True                        
-        return False
-
-
-    def populatePluginsTab():
-        from classes.plugin     import Plugin        
-        from classes.attribute  import Attribute
-        # Make a tab for every plugin' settings
-        for name, plugin in Plugin.loaded.items():            
-            with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
-                Attribute.parent = f'tab-window-{name}'
-                with dpg.child_window(border=False, tag=Attribute.parent, height=cfg.main.height) as window:
-                    perspective = 0
-                    project = False                    
-                    row     = [ 32,  32, 32]
-                    columns = [  0, 105]
-                    Attribute.label(8, 8, plugin.description, color=(55,155,255))
-                    for name,value in plugin.settings.items():
-                        if Preferences.capturePluginItemSetting( name, value ): continue
-                        # If setting is not a part specific attribute, then try to parse it as a
-                        # general setting (placed in the upper area )
-                        Attribute.plugin = plugin.name
-                        # Temporal patch for projection settings
-                        if name in ['perspective', 'angle', 'pos-x', 'pos-y', 'size-x', 'size-y']: 
-                            max_value = {
-                                'perspective'   : 1600,
-                                'angle'         : 360,
-                                'pos-x'         : 2048,
-                                'pos-y'         : 2048,
-                                'size-x'        : 2048,
-                                'size-y'        : 2048,
-                            }
-                            negative = {
-                                'perspective'   : False,
-                                'angle'         : True,
-                                'pos-x'         : True,
-                                'pos-y'         : True,
-                                'size-x'        : True,
-                                'size-y'        : True,
-                            }
-                            Attribute.label     ( 300, row[1], elegant(name).rjust(12, ' ') , parent=Attribute.parent+'-projection')
-                            Attribute.integer   ( 395, row[1], name, value                  , parent=Attribute.parent+'-projection', max_value=max_value[name], negative=negative[name])
-                            row[1]+=24
-                        else:
-                            Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
-                            if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )
-                            elif isinstance( value, int  )  : Attribute.integer (columns[1], row[0], name, value )
-                            elif isinstance( value, float)  : Attribute.decimal (columns[1], row[0], name, value )
-                            elif ':' in value               : Attribute.combo   (columns[1], row[0], name, value )
-                            else                            : Attribute.text    (columns[1], row[0], name, value )
-                            row[0]+=24
-                            
-                    
-                    if not len(colors):
-                        dpg.configure_item(window, height=381)
-                        continue
-                    
-                #
-                # If this point is reached means colors were detected, so we will generate a tab with specific 
-                # font related settings for each detected color type variable with a font associated
-                #  
-                detail_height   = cfg.detail.height
-                extra           = cfg.detail.extra
-                with dpg.child_window( no_scrollbar=True, pos=(8,Preferences.height - extra - detail_height), height=detail_height):
-                    with dpg.tab_bar(tag=f"plugin-tabs-{plugin.name}"):
-                        for name, color in colors.items():
-                            gname = name.rstrip("-color")
-                            group = f'plugin-setting-{plugin.name}-{gname}'
-                            tname = f"tab-plugins-{plugin.name}-{gname}"
-                            Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys, bradius, sizexs, sizeys )
-                            with dpg.tab( label = elegant(gname), tag = tname ):
-                                with dpg.child_window(no_scrollbar=True, height=180) as window:
-                                    Attribute.color         (   3,  13 , color)
-                                    if name.replace('color', 'font') in types.keys():
-                                        Attribute.label         ( 220,   8 , "Font Settings", parent=window)
-                                    Attribute.font          ( 220,  32 )
-                                    Attribute.font_size     ( 318,  32 )
-                                    Attribute.line_height   ( 360,  32 )
-                                    Attribute.italic        ( 318,   8 )
-                                    Attribute.bold          ( 339,   8 )
-                                    if name.replace('color', 'shadow') in shadows.keys():
-                                        Attribute.label         ( 220,  54 , "Shadow Color", parent=window)
-                                    Attribute.shadow        ( 220,  75 )
-                                    Attribute.shadow_pos_x  ( 370,  70 )
-                                    Attribute.shadow_pos_y  ( 370,  90 )
-                                    Attribute.pos_x         ( 410,  12 )
-                                    Attribute.pos_y         ( 410,  32 )
-                                    Attribute.size_x        ( 219,  12 )
-                                    Attribute.size_y        ( 219,  32 )
-                                    Attribute.shadow_blur   ( 370, 110 )
-                                    Attribute.border_width  ( 370, 130 )
-                                    Attribute.border_radius ( 370, 150 )
-                                    if name.replace('color', 'border-color') in bcolors.keys():
-                                        Attribute.label         ( 442,  54 , "Border Color", parent=window)
-                                    Attribute.border_color  ( 442,  75 )
-                
-    
-    def updatePluginLists():
-        from classes.plugin import Plugin
-        items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled']]
-        dpg.configure_item( 'enabled-plugins', items=items )        
-
     def createInputTab():
         with dpg.tab(label="Input", tag="tab_input"):
             with dpg.child_window():
@@ -433,59 +198,268 @@ class Preferences:
                 dpg.configure_item('ra-app-key'             , password=True)
                 dpg.configure_item('twitch-app-key'         , password=True)
                 dpg.configure_item('twitch-password'        , password=True)
-
     
-    def create( parent ):
-        Preferences.parent = parent
-        with dpg.window(
-            tag='preferences_main',
-            label="Preferences", 
-            width=Preferences.width, 
-            height=Preferences.height, 
-            no_collapse=True, 
-            no_resize=True,
-            modal = True,
-            show = False,
-            on_close=lambda:dpg.hide_item('preferences_main'),
-            pos=((Preferences.parent.width / 2) - (Preferences.width / 2),(Preferences.parent.height / 2) - (Preferences.height / 2))
-        ):
-            with dpg.tab_bar(tag="preferences-tabs"):
-                Preferences.createInterfaceTab()
-                Preferences.createInputTab()
-                Preferences.createPluginsTab()
-        
+    def createPluginsTab():
+        from classes.plugin import Plugin
+        with dpg.tab(label="Plugins", tag="tab_plugins"):
+            with dpg.child_window():
+                with dpg.tab_bar(tag="plugin-tabs"):
+                    with dpg.tab(label="General", tag="tab_plugins-general"):
+                        with dpg.child_window():
+                            plugins = Plugin.discover()
+                            available_plugins = list(plugins)
+                            labels = [ 
+                                dpg.add_text("Found"        , color=(255,255,0)), 
+                                dpg.add_text("Enabled"      , color=(255,255,0)), 
+                                dpg.add_text("  Debug Mode" , color=(255,255,0)), 
+                                dpg.add_text(" Reload Time" , color=(255,255,0)), 
+                            ]
+                            dpg.configure_item(labels[0], pos=(   8,   8 ) )
+                            dpg.configure_item(labels[1], pos=( 500,   8 ) )
+                            dpg.configure_item(labels[2], pos=(   8, 400 ) )
+                            dpg.configure_item(labels[3], pos=(   8, 424 ) )
+                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=484, num_items=20, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
+                            with dpg.tooltip('available-plugins'):
+                                dpg.add_text("Click a plugin to enable it")
+                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=484, num_items=20, pos=( 500,  32 ), callback=Plugin.disable, default_value=None)
+                            with dpg.tooltip('enabled-plugins'):
+                                dpg.add_text("Click a plugin to disable it")
+                            dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 400))
+                            dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
 
-    
+    def capturePluginItemSetting(name, value):
+        from classes.plugin     import parseBool
+        # Skip corrupt or malformed settings
+        if name in ['enabled', '']: return True
+        # Process settings which always come grouped, such as                         
+        # - Item color, font, line height
+        # These will be placed in individual tabs grouped, to do so use 
+        # the same prefix for line-height, font-size and color, then they will
+        # spawn in the same tab. 
+        if   '-border-color'    in name: bcolors[name] = value; return True     
+        elif '-border-width'    in name: bwidths[name] = value; return True     
+        elif '-border-radius'   in name: bradius[name] = value; return True     
+        elif '-shadow-color'    in name: shadows[name] = value; return True
+        elif '-shadow-pos-x'    in name: sposxs [name] = value; return True
+        elif '-shadow-pos-y'    in name: sposys [name] = value; return True
+        elif '-color'           in name: colors [name] = value; return True     
+        elif '-font-size'       in name: sizes  [name] = value; return True
+        elif '-line-height'     in name: heights[name] = value; return True
+        elif '-font-italic'     in name: italics[name] = parseBool(value); return True
+        elif '-font-bold'       in name: bolds  [name] = parseBool(value); return True
+        elif '-pos-x'           in name: posxs  [name] = value; return True
+        elif '-pos-y'           in name: posys  [name] = value; return True
+        elif '-size-x'          in name: sizexs [name] = value; return True
+        elif '-size-y'          in name: sizeys [name] = value; return True
+        elif '-shadow-blur'     in name: blurs  [name] = value; return True
+        elif '-font'            in name: types  [name] = value; return True                        
+        return False
+
+    def populatePluginsTab():
+        from classes.plugin     import Plugin        
+        from classes.attribute  import Attribute
+        # Make a tab for every plugin' settings
+        for name, plugin in Plugin.loaded.items():            
+            with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
+                Attribute.parent = f'tab-window-{name}'
+                with dpg.child_window(border=False, tag=Attribute.parent, height=cfg.main.height) as window:
+                    perspective = 0
+                    project = False                    
+                    row     = [ 32,  32, 32]
+                    columns = [  0, 105]
+                    Attribute.label(8, 8, plugin.description, color=(55,155,255))
+                    for name,value in plugin.settings.items():
+                        if Preferences.capturePluginItemSetting( name, value ): continue
+                        # If setting is not a part specific attribute, then try to parse it as a
+                        # general setting (placed in the upper area )
+                        Attribute.plugin = plugin.name
+                        # Temporal patch for projection settings
+                        if name in ['perspective', 'angle', 'pos-x', 'pos-y', 'size-x', 'size-y']: 
+                            max_value = {
+                                'perspective'   : 1600,
+                                'angle'         : 360,
+                                'pos-x'         : 2048,
+                                'pos-y'         : 2048,
+                                'size-x'        : 2048,
+                                'size-y'        : 2048,
+                            }
+                            negative = {
+                                'perspective'   : False,
+                                'angle'         : True,
+                                'pos-x'         : True,
+                                'pos-y'         : True,
+                                'size-x'        : True,
+                                'size-y'        : True,
+                            }
+                            Attribute.label     ( 300, row[1], elegant(name).rjust(12, ' ') , parent=Attribute.parent+'-projection')
+                            Attribute.integer   ( 395, row[1], name, value                  , parent=Attribute.parent+'-projection', max_value=max_value[name], negative=negative[name])
+                            row[1]+=24
+                        else:
+                            Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
+                            if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )
+                            elif isinstance( value, int  )  : Attribute.integer (columns[1], row[0], name, value )
+                            elif isinstance( value, float)  : Attribute.decimal (columns[1], row[0], name, value )
+                            elif ':' in value               : Attribute.combo   (columns[1], row[0], name, value )
+                            else                            : Attribute.text    (columns[1], row[0], name, value )
+                            row[0]+=24
+                            
+                    
+                    if not len(colors):
+                        dpg.configure_item(window, height=381)
+                    dpg.add_button(label="Preview", pos=( cfg.width - 64, 8), callback=Preferences.parent.openWeb, user_data=plugin.name)
+                #
+                # Create plugin item details controls
+                #
+                detail_height   = cfg.detail.height
+                extra           = cfg.detail.extra
+                with dpg.child_window( no_scrollbar=True, pos=(8,Preferences.height - extra - detail_height), height=detail_height):
+                    with dpg.tab_bar(tag=f"plugin-tabs-{plugin.name}"):
+                        for name, color in colors.items():
+                            gname = name.rstrip("-color")
+                            group = f'plugin-setting-{plugin.name}-{gname}'
+                            tname = f"tab-plugins-{plugin.name}-{gname}"
+                            Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys, bradius, sizexs, sizeys )
+                            with dpg.tab( label = elegant(gname), tag = tname ):
+                                with dpg.child_window(no_scrollbar=True, height=180) as window:
+                                    Attribute.color         (   3,  13 , color)
+                                    if name.replace('color', 'font') in types.keys():
+                                        Attribute.label         ( 220,   8 , "Font Settings", parent=window)
+                                    Attribute.font          ( 220,  32 )
+                                    Attribute.font_size     ( 318,  32 )
+                                    Attribute.line_height   ( 360,  32 )
+                                    Attribute.italic        ( 318,   8 )
+                                    Attribute.bold          ( 339,   8 )
+                                    if name.replace('color', 'shadow') in shadows.keys():
+                                        Attribute.label         ( 220,  54 , "Shadow Color", parent=window)
+                                    Attribute.shadow        ( 220,  75 )
+                                    Attribute.shadow_pos_x  ( 370,  70 )
+                                    Attribute.shadow_pos_y  ( 370,  90 )
+                                    Attribute.pos_x         ( 410,  12 )
+                                    Attribute.pos_y         ( 410,  32 )
+                                    Attribute.size_x        ( 219,  12 )
+                                    Attribute.size_y        ( 219,  32 )
+                                    Attribute.shadow_blur   ( 370, 110 )
+                                    Attribute.border_width  ( 370, 130 )
+                                    Attribute.border_radius ( 370, 150 )
+                                    if name.replace('color', 'border-color') in bcolors.keys():
+                                        Attribute.label         ( 442,  54 , "Border Color", parent=window)
+                                    Attribute.border_color  ( 442,  75 )
     def show():
         dpg.show_item('preferences_main')
 
-    
     def hide():
         dpg.hide_item('preferences_main')
 
-def createBooleanField(name, setting_name, callback=Preferences.updateSettingBoolean, restart=False):
-    dpg.add_checkbox(
-        label = name, 
-        tag = setting_name, 
-        callback=callback, 
+    def writecfg( restart=False ):
+        Preferences.root = Preferences.settings['root']        
+        with open(f'{Preferences.root}/config.txt', 'w') as file:
+            for key,value in Preferences.settings.items():
+                file.write(f'{key}={value}'+"\n")
+        Preferences.parent.restart = restart
+
+    
+    def loadcfg():
+        Preferences.settings = Preferences.defaults
+        Preferences.settings.update({'version' : Preferences.parent.version})
+        Preferences.root     = Preferences.settings['root']
         
-        default_value=Preferences.settings[setting_name], 
-        user_data=restart
+        try:
+            with open(f'{Preferences.root}/config.txt', 'r') as file:
+                data = file.read().split('\n')
+                for setting in data:
+                    if len(setting)==0:continue
+                    parts = setting.split('=')
+                    Preferences.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]
+            try:
+                if Preferences.settings['version'] == Preferences.parent.version:
+                    Log.info(f"PREFERENCES : Found version {Preferences.settings['version']} config file")
+            except:
+                Log.warning("PREFERENCES : Configuration file was invalid. Generating new one.")
+                root = Preferences.settings['root']
+                username = Preferences.settings['username']
+                Preferences.settings = Preferences.defaults
+                Preferences.settings['root'     ] = root
+                Preferences.settings['username' ] = username
+            Preferences.root                            = Preferences.settings['root']
+            Preferences.parent.width                    = int(Preferences.settings['width' ]) - (4 if Preferences.settings['fullscreen'] else 0)
+            Preferences.parent.height                   = int(Preferences.settings['height'])
+            Preferences.settings['width']               = Preferences.parent.width
+            Preferences.settings['height']              = Preferences.parent.height
+            json_fields = [
+                'x-pos'                     ,
+                'y-pos'                     ,
+                'gmt'                       ,
+                'auto_update_rate'          ,
+                'pending_cheevos'           ,
+                'unlocked_cheevos'          ,
+                'current_cheevo'            ,                
+            ]
+            for field in json_fields:                
+                Preferences.settings[field] = json.loads( str(Preferences.settings[field]) )
+            Cheevo.active_index = Preferences.settings['current_cheevo']
+        except Exception as E:
+            Log.error("PREFERENCES : Cannot parse/load config.txt", E)
+            return 
+
+    def updatePluginLists():
+        from classes.plugin import Plugin
+        items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled']]
+        dpg.configure_item( 'enabled-plugins', items=items )        
+    
+    def updateSetting(sender=None, value=None, refresh=False):
+        Preferences.settings[sender]         = dpg.get_value(sender)
+        Preferences.writecfg( restart=False )
+        if refresh: Preferences.parent.refresh()
+    
+    def updateSettingInteger(sender=None, value=None, user_data=None):
+        Preferences.settings[sender] = int(dpg.get_value(sender))
+        Preferences.writecfg( restart=False )
+   
+    def updateSettingVideo(sender=None, value=None, user_data=None):
+        Preferences.settings[sender] = int(dpg.get_value(sender))
+        dpg.set_viewport_pos( (Preferences.settings['x-pos'], Preferences.settings['y-pos']) )
+        dpg.set_viewport_width( Preferences.settings['width'] +16 )
+        dpg.set_viewport_height( Preferences.settings['height'] )
+        dpg.configure_item( 'main', width=Preferences.settings['width'], height=Preferences.settings['height'] )
+        Preferences.writecfg( restart=False )
+
+
+def createBooleanField(name, setting_name, callback=Preferences.updateSetting, restart=False):
+    dpg.add_checkbox(
+        label           = name, 
+        tag             = setting_name, 
+        callback        = callback, 
+        default_value   = Preferences.settings[setting_name], 
+        user_data       = restart,
     ) 
 
 def createIntegerField(name, setting_name, callback=Preferences.updateSettingInteger, restart=False, min_value=0, max_value=9999):
-    dpg.add_slider_int(label = name, tag = setting_name, callback=callback,default_value=int(Preferences.settings[setting_name]), min_value=min_value, max_value=max_value, user_data=restart) 
+    dpg.add_slider_int(
+        label           = name, 
+        tag             = setting_name, 
+        callback        = callback,
+        default_value   = int(Preferences.settings[setting_name]), 
+        min_value       = min_value, 
+        max_value       = max_value, 
+        user_data       = restart
+    ) 
 
 def createStringField(name, setting_name, callback=Preferences.updateSetting, restart=False):
-    dpg.add_input_text(label = name, tag = setting_name, callback=callback,default_value=Preferences.settings[setting_name], user_data=False) 
+    dpg.add_input_text(
+        label           = name, 
+        tag             = setting_name, 
+        callback        = callback,
+        default_value   = Preferences.settings[setting_name], 
+        user_data       = False
+    ) 
 
-def createColorField(name, setting_name, callback=Preferences.updateSettingColor):
+def createColorField(name, setting_name, callback=Preferences.updateSetting):
     dpg.add_color_picker(
-        height=128, 
-        width=128,
-        label = name, 
-        tag = setting_name, 
-        callback=callback,
-        default_value=Preferences.settings[setting_name], 
-        user_data=False
+        height          = 128, 
+        width           = 128,
+        label           = name, 
+        tag             = setting_name, 
+        callback        = callback,
+        default_value   = Preferences.settings[setting_name], 
+        user_data       = False,
     ) 

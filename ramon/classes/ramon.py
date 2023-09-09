@@ -94,6 +94,8 @@ class Ramon:
         elif type == 'ra-user'      : web = f"https://retroachievements.org/user/{Preferences.settings['username']}"
         elif type == 'ra-game'      : web = f"https://retroachievements.org/game/{Ramon.data.game.id}"
         elif type == 'ra-cheevo'    : web = f"https://retroachievements.org/achievement/{Ramon.data.the_cheevo.id}"
+        else:web = f"{Preferences.settings['root']}/data/{ type }.html"
+        
         os.system(f'start {web}')
     
     def createMenu():
@@ -166,8 +168,9 @@ class Ramon:
                 default_value=Preferences.settings['username'],
                 pos=(96, row),
                 width=110,
-                callback=Preferences.updateUsername,
+                callback=Preferences.updateSetting,
                 on_enter=True,
+                user_data=True #Reload data
             )
             dpg.add_text(
                 default_value="Last connection", 
