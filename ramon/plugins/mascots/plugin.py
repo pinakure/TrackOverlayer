@@ -6,11 +6,11 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'mascots'
-        self.description = 'Mascots related to current game autodisplay'
+        self.description = 'Auto display related Mascots'
         self.endpoint    = None
         
         #@ Composer Settings
-        self.z_index     = 9999
+        self.z_index     = 19
         self.width       = Plugin.width
         self.height      = 1080
         self.scale       = 1

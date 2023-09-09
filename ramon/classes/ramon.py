@@ -113,9 +113,10 @@ class Ramon:
     def mkdir(dirname):
         if not os.path.exists(f'{Preferences.root}/{dirname}'):
             os.mkdir(f'{Preferences.root}/{dirname}')
-            Log.info(f"Created directory '{dirname}'")
+            #Log.info(f"Created directory '{dirname}'")
         else:
-            Log.info(f"Using directory '{dirname}'")
+            pass
+            #Log.info(f"Using directory '{dirname}'")
         
      
     def setupCSS():

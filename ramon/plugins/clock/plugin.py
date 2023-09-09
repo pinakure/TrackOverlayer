@@ -21,8 +21,8 @@ class plugin(Plugin):
         self.width       = 70
         self.height      = 20
         self.scale       = 2
-        self.x           = 130
-        self.y           = 616
+        self.x           = 50
+        self.y           = 600
 
         #@ Settings
         self.settings.update({
@@ -33,18 +33,18 @@ class plugin(Plugin):
 
             "analogic"              : False,
 
-            "digits-color"          : [255,255,200,255],
+            "digits-color"          : [0,255,0,255],
             "digits-pos-x"          : 0,
             "digits-pos-y"          : 0,
-            "digits-font"           : "pinakure",
+            "digits-font"           : "digital-mono",
             "digits-font-size"      : 16,
             "digits-line-height"    : 18,
             "digits-font-bold"      : True,
             "digits-font-italic"    : False,
-            "digits-shadow-blur"    : 0,
-            "digits-shadow-color"   : [0,0,0,255],            
-            "digits-shadow-pos-x"   : 1,
-            "digits-shadow-pos-y"   : 1,
+            "digits-shadow-blur"    : 2,
+            "digits-shadow-color"   : [20,200,20,255],
+            "digits-shadow-pos-x"   : 0,
+            "digits-shadow-pos-y"   : 0,
             "digits-border-color"   : [0,0,0,0],
             "digits-border-width"   : 0,
         })

@@ -1,3 +1,0 @@
-- Take note of last progress in the game
-- When progress changes, animate the movement so it can be noticed
-- If possible, do some pokemon experience kind of sound when progress increases

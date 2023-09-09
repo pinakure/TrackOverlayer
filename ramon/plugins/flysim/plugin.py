@@ -6,19 +6,22 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'flysim'
-        self.description = 'Fly Simulator, JFF doodle'
+        self.description = 'Fly Simulator : Programable RetroPixel Overlay Demo'
         self.endpoint    = None
         
         #@ Composer Settings
-        self.z_index     = 9999
-        self.width       = Plugin.width
-        self.height      = 1080
+        self.z_index     = 999 # on top of other plugins but bezel
+        self.width       = 1024
+        self.height      = 700
         self.scale       = 1
+        self.x           = 400
+        self.y           = 96
+        
         
         #@ Settings
         self.settings.update({
-            'pos-x'                     : 0,
-            'pos-y'                     : 0,
+            'pos-x'                     : self.x,
+            'pos-y'                     : self.y,
             'size-x'                    : self.width,
             'size-y'                    : self.height,            
         })

@@ -358,7 +358,6 @@ class Plugin:
     def injectScripts(self):
         from classes.dynamic_css import fonts
         from dearpygui import dearpygui as dpg
-        print(Plugin.debug)            
                 
         for i in range(0,2):
             for key,value in {
@@ -564,6 +563,7 @@ class Plugin:
             if isColor(value)   : value = parseColor(value)
             elif isInt(value)   : value = parseInt(value)
             elif isBool(value)  : value = parseBool(value)
+            elif isFloat(value) : value = parseFloat(value)
             settings[ key ] = value
         if current and current in Plugin.loaded.keys():
             Plugin.loaded[current].settings = settings

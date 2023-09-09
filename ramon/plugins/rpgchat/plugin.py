@@ -35,7 +35,7 @@ class plugin(Plugin):
             "text-shadow-pos-y"     : 2,
             "text-line-height"      : 18,             
             "text-border-color"     : [0,0,0,0],  
-            "text-border-width"     : 0,  
+            "text-border-width"     : 0,
         })
 
         #@ Install settings

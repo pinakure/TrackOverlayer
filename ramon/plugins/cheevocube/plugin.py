@@ -15,7 +15,7 @@ class plugin(Plugin):
         self.height      = 256
         self.scale       = 0.35
         self.x           = -466
-        self.y           = -80 
+        self.y           = -83 
 
         #@ Settings
         self.settings.update({
@@ -43,22 +43,22 @@ class plugin(Plugin):
             "glow-type"                 : 'alternate',
             
             "name-color"                : [0,255,0,255],
-            "name-pos-x"                : 300,
-            "name-pos-y"                : 0,
+            "name-pos-x"                : 295,
+            "name-pos-y"                : 20,
             "name-border-color"         : [0,205,0,255],
             "name-border-width"         : 1,
             "name-shadow-color"         : [0,0,0,128],
             "name-shadow-pos-x"         : 4,
             "name-shadow-pos-y"         : 4,
             "name-shadow-blur"          : 0,
-            "name-font"                 : 'noir-caps',
+            "name-font"                 : 'arcade',
             "name-font-bold"            : False,
             "name-font-italic"          : False,
-            "name-font-size"            : 32,
+            "name-font-size"            : 40,
             "name-line-height"          : 68,
             
             "description-color"         : [0,255,0,255],
-            "description-pos-x"         : 300,
+            "description-pos-x"         : 304,
             "description-pos-y"         : 68,
             "description-border-color"  : [0,205,0,255],
             "description-border-width"  : 1,

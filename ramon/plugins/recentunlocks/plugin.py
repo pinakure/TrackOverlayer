@@ -12,11 +12,11 @@ class plugin(Plugin):
         
         #@ Composer Settings
         self.z_index     = 30
-        self.width       = 366
-        self.height      = 420
+        self.width       = 360
+        self.height      = 434
         self.scale       = 1
-        self.x           = 4
-        self.y           = 128
+        self.x           = 12
+        self.y           = 96
         
         #@ Settings
         self.settings.update({
@@ -30,8 +30,8 @@ class plugin(Plugin):
             "perspective"               : 0,
             "angle"                     : 0,
             
-            "backdrop-file"             : './recent-bg.png',
-            "overlay-file"              : './recent-overlay.png',
+            "backdrop-file"             : './files/recentunlocks/recent-bg.png',
+            "overlay-file"              : './files/recentunlocks/recent-overlay.png',
            
             "division-color"            : [ 0, 255, 255, 128 ],
             "division-border-width"     : 1,            
@@ -87,7 +87,7 @@ class plugin(Plugin):
             "name-border-radius"        : 1, 
             
             "description-color"         : [255,255,255,255],
-            "description-font"          : "square",
+            "description-font"          : "",
             "description-font-size"     : 16, 
             "description-font-italic"   : False, 
             "description-font-bold"     : False, 
@@ -106,15 +106,6 @@ class plugin(Plugin):
             "mid-color"                 : [  20,  96,  20, 255],
             "low-color"                 : [  10,  40,  10, 255],
         })
-
-
-        #@ Install settings
-        self.files      = [
-            'recent-bg.png',
-            #'recent-overlay.png',
-        ]
-
-
 
     def composerVars(self):
         return {

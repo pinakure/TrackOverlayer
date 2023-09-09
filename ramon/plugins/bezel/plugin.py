@@ -11,8 +11,8 @@ class plugin(Plugin):
         
         #@ Composer Settings
         self.z_index     = 9999
-        self.width       = Plugin.width
-        self.height      = 1080
+        self.width       = 1440
+        self.height      = 810
         self.scale       = 1
         
         #@ Settings

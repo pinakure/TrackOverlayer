@@ -100,6 +100,21 @@ class Attribute:
         with D.tooltip(slider): 
             D.add_text("Ctrl + Click to edit value")
         
+    def decimal( x, y, name, value, parent=None, negative=False, max_value=32.0):
+        slider = D.add_slider_float(
+            tag             = f'plugin-setting-{Attribute.plugin}-{name}',
+            default_value   = value, 
+            callback        = Plugin.updateSettings, 
+            user_data       = name,
+            width           = 180,
+            pos             = (x, y), 
+            parent          = parent if parent is not None else Attribute.parent,
+            min_value       = -max_value if negative else 0.0,
+            max_value       = max_value,
+        )
+        with D.tooltip(slider): 
+            D.add_text("Ctrl + Click to edit value")
+        
     
     def text( x, y, name, value):
         D.add_input_text(

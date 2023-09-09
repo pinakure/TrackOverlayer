@@ -6,7 +6,7 @@ class plugin(Plugin):
         Plugin.__init__(self)
         #@ Plugin Settings
         self.name        = 'progressbar'
-        self.description = 'RetroAchievements Current Game progress bar widget'
+        self.description = 'Game Mastery ProgressBar'
         self.endpoint    = 'progress'
 
         #@ Composer Settings
@@ -15,7 +15,7 @@ class plugin(Plugin):
         self.height      = 32
         self.scale       = 1   
         self.x           = 10
-        self.y           = 550
+        self.y           = 545
 
         #@ Settings
         self.settings.update({
@@ -31,9 +31,9 @@ class plugin(Plugin):
             
             "hard-gradient"             : False,
             
-            "overlay-file"              : './progress-overlay.png',
-            "sound-file"                : './experience.wav',
-            "backdrop-file"             : './progress-bg.png',
+            "overlay-file"              : './files/progressbar/progress-overlay.png',
+            "sound-file"                : './files/progressbar/experience.wav',
+            "backdrop-file"             : './files/progressbar/progress-bg.png',
             
             "percent-color"             : [ 245, 255,   0, 255],
             "percent-font"              : "vhs",
@@ -53,13 +53,6 @@ class plugin(Plugin):
             "low-color"                 : [  64, 128,  0, 128 ],            
             "glow-color"                : [ 255, 255,  0, 255 ],            
         })
-
-        #@ Install settings
-        self.files      = [
-            'progress-overlay.png',
-            'progress-bg.png',
-            'experience.wav',
-        ]    
 
     def composerVars(self):
         return {

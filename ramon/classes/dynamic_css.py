@@ -213,6 +213,7 @@ hr{
         return self.css
 
     def load(self):
+        return
         try:
             with open(f'{DynamicCSS.root}/css/{self.filename}.css', 'r') as input:
                 self.css = input.read()
@@ -222,6 +223,7 @@ hr{
             self.save()
 
     def save(self): 
+        return
         try:
             with open(f'{DynamicCSS.root}/css/{self.filename}.css', 'w') as input:
                 input.write( beautify(self.css ))

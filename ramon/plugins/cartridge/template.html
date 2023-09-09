@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css">
         <style>
             * {
                 box-sizing: border-box;
@@ -25,6 +26,7 @@
                 left                : calc( 50% - 128px );
                 top                 : calc( 50% - 128px );
                 perspective         : 1000px; -webkit-perspective : 1000px;
+                transform           : scale( calc( var(--zoom) / 10 ) );
             }
 
             #cube {
@@ -38,7 +40,6 @@
             }
 
             #cube div img {
-                animation: heartbeat 2s alternate ease-in-out infinite; -webkit-animation: heartbeat 2s alternate ease-in-out infinite;
             }
 
             #cube div {
@@ -54,14 +55,17 @@
                 /*box-shadow  : 0px 0px 8px #000;*/
                 border      : none;
             }
-            @keyframes heartbeat {
-                0%  { filter: opacity(100%)             }
-                100%{ filter: opacity(0%)               }
+
+            #label {
+                width       : 256px;
+                height      : 256px;
+                left        : calc( 50% - 128px );
+                position    : absolute;
+                top         : 4px;
+                zoom        : 0.47;
             }
-            @-webkit-keyframes heartbeat {
-                0%  { filter: opacity(100%)             }
-                100%{ filter: opacity(0%)               }
-            }
+
+           
             @keyframes rotatecube {
                 0%  { -webkit-transform: rotateY(360deg) }
                 25% { -webkit-transform: rotateY(270deg) }
@@ -83,18 +87,18 @@
             #cube .front     { z-index: -32px; top: 0px; left: calc( 50% - 128px ); width : 256px; }
             #cube .back      { z-index: 32px; top: 0px; left: calc( 50% - 128px ); width : 256px; }
             
-            #cube .front    {  -webkit-transform:                    rotateY(0deg )                      translateZ( 16px );}
-            #cube .back     {  -webkit-transform: rotateX( 180deg )                      rotateZ(180deg) translateZ( 16px );}
+            #cube .front    {  -webkit-transform:                    rotateY(0deg )                      translateZ( 15px );}
+            #cube .back     {  -webkit-transform: rotateX( 180deg )                      rotateZ(180deg) translateZ( 15px );}
             #cube .right    {  -webkit-transform:                    rotateY(  90deg )                   translateZ( 16px );}
             #cube .left     {  -webkit-transform:                    rotateY( -90deg )                   translateZ( 16px );}
             #cube *         {
-                background-image  : url('current_cheevo.png');
                 background-repeat : no-repeat;
                 background-size   : 100% 100%;
                 image-rendering   : pixelated;    
             }
         </style>
         <script>
+            {% script %}
             var current_face=1;
 
             function refresh(){ 
@@ -108,6 +112,7 @@
                 for( item in items){
                     rid                           = parseInt(Math.random()*65535);
                     node                          = items[item][0]
+                    // read localstorage and change url of picture
             //        node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
             //        node.children[0].src          = `current_cheevo_lock.png?${rid}`;
                     node.children[0].style.width  = '100%';
@@ -121,10 +126,10 @@
     <body>        
         <div class="container">
             <div id="cube">
-                <div class="front"  style="background-image:url('./cart-front.png') !important"></div>
-                <div class="back"   style="background-image:url('./cart-front.png') !important"></div>
-                <div class="right"  style="background-image:url('./cart-side.png') !important"></div>
-                <div class="left"   style="background-image:url('./cart-side.png') !important"></div>
+                <div class="front"  style="background-image:url('./files/cartridge/neogeo-cart-front.png') !important"><img id="label" src="./files/cartridge/neogeo/{% cartridge-game %}.png"/></div>
+                <div class="back"   style="background-image:url('./files/cartridge/neogeo-cart-front.png') !important"><img id="label" src="./files/cartridge/neogeo/{% cartridge-game %}.png"/></div>
+                <div class="right"  style="background-image:url('./files/cartridge/neogeo-cart-side.png') !important"></div>
+                <div class="left"   style="background-image:url('./files/cartridge/neogeo-cart-side.png') !important"></div>
                 <div class="top"    style="display: none"></div>
                 <div class="bottom" style="display: none"></div>
             </div>

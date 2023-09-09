@@ -310,6 +310,7 @@ Special thanks:
                         iframe.id       = `${plugin_name}`;
                         iframe.origin   = `http://localhost`;
                         iframe.sandbox  = 'allow-same-origin allow-scripts allow-top-navigation';
+                        iframe.style.overflow = 'hidden';
                         iframe.src      = `${ plugin_name }.html`;
                         TO.dom.to.appendChild(iframe)
                         TO.dom.plugins[ plugin_name ] = document.getElementById(`${ plugin_name }`)                        

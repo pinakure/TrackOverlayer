@@ -497,6 +497,7 @@ class Preferences:
                             Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
                             if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )
                             elif isinstance( value, int  )  : Attribute.integer (columns[1], row[0], name, value )
+                            elif isinstance( value, float)  : Attribute.decimal (columns[1], row[0], name, value )
                             else                            : Attribute.text    (columns[1], row[0], name, value )
                             row[0]+=24
                             
@@ -550,6 +551,8 @@ class Preferences:
 
     
     def createOutputTab():
+        return
+        #TODO: remove this block if nothing goes weird
         with dpg.tab(label="Output", tag="tab_output"):
             with dpg.child_window():
                 dpg.add_text("Date & Time Adjust", color=(255,255,0))
