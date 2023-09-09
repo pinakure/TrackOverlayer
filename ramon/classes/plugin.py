@@ -224,7 +224,7 @@ class Plugin:
             self.template_data = file.read()
 
     def write(self):        
-        with open( f"{Preferences.settings['root']}/data/{self.name}.css", 'w') as file:
+        with open( f"{Preferences.settings['root']}/data/css/{self.name}.css", 'w') as file:
             file.write( self.getCSS() )
         with open( f"{Preferences.settings['root']}/data/{self.name}.html", 'w') as file:
             file.write( self.rendered )
@@ -239,7 +239,7 @@ class Plugin:
             var link = document.createElement('link');
             link.rel = "stylesheet";
             link.type = "text/css";
-            link.href = `./{% name %}.css?${ rid }`;
+            link.href = `./css/{% name %}.css?${ rid }`;
             par.append(link);
             setTimeout(function(){ old.remove();}, 500);
             setTimeout(updatecss, 1000);
@@ -307,7 +307,7 @@ class Plugin:
                                 var link = document.createElement('link');
                                 link.rel = "stylesheet";
                                 link.type = "text/css";
-                                link.href = `./{% name %}.css?${ rid }`;
+                                link.href = `./css/{% name %}.css?${ rid }`;
                                 par.append(link);
                                 {% Name %}.log.print("style updated");
                                 return;

@@ -133,6 +133,7 @@ class Ramon:
         HotKeys.install()
         Ramon.mkdir('data')
         Ramon.mkdir('data/cache')
+        Ramon.mkdir('data/css')
         if Preferences.settings['vertical']:
             w, h = Ramon.width,Ramon.height
             Ramon.height = w
