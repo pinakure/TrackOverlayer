@@ -1,28 +1,13 @@
 import json
 from dearpygui              import dearpygui as dpg
+from classes.config         import Config as cfg 
 from classes.cheevo         import Cheevo
 from classes.log            import Log
-from classes.tools          import elegant 
-
+from classes.ui             import UI, row as ui_row, column as ui_column
+from classes.tools          import elegant, Color, parseInt, parseColor, parseFloat, parseBool
+                        
 # plugin preferences config globals
-class cfg:
-    
-    width   = 1024#640
-    height  = 600#480
-
-    class range:
-        pos_x   = [-1440, 1440]
-        pos_y   = [-1080, 1080]
-        size_x  = [-1440, 1440]
-        size_y  = [-1080, 1440]
-        zoom    = [ 1   ,  100]
-
-    class main:
-        height  = 282
-    class detail:
-        height  = 220
-        extra   = 68
-
+_item_details = 0
 # field collectors
 [ 
     sizexs, 
@@ -60,7 +45,65 @@ class cfg:
     {}, 
     {}, 
     {},
-]    
+]   
+#HACK Dont blame me, this works too fast. 
+def clearVariableBuffer():
+    global sizexs
+    global sizeys
+    global bradius
+    global bwidths
+    global bcolors
+    global colors
+    global types 
+    global heights
+    global italics
+    global bolds
+    global posxs
+    global posys
+    global sposys
+    global sposxs
+    global blurs
+    global shadows
+    global sizes
+    [ 
+        sizexs, 
+        sizeys, 
+        bradius,
+        bwidths, 
+        bcolors, 
+        colors, 
+        types , 
+        heights, 
+        italics, 
+        bolds, 
+        posxs, 
+        posys, 
+        sposys, 
+        sposxs, 
+        blurs, 
+        shadows, 
+        sizes ,
+    ] = [ 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {},
+    ]    
+
+
 
 class Preferences:
     root            = '.'
@@ -69,36 +112,7 @@ class Preferences:
     parent          = None
     data            = None
     
-    defaults = {
-        'last_game'                 : 'TestGame',
-        'last_date'                 : '01 Jan 2000, 00:00',
-        'rank'                      : '1 / 50,000',
-        'debug'                     : False,
-        'score'                     : '999999',
-        'width'                     : 1440,
-        'height'                    :  900,
-        'x-pos'                     :    0,
-        'y-pos'                     :    0,
-        'auto_update'               : True,
-        'auto_update_rate'          : 1,
-        'fullscreen'                : False,
-        'vertical'                  : False,
-        'username'                  : '',
-        'password'                  : '',
-        'twitch-username'           : '',
-        'twitch-password'           : '',
-        'root'                      : '.',
-        'gmt'                       : 2,
-        'twitch-app-key'            : '',
-        'twitch-use-api'            : False,
-        'ra-use-api'                : False,
-        'ra-app-key'                : '',
-        'offline'                   : False,
-        'simple_ui'                 : False,
-        'pending_cheevos'           : [0,255,255],
-        'unlocked_cheevos'          : [64, 128,0],
-        'current_cheevo'            : 1,
-    }
+    defaults        = cfg.defaults
     
     def create( parent ):
         Preferences.parent = parent
@@ -115,89 +129,44 @@ class Preferences:
             pos=((Preferences.parent.width / 2) - (Preferences.width / 2),(Preferences.parent.height / 2) - (Preferences.height / 2))
         ):
             with dpg.tab_bar(tag="preferences-tabs"):
-                Preferences.createInterfaceTab()
-                Preferences.createInputTab()
+                Preferences.createGeneralTab()
                 Preferences.createPluginsTab()
 
-    def createInterfaceTab():
-        with dpg.tab(label="Interface", tag="tab_general"):
+    def createGeneralTab():
+        with dpg.tab(label="General", tag="tab_general"):
             with dpg.child_window():
-                dpg.add_text("General", color=(255,255,0))
-                createBooleanField('Simple UI       '   , 'simple_ui'       , restart=True)
-                dpg.configure_item('simple_ui', enabled=False)
-                createBooleanField('Fullscreen      '   , 'fullscreen'      , restart=True)
-                # Window dimensions
-                dpg.add_text("Window Geometry", color=(255,255,0))
-                createBooleanField('Vertical Layout ( swaps width & height )', 'vertical'        , restart=True)
-                createIntegerField('Width'              , 'width'           , min_value=320,max_value=1440, callback=Preferences.updateSettingVideo)
-                createIntegerField('Height'             , 'height'          , min_value=320,max_value=1440, callback=Preferences.updateSettingVideo)
-                createIntegerField('X Position'         , 'x-pos'           , min_value=0,  max_value=3000, callback=Preferences.updateSettingVideo)
-                createIntegerField('Y Position'         , 'y-pos'           , min_value=0,  max_value=3000, callback=Preferences.updateSettingVideo)
-                # Window colors
-                dpg.add_text("Achievement Colors", tag='ach-colors', color=(255,255,0))
-                createColorField  ('Pending '   , 'pending_cheevos' )
-                createColorField  ('Unlocked'   , 'unlocked_cheevos' )
-                pos = dpg.get_item_pos('ach-colors')
-                dpg.configure_item('pending_cheevos' , pos=(0, 240))
-                pos = dpg.get_item_pos('pending_cheevos')
-                dpg.configure_item('unlocked_cheevos', pos=(pos[0]+192, pos[1]))
-                dpg.set_value('unlocked_cheevos', Preferences.settings['unlocked_cheevos'   ])
-                dpg.set_value('pending_cheevos' , Preferences.settings['pending_cheevos'    ])
-  
-    def createInputTab():
-        with dpg.tab(label="Input", tag="tab_input"):
-            with dpg.child_window():
-                dpg.add_text( "Twitch"          , tag="twitch-label"        , color=(205,255,0) )
-                dpg.add_text( "API Key"         , tag="twitch-app-key-label", color=(255,255,0) )
-                dpg.add_text( "Use API"         , tag="twitch-use-api-label", color=(255,255,0) )
-                dpg.add_text( "IRC Channel"     , tag="twitch-username-label",color=(255,255,0) )
-                dpg.add_text( "IRC Password"    , tag="twitch-password-label",color=(255,255,0) )
-                createStringField (''           , 'twitch-app-key'                              )
-                createStringField (''           , 'twitch-username'                             )
-                createStringField (''           , 'twitch-password'                             )
-                createBooleanField(''           , 'twitch-use-api'                              )
-                dpg.add_text( "RetroAchievements",tag="ra-label"            , color=(205,255,0) )
-                dpg.add_text( "API Key"         , tag="ra-app-key-label"    , color=(255,255,0) )
-                dpg.add_text( "Use API"         , tag="ra-use-api-label"    , color=(255,255,0) )
-                createStringField (''           , 'ra-app-key'                                  )
-                createBooleanField(''           , 'ra-use-api'                                  )
-                dpg.add_text( "RA Password"     , tag="ra-password-label"   , color=(255,255,0) )
-                dpg.add_text( "Offline Mode"    , tag="ra-offline-label"    , color=(255,255,0) )
-                createStringField (''           , 'password'                                    )
-                createBooleanField(''           , 'offline'                                     )
-                dpg.add_text( "AutoRefresh Rate", tag="auto-update-rate-label",color=(255,255,0))
-                dpg.add_text( "Use AutoRefresh" , tag="auto-update-enable-lbl",color=(255,255,0))
-                createBooleanField(''           , 'auto_update'     )
-                createIntegerField('Minutes'    , 'auto_update_rate' , min_value=1,max_value=60)
-                columns = [ 150, 16 ]
-                y = 8
-                dpg.configure_item('twitch-label'           , pos=(          8,   y ));y+=24
-                dpg.configure_item('twitch-app-key-label'   , pos=( columns[0],   y ))
-                dpg.configure_item('twitch-use-api-label'   , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('twitch-app-key'         , pos=( columns[0],   y ))
-                dpg.configure_item('twitch-use-api'         , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('twitch-username-label'  , pos=( columns[0],   y ));y+=24
-                dpg.configure_item('twitch-username'        , pos=( columns[0],   y ));y+=24
-                dpg.configure_item('twitch-password-label'  , pos=( columns[0],   y ));y+=24
-                dpg.configure_item('twitch-password'        , pos=( columns[0],   y ));y+=24
-                y+=24
-                dpg.configure_item('ra-label'               , pos=(          8,   y ));y+=24
-                dpg.configure_item('ra-app-key-label'       , pos=( columns[0],   y ))
-                dpg.configure_item('ra-use-api-label'       , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('ra-app-key'             , pos=( columns[0],   y ))
-                dpg.configure_item('ra-use-api'             , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('ra-password-label'      , pos=( columns[0],   y ))
-                dpg.configure_item('ra-offline-label'       , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('password'               , pos=( columns[0],   y ))
-                dpg.configure_item('offline'                , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('auto-update-rate-label' , pos=( columns[0],   y ))
-                dpg.configure_item('auto-update-enable-lbl' , pos=( columns[1],   y ));y+=24
-                dpg.configure_item('auto_update_rate'       , pos=( columns[0],   y ))
-                dpg.configure_item('auto_update'            , pos=( columns[1],   y ));y+=24                
-                dpg.configure_item('password'               , password=True)
-                dpg.configure_item('ra-app-key'             , password=True)
-                dpg.configure_item('twitch-app-key'         , password=True)
-                dpg.configure_item('twitch-password'        , password=True)
+                UI.setCursor(0,0)
+                UI.label        ("Interface"        , Color.lime        , left_align=True   ); UI.jump()
+                UI.checkbox     ("Simple UI"        , 'simple_ui'                           , enabled = False)
+                UI.checkbox     ("Fullscreen"       , 'fullscreen'                          )
+                UI.setCursor(1,2)
+                UI.checkbox     ("Vertical Layout"  , 'vertical'                            ); UI.jump()
+                UI.jump()
+                UI.label        ("Window Geometry"  , Color.lime        , left_align=True   ); UI.jump()
+                UI.numeric      ("Width"            , 'width'                               , callback=Preferences.updateSettingVideo )
+                UI.numeric      ("Height"           , 'height'                              , callback=Preferences.updateSettingVideo );UI.jump()
+                UI.numeric      ("X Position"       , 'x-pos'                               , callback=Preferences.updateSettingVideo )
+                UI.numeric      ("Y Position"       , 'y-pos'                               , callback=Preferences.updateSettingVideo )
+                UI.jump()
+                UI.jump()
+                UI.label        ("Twitch"           , Color.lime        , left_align=True   ); UI.jump()
+                UI.checkbox     ("Use API"          , 'twitch-use-api'                      )
+                UI.textfield    ("API Key"          , 'twitch-app-key'  , password=True     ); UI.jump()
+                UI.textfield    ("IRC Channel"      , 'twitch-username'                     )
+                UI.textfield    ("IRC Password"     , 'twitch-password' , password=True     ); UI.jump()
+                UI.jump()
+                UI.label        ("RetroAchievements", Color.lime        , left_align=True   ); UI.jump()
+                UI.checkbox     ("Use API"          , 'ra-use-api'                          )
+                UI.textfield    ("API Key"          , 'ra-app-key'      , password=True     ); UI.jump()
+                UI.textfield    ("RA Password"      , 'password'        , password=True     ); UI.jump()
+                #UI.textfield    ("Username"         , 'username'                          ); UI.jump()
+                UI.jump()
+                UI.label        ("RA Scraper Setup" , Color.lime        , left_align=True   ); UI.jump()
+                UI.checkbox     ("Offline Mode"     , 'offline'                             )
+                UI.checkbox     ("Automatic Refresh", 'auto_update'                         )
+                UI.setCursor(1,18)
+                UI.numeric      ("AutoRefresh Rate" , 'auto_update_rate'                    ); UI.jump()
+                
     
     def createPluginsTab():
         from classes.plugin import Plugin
@@ -227,86 +196,65 @@ class Preferences:
                             dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 400))
                             dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
 
-    def capturePluginItemSetting(name, value):
-        from classes.plugin     import parseBool
+    def capturePluginItemSetting(name : str, value : str):
+        global _item_details
         # Skip corrupt or malformed settings
         if name in ['enabled', '']: return True
+        if name.startswith('.'): return True
         # Process settings which always come grouped, such as                         
         # - Item color, font, line height
         # These will be placed in individual tabs grouped, to do so use 
         # the same prefix for line-height, font-size and color, then they will
         # spawn in the same tab. 
-        if   '-border-color'    in name: bcolors[name] = value; return True     
-        elif '-border-width'    in name: bwidths[name] = value; return True     
-        elif '-border-radius'   in name: bradius[name] = value; return True     
-        elif '-shadow-color'    in name: shadows[name] = value; return True
-        elif '-shadow-pos-x'    in name: sposxs [name] = value; return True
-        elif '-shadow-pos-y'    in name: sposys [name] = value; return True
-        elif '-color'           in name: colors [name] = value; return True     
-        elif '-font-size'       in name: sizes  [name] = value; return True
-        elif '-line-height'     in name: heights[name] = value; return True
-        elif '-font-italic'     in name: italics[name] = parseBool(value); return True
-        elif '-font-bold'       in name: bolds  [name] = parseBool(value); return True
-        elif '-pos-x'           in name: posxs  [name] = value; return True
-        elif '-pos-y'           in name: posys  [name] = value; return True
-        elif '-size-x'          in name: sizexs [name] = value; return True
-        elif '-size-y'          in name: sizeys [name] = value; return True
-        elif '-shadow-blur'     in name: blurs  [name] = value; return True
-        elif '-font'            in name: types  [name] = value; return True                        
+        if   '-border-color'    in name: _item_details = True; bcolors[name] = value; return True     
+        elif '-border-width'    in name: _item_details = True; bwidths[name] = value; return True     
+        elif '-border-radius'   in name: _item_details = True; bradius[name] = value; return True     
+        elif '-shadow-color'    in name: _item_details = True; shadows[name] = value; return True
+        elif '-shadow-pos-x'    in name: _item_details = True; sposxs [name] = value; return True
+        elif '-shadow-pos-y'    in name: _item_details = True; sposys [name] = value; return True
+        elif '-color'           in name: _item_details = True; colors [name] = value; return True     
+        elif '-font-size'       in name: _item_details = True; sizes  [name] = value; return True
+        elif '-line-height'     in name: _item_details = True; heights[name] = value; return True
+        elif '-font-italic'     in name: _item_details = True; italics[name] = parseBool(value); return True
+        elif '-font-bold'       in name: _item_details = True; bolds  [name] = parseBool(value); return True
+        elif '-pos-x'           in name: _item_details = True; posxs  [name] = value; return True
+        elif '-pos-y'           in name: _item_details = True; posys  [name] = value; return True
+        elif '-size-x'          in name: _item_details = True; sizexs [name] = value; return True
+        elif '-size-y'          in name: _item_details = True; sizeys [name] = value; return True
+        elif '-shadow-blur'     in name: _item_details = True; blurs  [name] = value; return True
+        elif '-font'            in name: _item_details = True; types  [name] = value; return True                        
         return False
 
     def populatePluginsTab():
+        global _item_details
+        UI.columns = [ 8, 450 ]
+        UI.setColumnWidth(445)
         from classes.plugin     import Plugin        
         from classes.attribute  import Attribute
         # Make a tab for every plugin' settings
-        for name, plugin in Plugin.loaded.items():            
+        for name, plugin in Plugin.loaded.items():
+            clearVariableBuffer()
             with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
                 Attribute.parent = f'tab-window-{name}'
                 with dpg.child_window(border=False, tag=Attribute.parent, height=cfg.main.height) as window:
-                    perspective = 0
-                    project = False                    
-                    row     = [ 32,  32, 32]
-                    columns = [  0, 105]
                     Attribute.label(8, 8, plugin.description, color=(55,155,255))
+                    UI.setCursor(0,1)
+                    _item_details = False
                     for name,value in plugin.settings.items():
                         if Preferences.capturePluginItemSetting( name, value ): continue
-                        # If setting is not a part specific attribute, then try to parse it as a
                         # general setting (placed in the upper area )
                         Attribute.plugin = plugin.name
-                        # Temporal patch for projection settings
-                        if name in ['perspective', 'angle', 'pos-x', 'pos-y', 'size-x', 'size-y']: 
-                            max_value = {
-                                'perspective'   : 1600,
-                                'angle'         : 360,
-                                'pos-x'         : 2048,
-                                'pos-y'         : 2048,
-                                'size-x'        : 2048,
-                                'size-y'        : 2048,
-                            }
-                            negative = {
-                                'perspective'   : False,
-                                'angle'         : True,
-                                'pos-x'         : True,
-                                'pos-y'         : True,
-                                'size-x'        : True,
-                                'size-y'        : True,
-                            }
-                            Attribute.label     ( 300, row[1], elegant(name).rjust(12, ' ') , parent=Attribute.parent+'-projection')
-                            Attribute.integer   ( 395, row[1], name, value                  , parent=Attribute.parent+'-projection', max_value=max_value[name], negative=negative[name])
-                            row[1]+=24
-                        else:
-                            Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
-                            if   isinstance( value, bool )  : Attribute.boolean (columns[1], row[0], name, value )
-                            elif isinstance( value, int  )  : Attribute.integer (columns[1], row[0], name, value )
-                            elif isinstance( value, float)  : Attribute.decimal (columns[1], row[0], name, value )
-                            elif ':' in value               : Attribute.combo   (columns[1], row[0], name, value )
-                            else                            : Attribute.text    (columns[1], row[0], name, value )
-                            row[0]+=24
-                            
-                    
+                        #Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
+                        if   isinstance( value, bool )  : Attribute.boolean (0,0, name, value )
+                        elif isinstance( value, int  )  : Attribute.integer (0,0, name, value )
+                        elif isinstance( value, float)  : Attribute.integer (0,0, name, value )
+                        elif '|' in value               : Attribute.combo   (0,0, name, value )
+                        else                            : Attribute.text    (0,0, name, value )
+                
                     if not len(colors):
                         dpg.configure_item(window, height=381)
-                    dpg.add_button(label="Preview", pos=( cfg.width - 64, 8), callback=Preferences.parent.openWeb, user_data=plugin.name)
+                    dpg.add_button(label="Preview", pos=( cfg.width - 96, 8), callback=Preferences.parent.openWeb, user_data=plugin.name)
+                if not _item_details: continue
                 #
                 # Create plugin item details controls
                 #

@@ -3,9 +3,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'mascots')
         #@ Plugin Settings
-        self.name        = 'mascots'
         self.description = 'Auto display related Mascots'
         self.endpoint    = None
         
@@ -18,8 +17,8 @@ class plugin(Plugin):
         #@ Settings
         self.settings.update({
             'pos-x'                     : 0,
-            'pos-y'                     : 0,
             'size-x'                    : self.width,
+            'pos-y'                     : 0,
             'size-y'                    : self.height,
             'mascots'                   : '[]',
         })

@@ -1,4 +1,5 @@
 from classes.plugin import Plugin, px
+from classes.config import ranges, combos
 
 class plugin(Plugin):
 
@@ -39,9 +40,8 @@ class plugin(Plugin):
     }
 
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'cartridge')
         #@ Plugin Settings
-        self.name        = 'cartridge'
         self.description = 'Rotating 3D Cartridge'
         self.endpoint    = None
         
@@ -52,19 +52,22 @@ class plugin(Plugin):
         self.scale       = 1
         self.zoom        = 8
         
+        self.setHelp('cartridge-game'   , "Sorry about this, in the future we will be able to autodetect the game")
+        self.setHelp('auto-update'      , "Try to guess which game is currently active")
+        
         #@ Settings
         self.settings.update(
             {
-                'auto-hide'                 : False,
                 'pos-x'                     : 110,
-                'pos-y'                     : 570,
                 'size-x'                    : 300,
+                'pos-y'                     : 570,
                 'size-y'                    : 240,
-                'rotation-speed'            : 1,
-                #'rotation-speed'            : 1.5,
-                'cartridge-type'            : 'platforms:neogeo',
-                'cartridge-game'            : 'mslugx',
+                'rotation-speed'            : 1.5,
                 'zoom'                      : self.zoom,
+                'cartridge-type'            : 'platforms|neogeo',
+                'cartridge-game'            : 'mslugx',
+                'auto-hide'                 : False,
+                'auto-update'               : False,
             }
         )
 

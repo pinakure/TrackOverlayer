@@ -1,4 +1,6 @@
 from classes.preferences    import Preferences
+from classes.tools          import parseBool, parseColor, parseFloat, parseInt
+from classes.tools          import isBool   , isColor   , isFloat   , isInt
 from classes.log            import Log
 import importlib, json, os
 
@@ -16,44 +18,6 @@ def cvar(name, value):
 
 def sane( insane ):
     return insane.replace("'", "`").replace(r'\`', '`')
-
-def parseBool(string):
-    string = str(string)
-    return string.lower() in [ 'true', '1', 'yes']
-
-def isBool(string):
-    return string.lower() in [ 'true', 'false', '1', '0', 'yes', 'no']
-
-def isInt(string):
-    try:
-        number = int( string )
-        return True
-    except:
-        return False
-    
-def parseInt(string):
-    return int(string)
-
-def isFloat(string):
-    try:
-        number = float( string )
-        return True
-    except:
-        return False
-
-def parseFloat(string):
-    return float(string)
-
-def isColor(string):
-    return (
-        ( len(string) > 0 ) and 
-        ( string[0] == '[' ) and 
-        ( string[-1]== ']' )
-    )
-    
-def parseColor(string):
-    return json.loads(string)
-
 
 class Endpoints:
 
@@ -130,11 +94,11 @@ class Plugin:
     debug  = False
     rate   = 5
 
-    def __init__(self):
+    def __init__(self, name):
         import random
         self.template_data  = None
         self.rendered       = ''
-        self.name           = 'new-plugin'
+        self.name           = name
         self.description    = 'New plugin human description'
         self.width          = 1280
         self.height         = 1024
@@ -149,6 +113,15 @@ class Plugin:
         }
         self.endpoint       = None #defines which kind of data payload will be fed from @rendering
         self.template       = 'template.html'
+        self.setRangedCombo ('angle'    , -180,  180)
+        self.setRangedCombo ('zoom'     ,     1, 100)
+        self.setRanged      ('pox-x'    , -1444,1444)
+        self.setRanged      ('pox-y'    , -1080,1080)
+        self.setRanged      ('size-x'   ,     0,1444)
+        self.setRanged      ('size-y'   ,     0,1080)
+        
+        self.setHelp        ('auto-hide' , "Automatically hide plugin when no game or cheevo is selected")
+
     
     def templateVars(self):
         return {
@@ -161,8 +134,6 @@ class Plugin:
         from dearpygui import dearpygui as dpg
         varname =user_data
         plugin_name = sender.replace('plugin-setting-', '').split('-')[0]
-        # print("SENDER: "+sender)
-        # print("USRDAT: "+user_data)
         plugin = Plugin.loaded[ plugin_name ]
         value[0] = int( value[0] * 255)
         value[1] = int( value[1] * 255)
@@ -185,16 +156,33 @@ class Plugin:
     
     def updateComboSettings( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
-        setname     = user_data.split(':')[0]
-        varname     = user_data.split(':')[1]
+        setname     = user_data.split('|')[0]
+        varname     = user_data.split('|')[1]
+        
         plugin_name = sender.replace('plugin-setting-','').split('-')[0]
         plugin = Plugin.loaded[ plugin_name ]
-        plugin.settings[ varname ] = f'{setname}:{value}'
+        plugin.settings[ varname ] = f'{setname}|{value}'
         Plugin.writeConfig()
         plugin.run()
         Plugin.compose()
 
+    def setRangedCombo(self, varname, min, max):
+        from classes.config import ranges,combos
+        self.setRanged(varname, min, max)
+        combos.append(f'plugin-setting-{self.name}-{varname}')
+
+    def setRanged(self, varname, min, max):
+        from classes.config import ranges,combos
+        ranges.update({
+            f'plugin-setting-{self.name}-{varname}' : [ min, max],
+        })
     
+    def setHelp(self, varname, text):
+        from classes.config import help
+        help.update({
+            f'plugin-setting-{self.name}-{varname}' : text,
+        })
+
     def enable( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
@@ -692,7 +680,7 @@ class Plugin:
             Log.time()
             module_name = f'plugins.{name}.plugin'
             module = importlib.import_module( module_name, '' )
-            Plugin.loaded[ name ] = module.plugin()            
+            Plugin.loaded[ name ] = module.plugin()
             Plugin.readConfig()
             if Plugin.loaded[ name ].settings['enabled']:
                 # Install required files at data folder, if any specified in plugin.py

@@ -3,9 +3,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'bezel')
         #@ Plugin Settings
-        self.name        = 'bezel'
         self.description = 'Custom Bezel Overlay'
         self.endpoint    = None
         
@@ -18,8 +17,8 @@ class plugin(Plugin):
         #@ Settings
         self.settings.update({
             'pos-x'                     : 0,
-            'pos-y'                     : 0,
             'size-x'                    : self.width,
+            'pos-y'                     : 0,
             'size-y'                    : self.height,
             'backdrop-file'             : "files/bezel/green.png",
             'backdrop-color'            : [192, 255, 192, 255],

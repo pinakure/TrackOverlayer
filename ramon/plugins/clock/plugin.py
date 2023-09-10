@@ -9,10 +9,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
-
+        Plugin.__init__(self, 'clock')
         #@ Plugin Settings
-        self.name        = 'clock'
         self.description = 'Personalizable Clock Display'
         self.endpoint    = None #@deprecated : replaced by overlay autoupdate using localStorage
         
@@ -27,8 +25,8 @@ class plugin(Plugin):
         #@ Settings
         self.settings.update({
             "pos-x"                 : self.x,
-            "pos-y"                 : self.y,
             "size-x"                : self.width,
+            "pos-y"                 : self.y,
             "size-y"                : self.height,
 
             "analogic"              : False,

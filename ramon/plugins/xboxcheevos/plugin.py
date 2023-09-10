@@ -2,10 +2,15 @@ from classes.plugin import Plugin, px
 
 class plugin(Plugin):
 
+    styles={
+        'xbox'      : 'XBox Live',
+        'retroarch' : 'RetroArch / LibRetro',
+        'steam'     : 'Steam',
+    }
+
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'xboxcheevos')
         #@ Plugin Settings
-        self.name        = 'xboxcheevos'
         self.description = 'XBox Achievement Notifications'
         self.endpoint    = 'notifications'
 
@@ -18,15 +23,15 @@ class plugin(Plugin):
         
         #@ Settings
         self.settings.update({
-            "perspective"               : 0,
-            "angle"                     : 0,
-            'sound'                     : True,
-            'sound-file'                : 'files/xboxcheevos/xbox.wav',
-            'style'                     : 'xbox',
-            'display-time'              : 3,
             'pos-x'                     : 0,
             'pos-y'                     : 0,
+            "angle"                     : 0,
+            "perspective"               : 0,
+            'style'                     : 'styles|xbox',
+            'sound-file'                : 'files/xboxcheevos/xbox.wav',
+            'display-time'              : 3,
             'border-radius'             : int(self.height/2),
+            
             'picture-color'             : [ 128,128,  0, 255],
             'picture-shadow-color'      : [   0,  0,  0, 255],
             'picture-shadow-blur'       : 8,

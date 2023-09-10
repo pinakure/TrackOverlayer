@@ -3,9 +3,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'rpgchat')
         #@ Plugin Settings
-        self.name        = 'rpgchat'
         self.description = 'RPGlike SuperChat Window'
         self.endpoint    = 'superchat'
         
@@ -17,13 +16,20 @@ class plugin(Plugin):
         self.x           = 558
         self.y           = 557
 
+        self.setRangedCombo('chars-per-line', 15, 50)
+        self.setRangedCombo('text-speed'    ,  1, 20)
+
         #@ Settings
         self.settings.update({
-            "perspective"           : 0,
-            "angle"                 : 0,
-            "chars-per-line"        : 25,
             "pos-x"                 : self.x,
+            "size-x"                : self.width,
             "pos-y"                 : self.y,
+            "size-y"                : self.height,
+            "angle"                 : 0,
+            "perspective"           : 0,
+            "chars-per-line"        : 25,
+            "text-speed"            : 10,
+            
             "text-color"            : [240,240,240,255],
             "text-font"             : "arcade", 
             "text-font-size"        : 10, 

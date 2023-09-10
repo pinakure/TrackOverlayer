@@ -3,9 +3,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
-        #@ Plugin Settings
-        self.name        = 'logos'
+        Plugin.__init__(self, 'logos')
+        #@ Plugin Settings        
         self.description = 'Current Game logo Display'
         self.endpoint    =  None
         
@@ -19,12 +18,12 @@ class plugin(Plugin):
 
         #@ Settings
         self.settings.update({
-            "perspective"           : 0,
-            "angle"                 : 0,
             "pos-x"                 : self.x,
-            "pos-y"                 : self.y,
             "size-x"                : self.width,
+            "pos-y"                 : self.y,
             "size-y"                : self.height,
+            "angle"                 : 0,
+            "perspective"           : 0,
         })
         
     def composerVars(self):

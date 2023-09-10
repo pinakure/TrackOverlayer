@@ -3,9 +3,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
-        #@ Plugin Settings
-        self.name        = 'progressbar'
+        Plugin.__init__(self, 'progressbar')
+        #@ Plugin Settings        
         self.description = 'Game Mastery ProgressBar'
         self.endpoint    = 'progress'
 
@@ -20,20 +19,20 @@ class plugin(Plugin):
         #@ Settings
         self.settings.update({
             "pos-x"                     : self.x,
-            "pos-y"                     : self.y,
             "size-x"                    : self.width,
+            "pos-y"                     : self.y,
             "size-y"                    : self.height,
             
-            "auto-hide"                 : True,
-            "perspective"               : 0,#TODO
             "angle"                     : 0,#TODO
-            "bar-opacity"               : 0.65,
-            
-            "hard-gradient"             : False,
-            
+            "perspective"               : 0,#TODO
             "overlay-file"              : './files/progressbar/progress-overlay.png',
-            "sound-file"                : './files/progressbar/experience.wav',
             "backdrop-file"             : './files/progressbar/progress-bg.png',
+            "sound-file"                : './files/progressbar/experience.wav',
+            "hard-gradient"             : False,
+            "bar-opacity"               : 0.65,
+            "auto-hide"                 : True,
+            
+            
             
             "percent-color"             : [ 245, 255,   0, 255],
             "percent-font"              : "vhs",

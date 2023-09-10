@@ -3,9 +3,8 @@ from classes.plugin import Plugin, px
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'flysim')
         #@ Plugin Settings
-        self.name        = 'flysim'
         self.description = 'Fly Simulator : Programable RetroPixel Overlay Demo'
         self.endpoint    = None
         
@@ -21,8 +20,8 @@ class plugin(Plugin):
         #@ Settings
         self.settings.update({
             'pos-x'                     : self.x,
-            'pos-y'                     : self.y,
             'size-x'                    : self.width,
+            'pos-y'                     : self.y,
             'size-y'                    : self.height,            
         })
 

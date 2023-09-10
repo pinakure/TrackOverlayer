@@ -4,9 +4,8 @@ class plugin(Plugin):
 
     def __init__(self):
         from classes.preferences import Preferences
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'twitchchat')
         #@ Plugin Settings
-        self.name        = 'twitchchat'
         self.description = 'Twitch Live Chat Typewriter'
         self.endpoint    = 'twitch-username'
         self.color       = '#f00'
@@ -19,15 +18,21 @@ class plugin(Plugin):
         self.y           = 88
         #@ Vars
 
+        self.setRangedCombo('message-count', 1, 25)
+        self.setRangedCombo('message-time' , 1, 25)
 
         self.settings.update({
-            "perspective"               : 0,
+            "pos-x"                     : self.x,
+            "size-x"                    : self.width,
+            "pos-y"                     : self.y,
+            "size-y"                    : self.height,
             "angle"                     : 0,
-            "sound"                     : True,
-            "sound-file"                : "./files/twitchchat/tick01.wav",#client will automatically try to find tick0[1-3].wav upon filename
+            "perspective"               : 0,
             "user"                      : Preferences.settings['twitch-username'],
-            'message-time'              : 5,
             'message-count'             : 5,
+            "sound-file"                : "./files/twitchchat/tick01.wav",#client will automatically try to find tick0[1-3].wav upon filename
+            'message-time'              : 5,
+
             'username-color'            : [ 255,255,0,255 ],
             'username-font'             : 'arcade',
             'username-font-size'        : 16,

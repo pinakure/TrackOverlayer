@@ -1,12 +1,12 @@
 from classes.plugin import Plugin, px
+from classes.config import ranges, combos
 
 class plugin(Plugin):
 
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'recentunlocks')
 
         #@ Plugin Settings
-        self.name        = 'recentunlocks'
         self.description = 'Recent Cheevo unlocks list'
         self.endpoint    = 'recent'
         
@@ -18,21 +18,23 @@ class plugin(Plugin):
         self.x           = 12
         self.y           = 96
         
+        # Define which integer values are being to be converted into ranged comboboxes        
+        self.setRangedCombo('row-count' , 1, 10)
+        self.setHelp('row-count'     , "Number of rows of recent cheevos to be displayed")
+        
         #@ Settings
         self.settings.update({
             "pos-x"                     : self.x,
-            "pos-y"                     : self.y,
             "size-x"                    : self.width,
+            "pos-y"                     : self.y,
             "size-y"                    : self.height,
-            
-            "auto-hide"                 : False,
-            
-            "perspective"               : 0,
             "angle"                     : 0,
-            
+            "perspective"               : 0,
             "backdrop-file"             : './files/recentunlocks/recent-bg.png',
             "overlay-file"              : './files/recentunlocks/recent-overlay.png',
-           
+            "row-count"                 : 5,
+            "auto-hide"                 : False,
+                       
             "division-color"            : [ 0, 255, 255, 128 ],
             "division-border-width"     : 1,            
             
@@ -45,7 +47,6 @@ class plugin(Plugin):
             "table-shadow-pos-x"        : 1,
             "table-shadow-pos-y"        : 1,
             
-            "row-count"                 : 5,
             "row-color"                 : [ 0, 255, 255, 128 ],
             "row-border-width"          : 2, 
             "row-border-color"          : [255,255,255,128], 

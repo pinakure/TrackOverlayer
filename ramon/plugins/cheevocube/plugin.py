@@ -2,10 +2,16 @@ from classes.plugin import Plugin, px
 
 class plugin(Plugin):
 
+    glowtypes = {
+        'alternate' : 'alternate', 
+        'forwards'  : 'forwards', 
+        'backwards' : 'backwards', 
+        'none'      : 'none', 
+    }
+
     def __init__(self):
-        Plugin.__init__(self)
+        Plugin.__init__(self, 'cheevocube')
         #@ Plugin Settings
-        self.name        = 'cheevocube'
         self.description = 'Current Achievement Rotating 3D Cube'
         self.endpoint    = 'current-cheevo'
 
@@ -20,11 +26,14 @@ class plugin(Plugin):
         #@ Settings
         self.settings.update({
             "pos-x"                     : self.x,
-            "pos-y"                     : self.y,
             "size-x"                    : self.width,
+            "pos-y"                     : self.y,
             "size-y"                    : self.height,
-            
+            "texture-file"              : "./current_cheevo.png",
+            "glow-file"                 : "./current_cheevo_lock.png",
             "auto-hide"                 : True,
+            "glow-type"                 : 'glowtypes|alternate',
+            
             
             "cube-color"                : [0,0,0,0],
             "cube-pos-x"                : 50,
@@ -38,9 +47,6 @@ class plugin(Plugin):
             "cube-border-width"         : 2,
             "cube-border-radius"        : 0,#TODO
             
-            "texture-file"              : "./current_cheevo.png",
-            "glow-file"                 : "./current_cheevo_lock.png",
-            "glow-type"                 : 'alternate',
             
             "name-color"                : [0,255,0,255],
             "name-pos-x"                : 295,

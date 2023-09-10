@@ -78,78 +78,66 @@ class Attribute:
         D.set_value(f'{Attribute.group}-color', color)
 
     def boolean( x, y, name, value):
-        D.add_checkbox(
-            tag             = f'plugin-setting-{Attribute.plugin}-{name}', 
-            default_value   = value, 
-            callback        = Plugin.updateSettings, 
-            user_data       = name,
-            pos             = (x, y),
-        )
-    
-    def combo( x, y, name, value, parent=None):
-        exec(f'from plugins.{Attribute.plugin} import plugin as {Attribute.plugin}')
-        items = eval(f'{Attribute.plugin}.plugin.{value.split(":")[0]}.keys()')
-        items = list(items)
-        # items = list([f'{value.split(":")[0]}:{x}' for x in items])
-        slider = D.add_combo(
-            tag             = f'plugin-setting-{Attribute.plugin}-{name}',
-            default_value   = value.split(':')[1],
-            items           = items,
-            callback        = Plugin.updateComboSettings, 
-            user_data       = f'{value.split(":")[0]}:{name}',
-            width           = 180,
-            pos             = (x, y), 
-            parent          = parent if parent is not None else Attribute.parent,
-        )
-        # with D.tooltip(slider): 
-        #     D.add_text("Ctrl + Click to edit value")
-        
-    def integer( x, y, name, value, parent=None, negative=False, max_value=128):
-        slider = D.add_slider_int(
-            tag             = f'plugin-setting-{Attribute.plugin}-{name}',
-            default_value   = value, 
-            callback        = Plugin.updateSettings, 
-            user_data       = name,
-            width           = 180,
-            pos             = (x, y), 
-            parent          = parent if parent is not None else Attribute.parent,
-            min_value       = -max_value if negative else 0,
-            max_value       = max_value,
-        )
-        with D.tooltip(slider): 
-            D.add_text("Ctrl + Click to edit value")
-        
-    def decimal( x, y, name, value, parent=None, negative=False, max_value=32.0):
-        slider = D.add_slider_float(
-            tag             = f'plugin-setting-{Attribute.plugin}-{name}',
-            default_value   = value, 
-            callback        = Plugin.updateSettings, 
-            user_data       = name,
-            width           = 180,
-            pos             = (x, y), 
-            parent          = parent if parent is not None else Attribute.parent,
-            min_value       = -max_value if negative else 0.0,
-            max_value       = max_value,
-        )
-        with D.tooltip(slider): 
-            D.add_text("Ctrl + Click to edit value")
-        
-    
-    def text( x, y, name, value):
-        D.add_input_text(
-            tag             = f'plugin-setting-{Attribute.plugin}-{name}',
-            default_value   = value,
+        from classes.ui import UI
+        varname = f'plugin-setting-{Attribute.plugin}-{name}'
+        UI.checkbox(
+            text            = name, 
+            varname         = varname,
             callback        = Plugin.updateSettings,
             user_data       = name,
-            width           = 180,
-            pos             = (x, y), 
+            settings        = { varname : value },
+        )
+
+    #
+    # Class defined combo, to use this define a static dictionary in your plugin class, then 
+    # define the value of the field as 'dict_name:dic_key', so when rendering it will turn into 
+    # a combo. 
+    #     
+    # Obviously, its forbidden to enter this char in any text field to avoid data corruption
+    # 
+    def combo( x, y, name, value, parent=None):
+        from classes.ui     import UI
+        exec(f'from plugins.{Attribute.plugin} import plugin as {Attribute.plugin}')
+        items = eval(f'{Attribute.plugin}.plugin.{value.split("|")[0]}.keys()')
+        varname = f'plugin-setting-{Attribute.plugin}-{name}'
+        UI.combo(
+            text            = name, 
+            varname         = varname,
+            callback        = Plugin.updateComboSettings,
+            user_data       = f'{value.split("|")[0]}|{name}',
+            settings        = { varname : value },
+            items           = list(items),
+        )
+        
+    def integer( x, y, name, value, parent=None, negative=False, max_value=128):
+        from classes.ui import UI
+        varname = f'plugin-setting-{Attribute.plugin}-{name}'
+        UI.numeric(
+            text            = name, 
+            varname         = varname,
+            callback        = Plugin.updateSettings,
+            user_data       = name,
+            settings        = { varname : value },
+        )
+    
+    def text( x, y, name, value):
+        from classes.ui import UI
+        varname = f'plugin-setting-{Attribute.plugin}-{name}'
+        UI.textfield(
+            text            = name, 
+            varname         = varname,
+            callback        = Plugin.updateSettings,
+            user_data       = name,
+            settings        = { varname : value },
         )
 
     def font( x, y):
-        from classes.fonts import fonts
+        from classes.ui     import UI
+        from classes.fonts  import fonts
         if not f'{Attribute.groupname}-font' in Attribute.types.keys(): return
+        varname = f'{Attribute.group}-font'
         D.add_combo(
-            tag             = f'{Attribute.group}-font',
+            tag             = varname,
             items           = list(fonts.keys()), 
             callback        = Plugin.updateSettings, 
             user_data       = f'{Attribute.groupname}-font', 
