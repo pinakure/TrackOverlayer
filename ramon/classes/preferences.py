@@ -42,6 +42,7 @@ class Preferences:
             with dpg.tab_bar(tag="preferences-tabs"):
                 Preferences.createGeneralTab()
                 Preferences.createPluginsTab()
+                Preferences.createDatabaseTab()
 
         from classes.plugin import Plugin
         with dpg.file_dialog(
@@ -98,11 +99,44 @@ class Preferences:
                 UI.numeric      ("AutoRefresh Rate" , 'auto_update_rate'                    ); UI.jump()
 
     
+    def createDatabaseTab():
+        from classes.plugin import Plugin
+        with dpg.tab(label="Database", tag="tab_database"):
+            with dpg.child_window():
+                with dpg.tab_bar(tag="database-tabs"):
+                    UI.setCursor(0,0)
+                    # Create as many tabs as tables on the database
+                    with dpg.tab(label="Games", tag="tab_database-general"):
+                        with dpg.child_window():
+                            fields = {
+                                'field1' : 'value1',
+                                'field2' : 'value2',
+                                'field3' : 'value3',
+                                'field4' : 'value4',
+                            }
+                            with dpg.table(show=True, header_row=False):
+                                
+                                for field in fields:
+                                    dpg.add_table_column()
+    
+                                with dpg.table_row():
+                                    for field in fields.keys():
+                                        with dpg.table_cell():
+                                            UI.setCursor(0,0)
+                                            dpg.add_text(elegant(field), color=Color.banana)
+                                            
+                                with dpg.table_row():
+                                    for field in fields.values():
+                                        with dpg.table_cell():
+                                            UI.setCursor(0,0)
+                                            dpg.add_text(field, color=Color.lichi)
+                                            
+                                    
+
     def createPluginsTab():
         from classes.plugin import Plugin
         with dpg.tab(label="Plugins", tag="tab_plugins"):
             with dpg.child_window():
-
                 with dpg.tab_bar(tag="plugin-tabs"):
                     with dpg.tab(label="General", tag="tab_plugins-general"):
                         with dpg.child_window():
