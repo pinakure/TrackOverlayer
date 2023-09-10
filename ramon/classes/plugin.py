@@ -108,17 +108,20 @@ class Plugin:
         self.scale          = 1
         self.files          = []
         self.color          = f'rgb( { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))})' # Debugging purposes
+        self.defaults       = {}
         self.settings       = {
             'enabled' : False,
         }
         self.endpoint       = None #defines which kind of data payload will be fed from @rendering
         self.template       = 'template.html'
-        self.setRangedCombo ('angle'    , -180,  180)
-        self.setRangedCombo ('zoom'     ,     1, 100)
-        self.setRanged      ('pox-x'    , -1444,1444)
-        self.setRanged      ('pox-y'    , -1080,1080)
-        self.setRanged      ('size-x'   ,     0,1444)
-        self.setRanged      ('size-y'   ,     0,1080)
+        self.setRangedCombo ('angle'        , -180,  180)
+        self.setRangedCombo ('zoom'         ,     1, 100)
+        self.setRanged      ('pos-x'        , -1444,1444)
+        self.setRanged      ('pos-y'        , -1080,1080)
+        self.setRanged      ('size-x'       ,     1,1444)
+        self.setRanged      ('size-y'       ,     1,1080)
+        self.setRanged      ('border-radius',     0, 128)
+        self.setRanged      ('perspective'  ,     1,1600)
         
         self.setHelp        ('auto-hide' , "Automatically hide plugin when no game or cheevo is selected")
 
@@ -128,10 +131,20 @@ class Plugin:
 
         }
 
+    def saveDefaults(self):
+        self.defaults.update(self.settings)
+
+    def setDefaults(sender, value, plugin):
+        from dearpygui import dearpygui as dpg
+        self = Plugin.loaded[plugin]
+        for key,value in self.defaults.items():
+            if key=='enabled': continue
+            target = f'plugin-setting-{plugin}-{key}'
+            print(target,'=',value)
+            dpg.set_value(target, value)
 
     
     def updateColor( sender=None, value=None, user_data=None ):
-        from dearpygui import dearpygui as dpg
         varname =user_data
         plugin_name = sender.replace('plugin-setting-', '').split('-')[0]
         plugin = Plugin.loaded[ plugin_name ]
@@ -144,12 +157,38 @@ class Plugin:
         plugin.run()
 
     
+    def selectFilename( sender=None, value=None, user_data=None ):
+        from dearpygui import dearpygui as dpg
+        dpg.configure_item('file_dialog_id', user_data=user_data)
+        dpg.show_item('file_dialog_id')
+
+    def updateFilenameSetting( sender=None, value=None, user_data=None ):
+        from dearpygui import dearpygui as dpg
+        dpg.hide_item('file_dialog_id')
+        sender      = user_data
+        varname     = user_data
+        try:
+            filename    = list(value['selections'].keys())[0]
+            print(value)
+        except Exception as E:
+            Log.error("Cannot update file field", E)
+            return 
+        dpg.configure_item(sender, label=filename)
+        if filename == '': return
+        plugin_name = sender.replace('plugin-setting-','').split('-')[0]
+        varname = sender.replace(f'plugin-setting-{plugin_name}-','')
+        plugin = Plugin.loaded[ plugin_name ]
+        plugin.settings[ varname ] = filename
+        Plugin.writeConfig()
+        plugin.run()
+        Plugin.compose()
+        
     def updateSettings( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
         varname     = user_data
         plugin_name = sender.replace('plugin-setting-','').split('-')[0]
         plugin = Plugin.loaded[ plugin_name ]
-        plugin.settings[ varname ] = value
+        plugin.settings[ varname ] = value.replace('|', '') if isinstance(value, str) else value
         Plugin.writeConfig()
         plugin.run()
         Plugin.compose()
@@ -680,7 +719,9 @@ class Plugin:
             Log.time()
             module_name = f'plugins.{name}.plugin'
             module = importlib.import_module( module_name, '' )
-            Plugin.loaded[ name ] = module.plugin()
+            plugin = module.plugin()
+            plugin.saveDefaults()
+            Plugin.loaded[ name ] = plugin
             Plugin.readConfig()
             if Plugin.loaded[ name ].settings['enabled']:
                 # Install required files at data folder, if any specified in plugin.py

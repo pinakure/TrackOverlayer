@@ -136,24 +136,26 @@ class UI:
         else:
             UI.label(text, Color.banana)
             if isinstance( settings[ varname ], float ):
+                [ min, max ] = [-100.0,  100.0 ] if not varname in ranges.keys() else range[varname]
                 id = WM.add_slider_float(
                     tag             = varname, 
                     pos             = pos(x,y),
                     default_value   = settings[varname],
                     width           = UI.column_width>>1,
-                    min_value       = -100.0,
-                    max_value       = 100.0,
+                    min_value       = min,
+                    max_value       = max,
                     user_data       = user_data,
                     callback        = Preferences.updateSetting if callback is None else callback,
                 )
             elif isinstance( settings[ varname ], int):
+                [ min, max ] = [-1444,  1444 ] if not varname in ranges.keys() else ranges[varname]
                 id = WM.add_slider_int(
                     tag             = varname, 
                     pos             = pos(x,y),
                     default_value   = settings[varname],
                     width           = UI.column_width>>1,
-                    min_value       = -1444,
-                    max_value       = 1444,
+                    min_value       = min,
+                    max_value       = max,
                     user_data       = user_data,
                     callback        = Preferences.updateSetting if callback is None else callback,
                 )

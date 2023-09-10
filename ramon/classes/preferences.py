@@ -3,108 +3,10 @@ from dearpygui              import dearpygui as dpg
 from classes.config         import Config as cfg 
 from classes.cheevo         import Cheevo
 from classes.log            import Log
-from classes.ui             import UI, row as ui_row, column as ui_column
+from classes.ui             import UI
+from classes.attribute      import Attribute
 from classes.tools          import elegant, Color, parseInt, parseColor, parseFloat, parseBool
                         
-# plugin preferences config globals
-_item_details = 0
-# field collectors
-[ 
-    sizexs, 
-    sizeys, 
-    bradius,
-    bwidths, 
-    bcolors, 
-    colors, 
-    types , 
-    heights, 
-    italics, 
-    bolds, 
-    posxs, 
-    posys, 
-    sposys, 
-    sposxs, 
-    blurs, 
-    shadows, 
-    sizes ,
-] = [ 
-    {} , 
-    {} , 
-    {} , 
-    {} , 
-    {} , 
-    {} , 
-    {} , 
-    {} , 
-    {}, 
-    {}, 
-    {}, 
-    {}, 
-    {}, 
-    {}, 
-    {}, 
-    {}, 
-    {},
-]   
-#HACK Dont blame me, this works too fast. 
-def clearVariableBuffer():
-    global sizexs
-    global sizeys
-    global bradius
-    global bwidths
-    global bcolors
-    global colors
-    global types 
-    global heights
-    global italics
-    global bolds
-    global posxs
-    global posys
-    global sposys
-    global sposxs
-    global blurs
-    global shadows
-    global sizes
-    [ 
-        sizexs, 
-        sizeys, 
-        bradius,
-        bwidths, 
-        bcolors, 
-        colors, 
-        types , 
-        heights, 
-        italics, 
-        bolds, 
-        posxs, 
-        posys, 
-        sposys, 
-        sposxs, 
-        blurs, 
-        shadows, 
-        sizes ,
-    ] = [ 
-        {} , 
-        {} , 
-        {} , 
-        {} , 
-        {} , 
-        {} , 
-        {} , 
-        {} , 
-        {}, 
-        {}, 
-        {}, 
-        {}, 
-        {}, 
-        {}, 
-        {}, 
-        {}, 
-        {},
-    ]    
-
-
-
 class Preferences:
     root            = '.'
     width           = cfg.width
@@ -114,23 +16,51 @@ class Preferences:
     
     defaults        = cfg.defaults
     
+    def nop(sender, value, varname):
+        print("Sender : ", sender )
+        print("Value  : ", value  )
+        print("Varname: ", varname)
+
+
     def create( parent ):
         Preferences.parent = parent
         with dpg.window(
-            tag='preferences_main',
-            label="Preferences", 
-            width=Preferences.width, 
-            height=Preferences.height, 
-            no_collapse=True, 
-            no_resize=True,
-            modal = True,
-            show = False,
-            on_close=lambda:dpg.hide_item('preferences_main'),
-            pos=((Preferences.parent.width / 2) - (Preferences.width / 2),(Preferences.parent.height / 2) - (Preferences.height / 2))
+            tag         = 'preferences_main',
+            label       = "Preferences", 
+            width       = Preferences.width, 
+            height      = Preferences.height, 
+            no_collapse = True, 
+            no_resize   = True,
+            modal       = False,
+            show        = False,
+            on_close    = lambda:dpg.hide_item('preferences_main'),
+            pos         = (
+                (Preferences.parent.width / 2) - (Preferences.width / 2),
+                (Preferences.parent.height / 2) - (Preferences.height / 2)
+            )
         ):
             with dpg.tab_bar(tag="preferences-tabs"):
                 Preferences.createGeneralTab()
                 Preferences.createPluginsTab()
+
+        from classes.plugin import Plugin
+        with dpg.file_dialog(
+            # directory_selector  = True, 
+            show                = False, 
+            modal               = True,
+            callback            = Plugin.updateFilenameSetting, 
+            tag                 = "file_dialog_id",
+            cancel_callback     = Preferences.nop, 
+            file_count          = 1,
+            width               = 700,
+            height              = 400,            
+            user_data           = '--plugin-variable-name--',
+        ):
+            dpg.add_file_extension(".*")
+            dpg.add_file_extension("", color=(150,255,150,255))
+            dpg.add_file_extension("Picture files (*.png *.jpg *.gif){.png,.jpg,.gif}", color=(0, 255, 255, 255))
+            dpg.add_file_extension("Audio files (*.wav *.mp3 ){.wav,.mp3}", color=(0, 255, 255, 255))
+            
 
     def createGeneralTab():
         with dpg.tab(label="General", tag="tab_general"):
@@ -166,12 +96,13 @@ class Preferences:
                 UI.checkbox     ("Automatic Refresh", 'auto_update'                         )
                 UI.setCursor(1,18)
                 UI.numeric      ("AutoRefresh Rate" , 'auto_update_rate'                    ); UI.jump()
-                
+
     
     def createPluginsTab():
         from classes.plugin import Plugin
         with dpg.tab(label="Plugins", tag="tab_plugins"):
             with dpg.child_window():
+
                 with dpg.tab_bar(tag="plugin-tabs"):
                     with dpg.tab(label="General", tag="tab_plugins-general"):
                         with dpg.child_window():
@@ -196,67 +127,47 @@ class Preferences:
                             dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 400))
                             dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
 
-    def capturePluginItemSetting(name : str, value : str):
-        global _item_details
-        # Skip corrupt or malformed settings
-        if name in ['enabled', '']: return True
-        if name.startswith('.'): return True
-        # Process settings which always come grouped, such as                         
-        # - Item color, font, line height
-        # These will be placed in individual tabs grouped, to do so use 
-        # the same prefix for line-height, font-size and color, then they will
-        # spawn in the same tab. 
-        if   '-border-color'    in name: _item_details = True; bcolors[name] = value; return True     
-        elif '-border-width'    in name: _item_details = True; bwidths[name] = value; return True     
-        elif '-border-radius'   in name: _item_details = True; bradius[name] = value; return True     
-        elif '-shadow-color'    in name: _item_details = True; shadows[name] = value; return True
-        elif '-shadow-pos-x'    in name: _item_details = True; sposxs [name] = value; return True
-        elif '-shadow-pos-y'    in name: _item_details = True; sposys [name] = value; return True
-        elif '-color'           in name: _item_details = True; colors [name] = value; return True     
-        elif '-font-size'       in name: _item_details = True; sizes  [name] = value; return True
-        elif '-line-height'     in name: _item_details = True; heights[name] = value; return True
-        elif '-font-italic'     in name: _item_details = True; italics[name] = parseBool(value); return True
-        elif '-font-bold'       in name: _item_details = True; bolds  [name] = parseBool(value); return True
-        elif '-pos-x'           in name: _item_details = True; posxs  [name] = value; return True
-        elif '-pos-y'           in name: _item_details = True; posys  [name] = value; return True
-        elif '-size-x'          in name: _item_details = True; sizexs [name] = value; return True
-        elif '-size-y'          in name: _item_details = True; sizeys [name] = value; return True
-        elif '-shadow-blur'     in name: _item_details = True; blurs  [name] = value; return True
-        elif '-font'            in name: _item_details = True; types  [name] = value; return True                        
-        return False
-
     def populatePluginsTab():
         global _item_details
         UI.columns = [ 8, 450 ]
         UI.setColumnWidth(445)
         from classes.plugin     import Plugin        
-        from classes.attribute  import Attribute
         # Make a tab for every plugin' settings
         for name, plugin in Plugin.loaded.items():
             clearVariableBuffer()
             with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
                 Attribute.parent = f'tab-window-{name}'
+                #
+                # Create main plugin controls, collect all details on the way to dump them altogether in
+                # the window we are about to create right after this one. 
+                # Note only fields matching certain suffixes will be collected and therefore 
+                # those will not show on the main window
+                #                
                 with dpg.child_window(border=False, tag=Attribute.parent, height=cfg.main.height) as window:
                     Attribute.label(8, 8, plugin.description, color=(55,155,255))
                     UI.setCursor(0,1)
                     _item_details = False
                     for name,value in plugin.settings.items():
-                        if Preferences.capturePluginItemSetting( name, value ): continue
+                        if capturePluginItemSetting( name, value ): continue
                         # general setting (placed in the upper area )
                         Attribute.plugin = plugin.name
-                        #Attribute.label(columns[0], row[0], elegant(name).rjust(14, ' '))
-                        if   isinstance( value, bool )  : Attribute.boolean (0,0, name, value )
-                        elif isinstance( value, int  )  : Attribute.integer (0,0, name, value )
-                        elif isinstance( value, float)  : Attribute.integer (0,0, name, value )
-                        elif '|' in value               : Attribute.combo   (0,0, name, value )
-                        else                            : Attribute.text    (0,0, name, value )
+                        if   isinstance( value, bool )  : Attribute.boolean (0,0, name, value , callback=Plugin.updateSettings)
+                        elif isinstance( value, int  )  : Attribute.integer (0,0, name, value , callback=Plugin.updateSettings)
+                        elif isinstance( value, float)  : Attribute.integer (0,0, name, value , callback=Plugin.updateSettings)
+                        #elif name.endswith('-file')     : Attribute.filename(0,0, name, value , callback=Plugin.selectFilename)
+                        elif '|' in value               : Attribute.combo   (0,0, name, value , callback=Plugin.updateComboSettings)
+                        else                            : Attribute.text    (0,0, name, value , callback=Plugin.updateSettings)
                 
                     if not len(colors):
                         dpg.configure_item(window, height=381)
-                    dpg.add_button(label="Preview", pos=( cfg.width - 96, 8), callback=Preferences.parent.openWeb, user_data=plugin.name)
+                    #
+                    # Add buttons on main window
+                    #
+                    dpg.add_button(label="Preview", pos=( cfg.width - 96, 8), callback=Preferences.parent.openWeb,  user_data=plugin.name)
+                    dpg.add_button(label="Default", pos=( cfg.width - 96,48), callback=Plugin.setDefaults, user_data=plugin.name)
                 if not _item_details: continue
                 #
-                # Create plugin item details controls
+                # Create plugin details window and all expected details controls
                 #
                 detail_height   = cfg.detail.height
                 extra           = cfg.detail.extra
@@ -269,29 +180,29 @@ class Preferences:
                             Attribute.setup( gname, group, types, name, sizes, heights, italics, bolds, shadows, posxs, posys, blurs, bcolors, bwidths, sposxs, sposys, bradius, sizexs, sizeys )
                             with dpg.tab( label = elegant(gname), tag = tname ):
                                 with dpg.child_window(no_scrollbar=True, height=180) as window:
-                                    Attribute.color         (   3,  13 , color)
-                                    if name.replace('color', 'font') in types.keys():
-                                        Attribute.label         ( 220,   8 , "Font Settings", parent=window)
-                                    Attribute.font          ( 220,  32 )
-                                    Attribute.font_size     ( 318,  32 )
-                                    Attribute.line_height   ( 360,  32 )
-                                    Attribute.italic        ( 318,   8 )
-                                    Attribute.bold          ( 339,   8 )
-                                    if name.replace('color', 'shadow') in shadows.keys():
-                                        Attribute.label         ( 220,  54 , "Shadow Color", parent=window)
-                                    Attribute.shadow        ( 220,  75 )
-                                    Attribute.shadow_pos_x  ( 370,  70 )
-                                    Attribute.shadow_pos_y  ( 370,  90 )
-                                    Attribute.pos_x         ( 410,  12 )
-                                    Attribute.pos_y         ( 410,  32 )
-                                    Attribute.size_x        ( 219,  12 )
-                                    Attribute.size_y        ( 219,  32 )
-                                    Attribute.shadow_blur   ( 370, 110 )
-                                    Attribute.border_width  ( 370, 130 )
-                                    Attribute.border_radius ( 370, 150 )
-                                    if name.replace('color', 'border-color') in bcolors.keys():
-                                        Attribute.label         ( 442,  54 , "Border Color", parent=window)
-                                    Attribute.border_color  ( 442,  75 )
+                                    Attribute.color         (   3,  13 , color, callback=Plugin.updateColor)
+                                    # if name.replace('color', 'font') in types.keys():
+                                    #     Attribute.label         ( 220,   8 , "Font Settings", parent=window)
+                                    Attribute.font          ( 220,  32 , callback=Plugin.updateSettings)
+                                    Attribute.font_size     ( 318,  32 , callback=Plugin.updateSettings)
+                                    Attribute.line_height   ( 360,  32 , callback=Plugin.updateSettings)
+                                    Attribute.italic        ( 318,   8 , callback=Plugin.updateSettings)
+                                    Attribute.bold          ( 339,   8 , callback=Plugin.updateSettings)
+                                    # if name.replace('color', 'shadow') in shadows.keys():
+                                    #     Attribute.label         ( 220,  54 , "Shadow Color", parent=window)
+                                    Attribute.shadow        ( 220,  75 , callback=Plugin.updateColor)
+                                    Attribute.shadow_pos_x  ( 370,  70 , callback=Plugin.updateSettings)
+                                    Attribute.shadow_pos_y  ( 370,  90 , callback=Plugin.updateSettings)
+                                    Attribute.pos_x         ( 410,  12 , callback=Plugin.updateSettings)
+                                    Attribute.pos_y         ( 410,  32 , callback=Plugin.updateSettings)
+                                    Attribute.size_x        ( 219,  12 , callback=Plugin.updateSettings)
+                                    Attribute.size_y        ( 219,  32 , callback=Plugin.updateSettings)
+                                    Attribute.shadow_blur   ( 370, 110 , callback=Plugin.updateSettings)
+                                    Attribute.border_width  ( 370, 130 , callback=Plugin.updateSettings)
+                                    Attribute.border_radius ( 370, 150 , callback=Plugin.updateSettings)
+                                    # if name.replace('color', 'border-color') in bcolors.keys():
+                                    #     Attribute.label         ( 442,  54 , "Border Color", parent=window)
+                                    Attribute.border_color  ( 442,  75 , callback=Plugin.updateColor)
     def show():
         dpg.show_item('preferences_main')
 
@@ -304,7 +215,6 @@ class Preferences:
             for key,value in Preferences.settings.items():
                 file.write(f'{key}={value}'+"\n")
         Preferences.parent.restart = restart
-
     
     def loadcfg():
         Preferences.settings = Preferences.defaults
@@ -372,42 +282,252 @@ class Preferences:
         Preferences.writecfg( restart=False )
 
 
-def createBooleanField(name, setting_name, callback=Preferences.updateSetting, restart=False):
-    dpg.add_checkbox(
-        label           = name, 
-        tag             = setting_name, 
-        callback        = callback, 
-        default_value   = Preferences.settings[setting_name], 
-        user_data       = restart,
-    ) 
 
-def createIntegerField(name, setting_name, callback=Preferences.updateSettingInteger, restart=False, min_value=0, max_value=9999):
-    dpg.add_slider_int(
-        label           = name, 
-        tag             = setting_name, 
-        callback        = callback,
-        default_value   = int(Preferences.settings[setting_name]), 
-        min_value       = min_value, 
-        max_value       = max_value, 
-        user_data       = restart
-    ) 
 
-def createStringField(name, setting_name, callback=Preferences.updateSetting, restart=False):
-    dpg.add_input_text(
-        label           = name, 
-        tag             = setting_name, 
-        callback        = callback,
-        default_value   = Preferences.settings[setting_name], 
-        user_data       = False
-    ) 
 
-def createColorField(name, setting_name, callback=Preferences.updateSetting):
-    dpg.add_color_picker(
-        height          = 128, 
-        width           = 128,
-        label           = name, 
-        tag             = setting_name, 
-        callback        = callback,
-        default_value   = Preferences.settings[setting_name], 
-        user_data       = False,
-    ) 
+
+
+
+
+
+
+
+#
+# END - OF - FILE 
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#HACK Dont blame me, this makes the construction of the UI and gathering properties without
+# caring of which order they come into, it works too fast it worths the hassle of having 
+# this piece of shit down here. Sorry about your eyes, who told you to see further the end of
+# the class definition ? =)
+# 
+# 
+# 
+# field collectors
+#
+# 
+# 
+sizexs      = {}
+sizeys      = {}
+bradius     = {}
+bwidths     = {}
+bcolors     = {}
+colors      = {}
+types       = {}
+heights     = {}
+italics     = {}
+bolds       = {}
+posxs       = {}
+posys       = {}
+sposys      = {}
+sposxs      = {}
+blurs       = {}
+shadows     = {}
+sizes       = {}
+
+def clearVariableBuffer():
+    global sizexs
+    global sizeys
+    global bradius
+    global bwidths
+    global bcolors
+    global colors
+    global types 
+    global heights
+    global italics
+    global bolds
+    global posxs
+    global posys
+    global sposys
+    global sposxs
+    global blurs
+    global shadows
+    global sizes
+    [ 
+        sizexs, 
+        sizeys, 
+        bradius,
+        bwidths, 
+        bcolors, 
+        colors, 
+        types , 
+        heights, 
+        italics, 
+        bolds, 
+        posxs, 
+        posys, 
+        sposys, 
+        sposxs, 
+        blurs, 
+        shadows, 
+        sizes ,
+    ] = [ 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {} , 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {}, 
+        {},
+    ]    
+
+# plugin preferences config globals
+_item_details = 0
+
+def capturePluginItemSetting(name : str, value : str):
+        global _item_details
+        # Skip corrupt or malformed settings
+        if name in ['enabled', '']: return True
+        if name.startswith('.'): return True
+        # Process settings which always come grouped, such as                         
+        # - Item color, font, line height
+        # These will be placed in individual tabs grouped, to do so use 
+        # the same prefix for line-height, font-size and color, then they will
+        # spawn in the same tab. 
+        if   '-border-color'    in name: _item_details = True; bcolors[name] = value; return True     
+        elif '-border-width'    in name: _item_details = True; bwidths[name] = value; return True     
+        elif '-border-radius'   in name: _item_details = True; bradius[name] = value; return True     
+        elif '-shadow-color'    in name: _item_details = True; shadows[name] = value; return True
+        elif '-shadow-pos-x'    in name: _item_details = True; sposxs [name] = value; return True
+        elif '-shadow-pos-y'    in name: _item_details = True; sposys [name] = value; return True
+        elif '-color'           in name: _item_details = True; colors [name] = value; return True     
+        elif '-font-size'       in name: _item_details = True; sizes  [name] = value; return True
+        elif '-line-height'     in name: _item_details = True; heights[name] = value; return True
+        elif '-font-italic'     in name: _item_details = True; italics[name] = parseBool(value); return True
+        elif '-font-bold'       in name: _item_details = True; bolds  [name] = parseBool(value); return True
+        elif '-pos-x'           in name: _item_details = True; posxs  [name] = value; return True
+        elif '-pos-y'           in name: _item_details = True; posys  [name] = value; return True
+        elif '-size-x'          in name: _item_details = True; sizexs [name] = value; return True
+        elif '-size-y'          in name: _item_details = True; sizeys [name] = value; return True
+        elif '-shadow-blur'     in name: _item_details = True; blurs  [name] = value; return True
+        elif '-font'            in name: _item_details = True; types  [name] = value; return True                        
+        return False
+
+# Anyway, if you're MrCheevos or LeslieMishigan, thanks for coming so far to check my code. I'm very glad. 
