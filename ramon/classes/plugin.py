@@ -430,6 +430,7 @@ class Plugin:
         for key in sorted:
             value = self.settings[key]
             if   key.endswith('-color'  ) : value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
+            elif key.endswith('-type'   ) : value = f'`{value}`'
             self.rendered = self.rendered.replace('{% '+key+' %}', str(value))
 
     def render( self, payload='' ):
@@ -470,6 +471,7 @@ class Plugin:
         if   '-color'       in key: value = f'[{value[0]},{value[1]},{value[2]},{value[3]}]'
         elif '-file'        in key: value = f"`{value}`"
         elif '-font'        in key: value = f'`{value}`'
+        elif '-type'        in key: value = f'`{value}`'
         return value
 
     def translateCSSVar(key, value):

@@ -27,8 +27,8 @@
                 -webkit-text-stroke-color   : var(--name-border-color);
                 overflow                    : hidden; 
                 text-overflow               : ellipsis;
-                height                      : var( --description-line-height );
-                width                       : calc( var(--size-x ) - var(--name-pos-x) );
+                height                      : var( --name-font-size );
+                width                       : calc( 100% - var(--name-pos-x) );
             }
 
             section[name=description]{
@@ -43,6 +43,7 @@
                 text-shadow                 : var(--description-shadow-pos-x) var(--description-shadow-pos-y) var(--description-shadow-blur) var(--description-shadow-color);
                 -webkit-text-stroke         : var(--description-border-width);
                 -webkit-text-stroke-color   : var(--description-border-color);
+                height                      : calc( 100% - calc( calc( var(--name-pos-x) + var(--name-font-size) ) + var(--description-pos-y) ) );
                 overflow                    : hidden; 
                 
             }
@@ -70,7 +71,7 @@
             }
 
             #{% name %} div img {
-                animation: heartbeat 2s {% glow-type %} ease-out infinite; -webkit-animation: heartbeat 2s {% glow-type %} ease-out infinite;
+                animation: heartbeat 2s alternate ease-out infinite; -webkit-animation: heartbeat 2s alternate ease-out infinite;
             }
 
             #{% name %} div {
@@ -78,6 +79,8 @@
                 width       : var(--cube-size-x);
                 display     : block;
                 position    : absolute;
+                top         : 0px;
+                left:       0px;
                 box-shadow  : 0px 0px calc( var(--cube-border-width) * 4 ) var(--cube-border-color);
                 border      : var(--cube-border-width) solid var(--cube-border-color);
             }
@@ -118,7 +121,7 @@
                 image-rendering     : pixelated;                 
                 overflow            : hidden;
             }
-            .layer {
+            body, .layer,section {
                 position: absolute;
                 top: 0px;
                 left: 0px;

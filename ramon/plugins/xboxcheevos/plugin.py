@@ -15,7 +15,7 @@ class plugin(Plugin):
         self.endpoint    = 'notifications'
 
         #@ Composer Settings
-        self.z_index     = 30
+        self.z_index     = 999999
         self.width       = Plugin.width
         self.height      = 128
         self.scale       = 1
