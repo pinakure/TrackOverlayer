@@ -52,7 +52,7 @@ class HotKeys:
             on_press=HotKeys.keydown,
             on_release=HotKeys.keyup
         )
-        HotKeys.listener.start()
+        #HotKeys.listener.start()
 
 class Ramon:
     width               = 1440

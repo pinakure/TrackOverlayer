@@ -64,7 +64,7 @@ class Data(Scraper):
         with db.atomic():            
             Log.info(f'Parsing {len(self.cheevos_raw)} raw cheevos')
             for t, c in enumerate(self.cheevos_raw):
-                if t%5 == 0: dpg.render_dearpygui_frame()
+                #if (t%5) == 0: dpg.render_dearpygui_frame()
                 cheevos.append( Cheevo.parse( game, c ) )
             Log.info(f'Got {len(cheevos)} sane cheevo instances')
         return cheevos       
@@ -152,7 +152,6 @@ class Data(Scraper):
             Log.info("Parsing cheevos")
             self.cheevos        = self.parseCheevos(self.game)
             for t, d in enumerate(self.cheevos):
-                if t%5 == 0:dpg.render_dearpygui_frame()
                 if d.index == Cheevo.active_index:
                     self.the_cheevo = d
                     self.cheevo = d.name + "\n" + d.description
