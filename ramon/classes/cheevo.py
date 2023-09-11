@@ -9,7 +9,8 @@ class Game(Model):
     name    = CharField()
     picture = CharField()
     current = IntegerField(default=1)
-
+    romname = IntegerField(null=True, default='')
+    
     class Meta:
         database = db
 
@@ -18,7 +19,7 @@ class Game(Model):
         #query db loking for requested game
         try:
             return Game.get(Game.id==game_id)
-        except:
+        except Exception as E:
             #if game does not exist download metadata
             return Game.download(game_id)
     
@@ -66,6 +67,7 @@ class Cheevo(Model):
     def build_cache(self):
         try:
             Log.info(f"Caching cheevo picture {self.picture}...")
+            print(f"Caching cheevo picture {self.picture}...")
             Cheevo.getPicture( self.picture.split('.png')[0].split('_lock')[0] )
             self.cached = True
             self.save()
@@ -73,9 +75,6 @@ class Cheevo(Model):
             Log.error(f"Cannot create cache for cheevo {self.id}", E)
     
     def __str__(self):
-        if not self.cached:
-            #if not os.path.exists(f'{Cheevo.root}/data/cache/{self.picture}'):
-            self.build_cache()            
         return f'<img class="{"active" if self.index == Cheevo.active_index else ""} round" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
 
     
@@ -97,6 +96,11 @@ class Cheevo(Model):
             cheevo.locked = locked
             cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'              
             cheevo.index  = index
+            cheevo.cached = os.path.exists(f'{Cheevo.root}/data/cache/{cheevo.picture}') 
+            if not cheevo.cached:
+                cheevo.build_cache()            
+        
+
             cheevo.save()
             return cheevo
         except Exception as E:            

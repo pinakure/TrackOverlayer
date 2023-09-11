@@ -31,7 +31,7 @@ class Preferences:
             height      = Preferences.height, 
             no_collapse = True, 
             no_resize   = True,
-            modal       = False,
+            modal       = True,
             show        = False,
             on_close    = lambda:dpg.hide_item('preferences_main'),
             pos         = (
@@ -108,28 +108,42 @@ class Preferences:
                     # Create as many tabs as tables on the database
                     with dpg.tab(label="Games", tag="tab_database-general"):
                         with dpg.child_window():
-                            fields = {
-                                'field1' : 'value1',
-                                'field2' : 'value2',
-                                'field3' : 'value3',
-                                'field4' : 'value4',
-                            }
+                            from classes.cheevo import Game
+                            games = Game.select().dicts()
+                            rows = []
+                            for game in games:
+                                rows.append({
+                                    'id'     : game['id'],
+                                    'name'   : game['name'],
+                                    'picture': game['picture'],
+                                    'current': game['current'],
+                                    'romname': game['romname'],
+                                })
+                                
+                            fields = [
+                                'id',
+                                'name',
+                                'picture',
+                                'current',
+                                'romname',
+                            ]
                             with dpg.table(show=True, header_row=False):
                                 
                                 for field in fields:
                                     dpg.add_table_column()
     
                                 with dpg.table_row():
-                                    for field in fields.keys():
+                                    for field_name in fields:
                                         with dpg.table_cell():
                                             UI.setCursor(0,0)
-                                            dpg.add_text(elegant(field), color=Color.banana)
+                                            dpg.add_text(elegant(field_name), color=Color.banana)
                                             
-                                with dpg.table_row():
-                                    for field in fields.values():
-                                        with dpg.table_cell():
-                                            UI.setCursor(0,0)
-                                            dpg.add_text(field, color=Color.lichi)
+                                for index,row in enumerate(rows):
+                                    with dpg.table_row():
+                                        UI.setCursor(0,index+1)
+                                        for field_name in fields:
+                                            with dpg.table_cell():
+                                                dpg.add_text(row[ field_name ], color=Color.lichi)
                                             
                                     
 
@@ -238,6 +252,7 @@ class Preferences:
                                     #     Attribute.label         ( 442,  54 , "Border Color", parent=window)
                                     Attribute.border_color  ( 442,  75 , callback=Plugin.updateColor)
     def show():
+        dpg.hide_item('preferences_main')
         dpg.show_item('preferences_main')
 
     def hide():

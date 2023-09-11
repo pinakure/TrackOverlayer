@@ -93,7 +93,7 @@ class Plugin:
     width  = 1440
     debug  = False
     rate   = 5
-
+    
     def __init__(self, name):
         import random
         self.template_data  = None
@@ -106,6 +106,7 @@ class Plugin:
         self.x              = 0
         self.y              = 0
         self.scale          = 1
+        self.interactive    = False
         self.files          = []
         self.color          = f'rgb( { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))})' # Debugging purposes
         self.defaults       = {}
@@ -523,7 +524,7 @@ class Plugin:
         """+'}\n\t\t\t'
 
     def iframe(self):
-        return f'<iframe style="overflow: hidden;" id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
+        return f'<iframe style="{"pointer-events: none;" if not self.interactive else ""} overflow: hidden;" id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
 
     
     def toggleDebug():

@@ -19,9 +19,9 @@ class plugin(Plugin):
         self.z_index     = 10
         self.width       = Plugin.width
         self.height      = 256
-        self.scale       = 0.35
-        self.x           = -466
-        self.y           = -83 
+        self.scale       = 1
+        self.x           = 0
+        self.y           = 0
 
         #@ Settings
         self.settings.update({
@@ -31,43 +31,43 @@ class plugin(Plugin):
             "size-y"                    : self.height,
             "texture-file"              : "./current_cheevo.png",
             "glow-file"                 : "./current_cheevo_lock.png",
-            "auto-hide"                 : True,
+            "zoom"                      : 35,
             "glow-type"                 : 'glowtypes|alternate',
-            
+            "auto-hide"                 : True,
             
             "cube-color"                : [0,0,0,0],
             "cube-pos-x"                : 50,
             "cube-pos-y"                : 20,
             "cube-size-x"               : 200,
             "cube-shadow-blur"          : 0,
-            "cube-shadow-color"         : [0,255,0,255],            
+            "cube-shadow-color"         : [255, 0, 0, 255],            
             "cube-shadow-pos-x"         : 0,
             "cube-shadow-pos-y"         : 0,
-            "cube-border-color"         : [0,255,0,255],
+            "cube-border-color"         : [82, 53, 0, 255],
             "cube-border-width"         : 2,
-            "cube-border-radius"        : 0,#TODO
+            "cube-border-radius"        : 0,
             
             
             "name-color"                : [0,255,0,255],
-            "name-pos-x"                : 295,
-            "name-pos-y"                : 20,
+            "name-pos-x"                : 104,
+            "name-pos-y"                : 2,
             "name-border-color"         : [0,205,0,255],
             "name-border-width"         : 1,
             "name-shadow-color"         : [0,0,0,128],
-            "name-shadow-pos-x"         : 4,
-            "name-shadow-pos-y"         : 4,
+            "name-shadow-pos-x"         : 2,
+            "name-shadow-pos-y"         : 2,
             "name-shadow-blur"          : 0,
             "name-font"                 : 'arcade',
             "name-font-bold"            : False,
             "name-font-italic"          : False,
-            "name-font-size"            : 40,
+            "name-font-size"            : 16,
             "name-line-height"          : 68,
             
-            "description-color"         : [0,255,0,255],
-            "description-pos-x"         : 304,
-            "description-pos-y"         : 68,
-            "description-border-color"  : [0,205,0,255],
-            "description-border-width"  : 1,
+            "description-color"         : [231, 230, 227, 255],
+            "description-pos-x"         : 105,
+            "description-pos-y"         : 25,
+            "description-border-color"  : [205, 0, 0, 0],
+            "description-border-width"  : 0,
             "description-shadow-color"  : [0,0,0,255],
             "description-shadow-pos-x"  : 2,
             "description-shadow-pos-y"  : 2,
@@ -75,9 +75,8 @@ class plugin(Plugin):
             "description-font"          : 'square',
             "description-font-bold"     : True,
             "description-font-italic"   : False,
-            "description-font-size"     : 54,
-            "description-line-height"   : 52,
-            
+            "description-font-size"     : 27,
+            "description-line-height"   : 27,            
         })
 
 

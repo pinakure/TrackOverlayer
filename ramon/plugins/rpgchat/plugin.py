@@ -16,6 +16,8 @@ class plugin(Plugin):
         self.x           = 558
         self.y           = 557
 
+        self.interactive = True
+
         self.setRangedCombo('chars-per-line', 15, 50)
         self.setRangedCombo('text-speed'    ,  1, 20)
 

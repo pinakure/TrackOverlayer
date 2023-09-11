@@ -19,7 +19,7 @@ class Scraper:
         self.login_tokens           = { x : "" for x in login_tokens    }
         self.login_username         = login_username
         self.login_password         = login_password
-        self.logged_id              = False
+        self.logged_in              = False
         self.parsed                 = None
         self.form_boundary          = form_boundary
         self.login_form_url         = self.url( login_form_url )

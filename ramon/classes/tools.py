@@ -47,4 +47,22 @@ def isColor(string):
 def parseColor(string):
     return json.loads(string)
 
+def readfile(filename):
+    try:
+        with open(filename, "r") as file:
+            return file.read()
+    except:
+        return ""
 
+def ascii(string):
+    table = {
+        'ū' : 'u',
+        'à' : 'a',
+        'è' : 'e',
+        'ì' : 'i',
+        'ò' : 'o',
+        'ù' : 'u',
+    }
+    for key, value in table.items():
+        string = string.replace(key, value)
+    return str(string)

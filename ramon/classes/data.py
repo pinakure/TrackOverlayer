@@ -1,33 +1,12 @@
-import requests, os, random, json
+import os, random, json
 from dearpygui              import dearpygui as dpg
 from datetime               import datetime, timedelta
-from bs4                    import BeautifulSoup    
-from classes.cheevo         import Cheevo,Game
+from classes.cheevo         import Cheevo,Game, db
 from classes.preferences    import Preferences
 from classes.log            import Log
 from classes.plugin         import Plugin
 from classes.scraper        import Scraper
-
-def readfile(filename):
-    try:
-        with open(filename, "r") as file:
-            return file.read()
-    except:
-        return ""
-
-#todo: move to helper module, when it exists....
-def ascii(string):
-    table = {
-        'ū' : 'u',
-        'à' : 'a',
-        'è' : 'e',
-        'ì' : 'i',
-        'ò' : 'o',
-        'ù' : 'u',
-    }
-    for key, value in table.items():
-        string = string.replace(key, value)
-    return str(string)
+from classes.tools          import ascii, readfile
 
 class Data(Scraper):
 
@@ -82,10 +61,12 @@ class Data(Scraper):
 
     def parseCheevos(self, game):
         cheevos = []
-        Log.info(f'Parsing {len(self.cheevos_raw)} raw cheevos')
-        for c in self.cheevos_raw:
-            cheevos.append( Cheevo.parse( game, c ) )
-        Log.info(f'Got {len(cheevos)} sane cheevo instances')
+        with db.atomic():            
+            Log.info(f'Parsing {len(self.cheevos_raw)} raw cheevos')
+            for t, c in enumerate(self.cheevos_raw):
+                if t%5 == 0: dpg.render_dearpygui_frame()
+                cheevos.append( Cheevo.parse( game, c ) )
+            Log.info(f'Got {len(cheevos)} sane cheevo instances')
         return cheevos       
         
     
@@ -170,7 +151,8 @@ class Data(Scraper):
             self.cheevos_raw    = self.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
             Log.info("Parsing cheevos")
             self.cheevos        = self.parseCheevos(self.game)
-            for d in self.cheevos:
+            for t, d in enumerate(self.cheevos):
+                if t%5 == 0:dpg.render_dearpygui_frame()
                 if d.index == Cheevo.active_index:
                     self.the_cheevo = d
                     self.cheevo = d.name + "\n" + d.description
