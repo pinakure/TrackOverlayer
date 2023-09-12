@@ -8,6 +8,7 @@ class Color:
     lime    = (128,255,0)
     banana  = (205,255,0)
     lichi   = (205,255,255)
+    grape   = (180,  0,255)
 
 
 def parseBool(string):

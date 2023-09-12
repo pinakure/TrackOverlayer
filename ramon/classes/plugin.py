@@ -527,15 +527,19 @@ class Plugin:
         return f'<iframe style="{"pointer-events: none;" if not self.interactive else ""} overflow: hidden;" id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
 
     
-    def toggleDebug():
-        Plugin.debug = not Plugin.debug
-        Endpoints.debug = Plugin.debug
-        Log.verbose = Plugin.debug
-        Preferences.settings['debug'] = Plugin.debug
+    def updateOverlaySetting(sender, value, user_data):
+        Preferences.settings[sender] = value
+        Log.verbose = Endpoints.debug = Plugin.debug = Preferences.settings['debug']
         Plugin.runLoaded()
         Plugin.compose()
+        Preferences.writecfg()
 
-    
+    def getNoWelcome():
+        return '''
+            TO.dom.overlay.remove();
+            TO.start();
+        ''' if Preferences.settings['no-welcome'] else ''
+
     def compose():
         # Generates overlay.html file:
         # This file holds an iframe per each one of the plugins, shaping their geometry from info inside each plugin.py
@@ -566,11 +570,12 @@ class Plugin:
             Log.error("Cannot read Plugin Overlay template file", E)
         #
         # Inject payloads 
-        data = data.replace( '/*VARS*/'     , cvars )
-        data = data.replace( '/*CSS*/'      , css   )
-        data = data.replace( '<!--HTML-->'  , html  )
-        data = data.replace( '/*JS*/'       , js    )
-        data = data.replace( '{% plugins %}', Plugin.getPluginList())
+        data = data.replace( '/*VARS*/'         , cvars )
+        data = data.replace( '/*CSS*/'          , css   )
+        data = data.replace( '<!--HTML-->'      , html  )
+        data = data.replace( '/*JS*/'           , js    )
+        data = data.replace( '{% plugins %}'    , Plugin.getPluginList())
+        data = data.replace( '{% no-welcome %}' , Plugin.getNoWelcome())
         #
         # Dump data into rendered template
         try:

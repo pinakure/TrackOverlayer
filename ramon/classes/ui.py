@@ -53,9 +53,23 @@ class UI:
             column.label = 0
         return id
     
+    def setColumns(count, width):
+        column.label = 0
+        column.input = 0
+        last_width = UI.setColumnWidth(width)
+        last_count = UI.setColumnCount(count)
+        return last_width,last_count
+
+    def setColumnCount(c):
+        last_count = len(UI.columns)
+        UI.columns = [ 8+(x*UI.column_width) for x in range(0,c) ]
+        return last_count
+        
     def setColumnWidth(w):
-        UI.column_width = w
+        last_width = UI.column_width
+        UI.column_width = int(w)
         UI.label_len = int((UI.column_width)/16)
+        return last_width
 
     def setCursor(x,y):
         column.set( x )
@@ -69,18 +83,21 @@ class UI:
         row.input    += 1 if y is None and x is not None else 0
         if column.input >= len(UI.columns): UI.jump()
 
-    def textfield( text="A label", varname='a_var_name', x=None, y=None, callback=None, password=False, user_data=None, settings=None):
+    def textfield( text="A label", varname='a_var_name', x=None, y=None, callback=None, password=False, user_data=None, settings=None, on_enter=False, readonly=False):
         from classes.preferences    import Preferences
         from classes.config         import help
         UI.label(text, Color.banana)
+        settings = Preferences.settings if settings is None else settings
         id = WM.add_input_text(
             tag             = varname, 
             pos             = pos(x,y),
-            default_value   = Preferences.settings[ varname ] if settings is None else settings[ varname ], 
+            default_value   = settings[ varname ] if varname in settings.keys() else '', 
             width           = UI.column_width>>1,
             password        = password,
             user_data       = user_data,
             callback        = Preferences.updateSetting if callback is None else callback,
+            on_enter        = on_enter,
+            readonly        = readonly,
         )
         if varname in help.keys():
             with WM.tooltip(varname):

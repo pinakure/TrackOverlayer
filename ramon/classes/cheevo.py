@@ -1,35 +1,9 @@
 import requests, os, json
 from classes.log        import Log
-from peewee import *
+from classes.database   import db
+from classes.game       import Game
+from peewee             import *
 
-db = SqliteDatabase('ramon.db')
-
-class Game(Model):
-    id      = IntegerField(unique=True, primary_key=True)
-    name    = CharField()
-    picture = CharField()
-    current = IntegerField(default=1)
-    romname = IntegerField(null=True, default='')
-    
-    class Meta:
-        database = db
-
-    
-    def loadOrCreate(game_id):
-        #query db loking for requested game
-        try:
-            return Game.get(Game.id==game_id)
-        except Exception as E:
-            #if game does not exist download metadata
-            return Game.download(game_id)
-    
-    
-    def download( game_id ):
-        data    = str(requests.get(f'https://retroachievements.org/game/{game_id}').content)
-        name    = data.split('block mb-1">')[1].split('</span>')[0]
-        picture = data.split('h-[96px]" \\n        src="https://media.retroachievements.org/Images/')[1].split('.png')[0].split('_lock')[0]
-        Log.info("Downloaded game metadata")
-        return Game.create(id=game_id, name=name, picture=picture)
 
 class Cheevo(Model):
     root            = '.'
@@ -64,13 +38,16 @@ class Cheevo(Model):
             file.write(data)
         return data
 
+    def _build_cache(picture):
+        Cheevo.getPicture( picture.split('.png')[0].split('_lock')[0] )
+            
     def build_cache(self):
         try:
-            Log.info(f"Caching cheevo picture {self.picture}...")
             print(f"Caching cheevo picture {self.picture}...")
-            Cheevo.getPicture( self.picture.split('.png')[0].split('_lock')[0] )
+            Cheevo._build_cache(self.picture)
             self.cached = True
             self.save()
+
         except Exception as E:
             Log.error(f"Cannot create cache for cheevo {self.id}", E)
     
@@ -84,6 +61,13 @@ class Cheevo(Model):
         cheevo_id   = int(payload.split('achievement/')[1].split('"')[0])
         locked      = picture.find('lock')>-1
         description = payload.split('mb-1')[1].split('gt')[1].split('&lt;/div')[0].replace(';', '')
+        pic         = picture.strip('https://media.retroachievements.org/Badge/')+'.png'
+        cached      = os.path.exists(f'{Cheevo.root}/data/cache/{pic}') 
+        if not cached:
+            Log.info(f"CHEEVO : Picture '{pic.split('.png')[0]}' not found, caching...", True)
+            Cheevo._build_cache(pic)
+            cached = os.path.exists(f'{Cheevo.root}/data/cache/{pic}')         
+        
         index       = 0
         if locked:
             Cheevo.global_index+=1
@@ -94,18 +78,16 @@ class Cheevo(Model):
             # cheevo already exists in DB
             cheevo = Cheevo.get(id=cheevo_id)            
             cheevo.locked = locked
-            cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'              
+            cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'
             cheevo.index  = index
-            cheevo.cached = os.path.exists(f'{Cheevo.root}/data/cache/{cheevo.picture}') 
-            if not cheevo.cached:
-                cheevo.build_cache()            
+            cheevo.cached = cached
         
-
             cheevo.save()
             return cheevo
         except Exception as E:            
-            Log.warning(f"Cannot update cheevo {cheevo_id}, creating new one")
             # cheevo does not exist in DB, create new
+            Log.info(f"DATABASE : New Cheevo '{cheevo_id}' found! Creating database entry...", True)
+            
             return Cheevo.create(
                 id          = cheevo_id,
                 name        = name.replace('"', "´"), 
@@ -113,6 +95,7 @@ class Cheevo(Model):
                 picture     = picture.strip('https://media.retroachievements.org/Badge/')+'.png', 
                 locked      = locked,
                 index       = index,
+                cached      = cached,
                 game        = game,
             )
 

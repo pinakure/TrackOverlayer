@@ -5,8 +5,10 @@ from classes.cheevo         import Cheevo
 from classes.log            import Log
 from classes.ui             import UI
 from classes.attribute      import Attribute
+from classes.database       import DBTable
 from classes.tools          import elegant, Color, parseInt, parseColor, parseFloat, parseBool
-                        
+
+    
 class Preferences:
     root            = '.'
     width           = cfg.width
@@ -15,6 +17,7 @@ class Preferences:
     data            = None
     
     defaults        = cfg.defaults
+    table_game      = None
     
     def nop(sender, value, varname):
         print("Sender : ", sender )
@@ -64,39 +67,56 @@ class Preferences:
             
 
     def createGeneralTab():
+        from classes.plugin import Plugin
         with dpg.tab(label="General", tag="tab_general"):
             with dpg.child_window():
                 UI.setCursor(0,0)
-                UI.label        ("Interface"        , Color.lime        , left_align=True   ); UI.jump()
+                last_width,last_count = UI.setColumns(4, (Preferences.width/4)-8)
+                UI.label        ("Interface"        , Color.grape        , left_align=True   ); UI.jump()
                 UI.checkbox     ("Simple UI"        , 'simple_ui'                           , enabled = False)
                 UI.checkbox     ("Fullscreen"       , 'fullscreen'                          )
-                UI.setCursor(1,2)
-                UI.checkbox     ("Vertical Layout"  , 'vertical'                            ); UI.jump()
+                UI.checkbox     ("Vertical Layout"  , 'vertical'                            )
                 UI.jump()
-                UI.label        ("Window Geometry"  , Color.lime        , left_align=True   ); UI.jump()
+                UI.jump()
+                
+                UI.label        ("Window Geometry"  , Color.grape       , left_align=True   )
+                UI.jump()
                 UI.numeric      ("Width"            , 'width'                               , callback=Preferences.updateSettingVideo )
-                UI.numeric      ("Height"           , 'height'                              , callback=Preferences.updateSettingVideo );UI.jump()
+                UI.numeric      ("Height"           , 'height'                              , callback=Preferences.updateSettingVideo )
                 UI.numeric      ("X Position"       , 'x-pos'                               , callback=Preferences.updateSettingVideo )
                 UI.numeric      ("Y Position"       , 'y-pos'                               , callback=Preferences.updateSettingVideo )
                 UI.jump()
+                
+                # UI.setColumns   (last_count, last_width)
+                # last_width,last_count = UI.setColumns(4, Preferences.width/4)
+                
+                UI.label        ("Twitch"           , Color.grape       , left_align=True   )
                 UI.jump()
-                UI.label        ("Twitch"           , Color.lime        , left_align=True   ); UI.jump()
+                UI.textfield    ("IRC Password"     , 'twitch-password' , password=True     )
                 UI.checkbox     ("Use API"          , 'twitch-use-api'                      )
-                UI.textfield    ("API Key"          , 'twitch-app-key'  , password=True     ); UI.jump()
+                UI.textfield    ("API Key"          , 'twitch-app-key'  , password=True     ) 
                 UI.textfield    ("IRC Channel"      , 'twitch-username'                     )
-                UI.textfield    ("IRC Password"     , 'twitch-password' , password=True     ); UI.jump()
                 UI.jump()
-                UI.label        ("RetroAchievements", Color.lime        , left_align=True   ); UI.jump()
+                UI.label        ("RetroAchievements", Color.grape       , left_align=True   )
+                UI.jump()
+                UI.textfield    ("RA Password"      , 'password'        , password=True     )
                 UI.checkbox     ("Use API"          , 'ra-use-api'                          )
-                UI.textfield    ("API Key"          , 'ra-app-key'      , password=True     ); UI.jump()
-                UI.textfield    ("RA Password"      , 'password'        , password=True     ); UI.jump()
+                UI.textfield    ("API Key"          , 'ra-app-key'      , password=True     )
+                UI.jump()
+                UI.jump()
+                UI.setColumns   (last_count, last_width)
+                UI.label        ("RA Scraper Setup" , Color.grape        , left_align=True   ); UI.jump()
+                UI.checkbox     ("Offline Mode"     , 'offline'                             )
+                UI.checkbox     ("Auto Refresh"     , 'auto_update'                         )
+                UI.numeric      ("Refresh Rate"     , 'auto_update_rate'                    )
                 #UI.textfield    ("Username"         , 'username'                          ); UI.jump()
                 UI.jump()
-                UI.label        ("RA Scraper Setup" , Color.lime        , left_align=True   ); UI.jump()
-                UI.checkbox     ("Offline Mode"     , 'offline'                             )
-                UI.checkbox     ("Automatic Refresh", 'auto_update'                         )
-                UI.setCursor(1,18)
-                UI.numeric      ("AutoRefresh Rate" , 'auto_update_rate'                    ); UI.jump()
+                UI.label        ("Plugin Overlay Setup", Color.grape        , left_align=True   )
+                UI.jump()
+                UI.checkbox     ("No Welcome"       , 'no-welcome'                              , callback=Plugin.updateOverlaySetting)
+                UI.checkbox     ("Debug Mode"       , 'debug'                                   , callback=Plugin.updateOverlaySetting)
+                UI.numeric      ("Plugin Rate"      , "plugin-rate"                             , callback=Plugin.updateOverlaySetting)
+                
 
     
     def createDatabaseTab():
@@ -104,48 +124,22 @@ class Preferences:
         with dpg.tab(label="Database", tag="tab_database"):
             with dpg.child_window():
                 with dpg.tab_bar(tag="database-tabs"):
-                    UI.setCursor(0,0)
                     # Create as many tabs as tables on the database
-                    with dpg.tab(label="Games", tag="tab_database-general"):
-                        with dpg.child_window():
-                            from classes.cheevo import Game
-                            games = Game.select().dicts()
-                            rows = []
-                            for game in games:
-                                rows.append({
-                                    'id'     : game['id'],
-                                    'name'   : game['name'],
-                                    'picture': game['picture'],
-                                    'current': game['current'],
-                                    'romname': game['romname'],
-                                })
-                                
-                            fields = [
-                                'id',
-                                'name',
-                                'picture',
-                                'current',
-                                'romname',
-                            ]
-                            with dpg.table(show=True, header_row=False):
-                                
-                                for field in fields:
-                                    dpg.add_table_column()
-    
-                                with dpg.table_row():
-                                    for field_name in fields:
-                                        with dpg.table_cell():
-                                            UI.setCursor(0,0)
-                                            dpg.add_text(elegant(field_name), color=Color.banana)
-                                            
-                                for index,row in enumerate(rows):
-                                    with dpg.table_row():
-                                        UI.setCursor(0,index+1)
-                                        for field_name in fields:
-                                            with dpg.table_cell():
-                                                dpg.add_text(row[ field_name ], color=Color.lichi)
-                                            
-                                    
+                    Preferences.table_game = DBTable.create(
+                        'game', 
+                        fields=[
+                            'id',
+                            'romname',
+                            'name',
+                            'subset',
+                            'picture',
+                            'cached',
+                            'cheevos',
+                            'current',
+                        ], 
+                        editable=['romname', 'name', 'subset']
+                    )
+        Preferences.table_game.update()        
 
     def createPluginsTab():
         from classes.plugin import Plugin
@@ -159,21 +153,15 @@ class Preferences:
                             labels = [ 
                                 dpg.add_text("Found"        , color=(255,255,0)), 
                                 dpg.add_text("Enabled"      , color=(255,255,0)), 
-                                dpg.add_text("  Debug Mode" , color=(255,255,0)), 
-                                dpg.add_text(" Reload Time" , color=(255,255,0)), 
                             ]
                             dpg.configure_item(labels[0], pos=(   8,   8 ) )
                             dpg.configure_item(labels[1], pos=( 500,   8 ) )
-                            dpg.configure_item(labels[2], pos=(   8, 400 ) )
-                            dpg.configure_item(labels[3], pos=(   8, 424 ) )
-                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=484, num_items=20, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
+                            dpg.add_listbox(tag='available-plugins' , items=available_plugins   , width=484, num_items=25, pos=(   8,  32 ), callback=Plugin.enable , default_value=None)
                             with dpg.tooltip('available-plugins'):
                                 dpg.add_text("Click a plugin to enable it")
-                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=484, num_items=20, pos=( 500,  32 ), callback=Plugin.disable, default_value=None)
+                            dpg.add_listbox(tag='enabled-plugins'   , items=[]                  , width=484, num_items=25, pos=( 500,  32 ), callback=Plugin.disable, default_value=None)
                             with dpg.tooltip('enabled-plugins'):
                                 dpg.add_text("Click a plugin to disable it")
-                            dpg.add_checkbox(tag="debugplugins"     , callback=Plugin.toggleDebug,default_value=Preferences.settings['debug'], pos=(108, 400))
-                            dpg.add_combo(tag="plugin_rate"         , items=list(range(1, 1800)), callback=Plugin.compose, default_value=Plugin.rate, pos=(108, 424), width=64)
 
     def populatePluginsTab():
         global _item_details

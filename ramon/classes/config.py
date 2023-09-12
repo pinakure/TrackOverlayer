@@ -28,10 +28,12 @@ class Config:
         'ra-use-api'                : False,
         'ra-app-key'                : '',
         'offline'                   : False,
+        'no-welcome'                : False,
         'simple_ui'                 : False,
         'pending_cheevos'           : [0,255,255],
         'unlocked_cheevos'          : [64, 128,0],
         'current_cheevo'            : 1,
+        'plugin-rate'               : 5,
     }
     
     class range:
@@ -58,14 +60,17 @@ ranges = {
     'pos-x'                         : [ -1444, 1444], # Plugin position
     'perspective'                   : [     1, 1600],
     'angle'                         : [ -180 , 180 ],
+    'plugin-rate'                   : [     1, 1800],
 }
 
 combos = [
     'auto_update_rate',    
+    'plugin-rate',
 ]
 
-help = {
-    
+help = {    
+    'no-welcome'                : "Hide initial authorization screen in overlay.html",
+    'plugin-rate'               : "How often the plugins will try to update their data",
     'auto_update'               : "Request cheevo information to RetroAchievements periodically",
     'auto_update_rate'          : "Time to wait between requests in minutes",
     'offline'                   : "Use this while setting up the look and feel, please",

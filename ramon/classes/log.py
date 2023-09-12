@@ -7,31 +7,36 @@ class Log:
     stdout  = True
     BR      = '\n'
     width   = 800
-    height  = 600
+    height  = 0
     
     
     def create(parent):
         Log.parent = parent 
-        with dpg.window(
-                modal=True, 
-                label="Log",
-                tag="log_window", 
-                on_close=Log.hide,
-                width=Log.width, 
-                height=Log.height, 
-                min_size=[Log.width, Log.height], 
-                no_scrollbar=True, 
-                max_size=[Log.width, Log.height], 
-                no_collapse=True, 
-                no_resize=True, 
-                pos=[(parent.width / 2)-100, 
-                (parent.height / 2)-32], 
-                show=False
-                ):
-                    dpg.add_input_text(readonly=True, pos=(0,22), multiline=True, tag='log', width=Log.width - 4, height=Log.height-26)
+        Log.height = parent.log_height
+        Log.width  = parent.inner_width-(parent.padding*2)
+        with dpg.child_window(
+                label       =  "Log",
+                tag         = "log-window", 
+                width       = Log.width, 
+                height      = Log.height, 
+                no_scrollbar= True, 
+                pos         = [
+                    0, 
+                    parent.inner_height-(Log.height+parent.statusbar_height),
+                ]):
+                    dpg.add_input_text(
+                        track_offset = 1.0,
+                        tracked      = True, 
+                        readonly     = True, 
+                        pos          = (0,0), 
+                        multiline    = True, 
+                        tag          = 'log', 
+                        width        = Log.width-8, 
+                        height       = Log.height,
+                    )
         Log.stdout = False
 
-    
+
     def show():
         dpg.show_item('log_window')         
          
@@ -44,20 +49,25 @@ class Log:
         if Log.stdout:
             print(text, end=Log.BR)
         else:
-            dpg.set_value('log', dpg.get_value('log')+text+'\n')
-
+            dpg.set_value(
+                'log', 
+                "\n".join(
+                    (
+                        dpg.get_value('log')+text+'\n'
+                    ).split('\n')[-(Log.parent.log_line_count+3):]
+                ),
+            )
+            
     
     def warning(text):
         Log.print("WARNING:\n\t"+text+"\n")
 
     
-    def info(text):
+    def info(text, force_redraw=False):
         Log.print(f'{text}')
         if not Log.stdout:
-            dpg.set_viewport_title(f'tRAckOverlayer - {text}')
-            # if dpg.is_dearpygui_running(): 
-            #     dpg.render_dearpygui_frame()
-
+            dpg.set_viewport_title(f'tRAckOverlayer - {text}')            
+            #if force_redraw: dpg.render_dearpygui_frame()
     
     def time( finish=False ):
         if not finish:

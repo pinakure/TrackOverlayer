@@ -86,11 +86,8 @@ if Ramon.start():
     if Preferences.settings['debug']:
         from dearpygui import dearpygui as D
         Preferences.show()
-        D.set_value('preferences-tabs', 'tab_general')
-        #D.set_value('plugin-tabs'     , 'tab_plugins-recentunlocks')
-        Plugin.debug = Preferences.settings['debug']
-        # D.set_value('plugin-preferences-tabs', 'plugin-tabs')
-        # D.set_value('plugin-tabs')
+        D.set_value('preferences-tabs', 'tab_database')
+        Plugin.debug = Preferences.settings['debug']        
     if len( Ramon.plugins ): 
         Plugin.compose()
     # enter main loop

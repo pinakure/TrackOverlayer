@@ -99,9 +99,12 @@ class Scraper:
         if self.needs_login and not self.login():
             Log.error("SCRAPER : Login failed")
             return False
+        print("Logged in")
+        print("Getting payload")
         if not self.getPayload():
             Log.error("SCRAPER : Cannot parse get payload HTML")
             return False
+        print("Parsing payload")
         return self.parse()
     
     def validateLoginUsername(self):
@@ -118,7 +121,7 @@ class Scraper:
             # Avoid double login, but keep ability to re-login if username changes during execution
             if self.sameLoginUsername() and self.logged_in: return True
             if not self.validateLoginUsername() : return False
-            
+        
             Log.info("SCRAPER : Logging in...")
             
             # Inject headers for future requests
@@ -145,13 +148,15 @@ class Scraper:
             
             # Get form and Create form response
             self.getFormPayload()
-
+            Log.info("SCRAPER : Got login response, sending payload...")
+            print("Login payload ->")
             # Request for login.
             result = self.request( self.login_post_url, self.form_data, 'login-response', post=True)
             
             # Memorize user if login was sucessful before returning
             self.login_last_username = self.login_username if result else None
-            Log.info("SCRAPER : Logged in successfuly")
+            Log.info("SCRAPER : Logged in successfully!")
+            print("Login payload <-")
             return result
         
         except Exception as E:
