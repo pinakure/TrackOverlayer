@@ -63,10 +63,12 @@ class Data(Scraper):
         self.parent.queue.append(cheevo)
 
     def dispatchQueue(self):
+        last   = False
         redraw = False
         if not len(self.parent.queue): return
         head = self.parent.queue[0]
-        if len(self.parent.queue)==1: redraw = True
+        if len(self.parent.queue)==1: 
+            last   = True
         self.parent.queue = self.parent.queue[1:] if len( self.parent.queue)>1 else []
         cheevo = Cheevo.parse(self.game, head)
         self.cheevos.append( cheevo )
@@ -74,7 +76,10 @@ class Data(Scraper):
             redraw = True
             self.setActiveCheevo(cheevo.index)
             self.cheevo = cheevo.name + "\n" + cheevo.description
-        if redraw:
+            self.writeCheevo()
+        if last:
+            Log.info("Ready")
+        if redraw or last:
             self.parent.redraw()
 
     def parseCheevos(self, game):

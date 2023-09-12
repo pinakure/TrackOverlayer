@@ -81,7 +81,7 @@ class Ramon:
     def updateCheevoManually(sender=None, args=None, user_data=None):
         with open(f'{Ramon.data.root}/data/current_cheevo.txt', "w") as file:
             file.write(dpg.get_value('cheevo'))
-        os.truncate(f'{Ramon.data.root}/data/current_cheevo.png')
+        os.truncate(f'{Ramon.data.root}/data/current_cheevo.png',0)
 
     
     def updateCheevo(sender=None, args=None, user_data=None):
@@ -179,9 +179,28 @@ class Ramon:
         Preferences.writecfg()
 
 
+    def copy(fin, fout):
+        try:
+            with open(fin, 'rb') as sin:
+                with open(fout, 'wb') as sout:
+                    sout.write(sin.read())
+        except:
+            pass
+
+
     def start():
         Preferences.parent = Ramon
         Preferences.loadcfg()
+        os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
+        Ramon.copy(
+            f'{Preferences.settings["root"]}/plugins/default.png',
+            f'{Preferences.settings["root"]}/data/current_cheevo.png',
+        )
+        Ramon.copy(
+            f'{Preferences.settings["root"]}/plugins/default.png',
+            f'{Preferences.settings["root"]}/data/current_cheevo_lock.png',
+        )
+
         Ramon.data  = Data(Ramon)
         HotKeys.install()
         Ramon.mkdir('data')
@@ -237,7 +256,7 @@ class Ramon:
             UI.textfield("Rank"                     , 'rank'                , readonly=True)
             UI.textfield("Now Playing"              , 'game'                , readonly=True)
             UI.textfield("Last connection"          , 'date'                , readonly=True)
-            UI.textfield("Cheevo"                   , 'cheevo'              , readonly=True, callback=Ramon.updateCheevoManually)
+            UI.textfield("Cheevo"                   , 'cheevo'              , readonly=True)
             UI.jump()
             row = ROW.input * UI.row_height
             with dpg.child_window(
@@ -314,7 +333,7 @@ class Ramon:
         with open("./compile.bat", "w") as file:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
             file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
-            file.write(f'''@pythos3 -m PyInstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
+            file.write(f'''@python3 -m PyInstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
         os.system('start compile.bat')
         dpg.set_viewport_title('tRAckOverlayer - Compiled "compile.bat" script succesfully')
 
