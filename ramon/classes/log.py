@@ -73,7 +73,8 @@ class Log:
         if not finish:
             Log.when = time.time_ns()
         else:
-            Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/10000) } msec")
+            pass
+            #Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/10000) } msec")
 
     
     def error(text, exception=None):

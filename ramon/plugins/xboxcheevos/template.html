@@ -1,31 +1,25 @@
-<html>
+<!DOCTYPE html>
+<html type="plugin" version="0.?" author="smiker@m4gtracker.com">
     <head>
+        <link rel="stylesheet" type="text/css" href="./{% name %}.css">
+        <title>{% Name %}</title>
         <style>
-            :root {
-                --dummy-var : 0;
-                /*VARS*/
-            }
-            * {
-                overflow: hidden;
-            }
-            body {
-                background-color: rgba(0,0,0,0);
-            }
-
-            #notifications {
+            {% fonts %}
+            {% fullsized %}            
+            * { overflow: hidden; box-sizing: border-box; padding: 0px; margin: 0px;}
+            #{% name %} {
                 box-sizing          : border-box;
                 padding             : 0px 0px 0px 0px;
                 margin              : 0px 0px 0px 0px;
                 background-color    : rgba(0,0,0,0);
             }
-            
             .notification {
-                display: none;
+                display             : none;
                 position            : absolute;
                 top                 : 8px;
                 left                : calc( 50% - 256px );
                 width               : 512px;
-                height              : 104;
+                height              : 104px;
                 font-family         : 'consolas', 'sans-serif';
                 font-weight         : 600;
                 font-size           : 24px;
@@ -59,14 +53,12 @@
                 border-radius       : 44px 44px 44px 44px;
                 overflow            : hidden;
             }
-
             .notification-show      {
                 display: inline-block;
                 animation-name: notification-open;
                 animation-iteration-count: 1;
                 animation-duration: 1s;
             }
-
             .notification-hide      {
                 display: inline-block;
                 animation-name: notification-hide;
@@ -74,7 +66,6 @@
                 animation-duration: 1s;
                 animation-fill-mode: forwards;
             }
-
             @keyframes notification-hide {
                 0% {
                     filter  : opacity(100%);
@@ -97,9 +88,6 @@
                     transform: scaleX(100%);
                 }
             }
-
-            /*CSS*/
-
         </style>
         <script>
             function Notification( name, description, picture ){
@@ -113,7 +101,7 @@
                 this.target.id          = `notification_${ this.id }`;
                 this.target.style.width = `calc( 102px + ${this.length*14}px )`;
                 this.target.style.left  = `calc( 50% - calc( 51px + ${this.length*7}px ) )`;
-                items = [ document.createElement( 'div' ),document.createElement( 'div' ),document.createElement( 'div' )];
+                items                   = [ document.createElement( 'div' ),document.createElement( 'div' ),document.createElement( 'div' )];
                 items[0].className      = 'notification-name';
                 items[0].innerHTML      = this.name;
                 items[1].className      = 'notification-description';
@@ -123,33 +111,60 @@
                 this.target.appendChild(items[0])
                 this.target.appendChild(items[1])
                 this.target.appendChild(items[2])
-                document.getElementById( 'notifications' ).appendChild( this.target );                
+                document.getElementById( '{% name %}' ).appendChild( this.target );                
             }
 
             Notification.prototype.show = function(){
                 self = this;
-                Notifier.sound.play();
+                {% Name %}.sound.play();
                 self.target.className = 'notification notification-show';
-                setTimeout( function(){ self.hide(); }, Notifier.timeout * 1000 );
+                setTimeout( function(){ self.hide(); }, {% Name %}.timeout * 1000 );
             }
 
             Notification.prototype.hide = function(){   
                 self.target.className = 'notification notification-hide';
-                setTimeout( function(){ self.target.remove(); Notifier.notification=null;}, 1000 );
+                setTimeout( function(){ self.target.remove(); {% Name %}.notification=null;}, 1000 );
             }
+        </script>
+    </head>
+    <body id="{% name %}">
+        
+        <script>
+            {% plugin %}
 
-            var Notifier = {
+            var {% Name %} = {
                 
-                notified    : {},
-                timeout     : 5,
-                queue       : [],
-                notification: null,
-                callback    : null,
-                sound       : null,
+                notified        : {},
+                timeout         : 5,
+                queue           : [],
+                notification    : null,
+                callback        : null,
+                sound           : null,
 
-                start       : function( ){
-                    Notifier.sound = new Audio('./files/xboxcheevos/xbox.wav');
-                    Notifier.callback = setInterval(Notifier.work, 1000);
+                 dom            : {
+                    {% name %}      : document.getElementById('{% name %}'),
+                },
+
+                {% framework %}
+                
+                update : function(){
+                    {% Name %}.feed();
+                    console.log("XBOX Update", {% Name %}.queue)
+                    if( {% Name %}.queue.length > 0){
+                        if(!{% Name %}.notification){
+                            {% Name %}.notification = {% Name %}.queue[0];
+                            {% Name %}.queue.splice(0,1);
+                            if(!{% Name %}.notified[ {% Name %}.notification.name ])
+                                {% Name %}.notification.show();
+                            {% Name %}.notified[ {% Name %}.notification.name ] =true
+                        }
+                    }                    
+                },
+
+                enqueue     : function( name, description, picture ){
+                    {% Name %}.queue[{% Name %}.queue.length] = new Notification( 
+                        name, description, picture
+                    )
                 },
 
                 feed : function(){
@@ -158,49 +173,26 @@
                         notifications = JSON.parse(localStorage.getItem('notifications'))
                         localStorage.setItem('notifications', '[]')
                     }catch(e){
-                        console.warn("notifications : item does not exist on localStorage");
+                        console.warn("notifications : failed to parse as json");
                     }
                     for( notification_index in notifications ){
                         notification = notifications[notification_index]
-                        Notifier.enqueue( 
+                        {% Name %}.enqueue( 
                             notification[0],
                             notification[1],
                             notification[2],
                         );                    
                     }
                 },
-
-                work        : function( ){
-                    Notifier.feed();
-                    if( Notifier.queue.length > 0){
-                        if(!Notifier.notification){
-                            Notifier.notification = Notifier.queue[0];
-                            Notifier.queue.splice(0,1);
-                            if(!Notifier.notified[ Notifier.notification.name ])
-                                Notifier.notification.show();
-                            Notifier.notified[ Notifier.notification.name ] =true
-                        }
-                    } else {
-                        clearInterval(Notifier.callback);
-                        Notifier.callback = setTimeout(function(){ location.reload(); }, 15000);                        
-                    }                    
-                },
-
-                enqueue     : function( name, description, picture ){
-                    Notifier.queue[Notifier.queue.length] = new Notification( 
-                        name, description, picture
-                    )
-                },
-
-            };
+                
+                start : function(){
+                    {% Name %}.loadSettings();
+                    {% Name %}.messageHandler();
+                    {% Name %}.sound = new Audio('{% sound-file %}');
+                    {% Name %}.update();
+                }
+            }
+            {% Name %}.start()
         </script>
-    </head>
-    <body id="notifications">
-        <!--HTML-->
-    </body>    
-    <script>        
-        /*JS*/        
-        Notifier.start( ); 
-    </script>
-    
+    </body>
 </html>

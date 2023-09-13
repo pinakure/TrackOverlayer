@@ -9,7 +9,7 @@ class Endpoints:
     
     def notifications():
         from classes.ramon import Ramon
-        return sane(json.dumps(Ramon.data.notifications))
+        return sane(json.dumps(Ramon.data.getNotifications()))
     
     
     def current_cheevo():

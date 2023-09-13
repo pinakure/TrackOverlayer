@@ -12,7 +12,7 @@ class plugin(Plugin):
         Plugin.__init__(self, 'xboxcheevos')
         #@ Plugin Settings
         self.description = 'XBox Achievement Notifications'
-        self.endpoint    = 'notifications'
+        self.endpoint    = None #'notifications'
 
         #@ Composer Settings
         self.z_index     = 999999

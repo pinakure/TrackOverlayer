@@ -6,6 +6,9 @@ from classes.log    import Log
 db = SqliteDatabase('ramon.db')
 
 
+def readonly(sender, value, user_data):
+    dpg.set_value(sender, not value)
+
 class DBTable:
     
     def __init__(self,name,fields=['id'],editable=[]):
@@ -42,16 +45,34 @@ class DBTable:
                 for field_name in fields:
                     with dpg.table_cell():
                         if field_name in editable:
-                            dpg.add_input_text( 
-                                tag             = f"game:{field_name}:{row['id']}", 
-                                default_value   = row[ field_name ], 
-                                callback        = DBTable.updateField,
-                                user_data       = row['id'],
-                                on_enter        = True,
-                                width           = 200,
-                            )
+                            if isinstance( row[ field_name ], str):
+                                dpg.add_input_text( 
+                                    tag             = f"{self.name}:{field_name}:{row['id']}", 
+                                    default_value   = row[ field_name ], 
+                                    callback        = DBTable.updateField,
+                                    user_data       = row['id'],
+                                    on_enter        = True,
+                                    width           = 200,
+                                )
+                            if isinstance( row[ field_name ], bool):
+                                dpg.add_checkbox( 
+                                    tag             = f"{self.name}:{field_name}:{row['id']}", 
+                                    default_value   = row[ field_name ], 
+                                    callback        = DBTable.updateField,
+                                    user_data       = row['id'],                                    
+                                )
+
                         else:
-                            dpg.add_text(row[ field_name ], color=Color.lichi)
+                            if isinstance( row[ field_name ], bool):
+                                dpg.add_checkbox( 
+                                    tag             = f"{self.name}:{field_name}:{row['id']}", 
+                                    default_value   = row[ field_name ], 
+                                    callback        = readonly,
+                                    user_data       = row['id'],
+                                )
+                            else:
+                                dpg.add_text(row[ field_name ], color=Color.lichi)
+
 
     def update(self):
         for index in range(0,len(self.rows)):
@@ -68,6 +89,7 @@ class DBTable:
             exec(f'''{instaname} = {classname}.get(id={id})''')
             exec(f'''{instaname}.{fieldname}={ f'"{value}"' if isinstance(value, str) else value }''')
             exec(f'''{instaname}.save()''')
+            db.close()
             Log.info("Stored data on DB")
         except Exception as E:
             Log.error("Cannot save data to DB", E)

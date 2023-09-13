@@ -87,9 +87,7 @@ if Ramon.start():
         from dearpygui import dearpygui as D
         Preferences.show()
         D.set_value('preferences-tabs', 'tab_database')
-        Plugin.debug = Preferences.settings['debug']        
-    if len( Ramon.plugins ): 
-        Plugin.compose()
+        Plugin.debug = Preferences.settings['debug']    
     # enter main loop
     Ramon.render()
 if Ramon.restart:

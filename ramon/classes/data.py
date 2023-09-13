@@ -80,6 +80,8 @@ class Data(Scraper):
         if last:
             Log.info("Ready")
         if redraw or last:
+            if last: 
+                Plugin.compose()
             self.parent.redraw()
 
     def parseCheevos(self, game):
@@ -358,7 +360,11 @@ class Data(Scraper):
         for cheevo in cheevos:
             notifications.append( [ cheevo.name, cheevo.description, cheevo.picture.rstrip('.png').rstrip('_lock') ] )
             cheevo.notified = True
-            cheevo.save()
+            try:
+                cheevo.save()
+            except:
+                pass
+        print(notifications)
         return notifications
         
     
@@ -366,6 +372,7 @@ class Data(Scraper):
         notifications = self.getNotifications()
         self.notifications = notifications
         data = json.dumps(notifications)
+        print(data)
         
     
     def write(self):
@@ -374,7 +381,7 @@ class Data(Scraper):
         with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(self.last_seen     ))
         with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(self.site_rank     )
         with open(f'{Preferences.root}/data/score.txt'          , 'w') as file:   file.write(self.score         )        
-        self.writeNotifications()
+        #self.writeNotifications()
         self.writeCheevo()
         self.writeCheevos()
         self.writeRecent()

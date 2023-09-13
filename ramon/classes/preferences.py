@@ -139,6 +139,21 @@ class Preferences:
                         ], 
                         editable=['romname', 'name', 'subset']
                     )
+                    Preferences.table_game = DBTable.create(
+                        'cheevo', 
+                        fields=[
+                            'id',
+                            'name',
+                            'description',
+                            'locked',
+                            'notified',
+                            'picture',
+                            'index',
+                            'cached',
+                            'game',                            
+                        ], 
+                        editable=['description', 'name', 'notified']
+                    )
         Preferences.table_game.update()        
 
     def createPluginsTab():

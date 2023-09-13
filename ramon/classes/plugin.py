@@ -66,7 +66,6 @@ class Plugin:
         dicts = []
         for dictname in self.dicts:
             obj = eval(f'self.{dictname}')
-            print(dictname)
             jsvars = [ f"{ k } : { jsvalue(v,k) }" for k,v in obj.items()]
             dicts.append( dictname + ' : {\n' + ",\n\t".join( jsvars ) + "}," )
         return '\n'.join(dicts)
@@ -108,7 +107,8 @@ class Plugin:
         dpg.show_item('file_dialog_id')
 
     def updateFilenameSetting( sender=None, value=None, user_data=None ):
-        from dearpygui import dearpygui as dpg
+        from dearpygui      import dearpygui as dpg
+        from classes.ramon  import Ramon
         dpg.hide_item('file_dialog_id')
         sender      = user_data
         varname     = user_data
@@ -126,9 +126,10 @@ class Plugin:
         plugin.settings[ varname ] = filename
         Plugin.writeConfig()
         plugin.run()
-        Plugin.compose()
+        Ramon.redraw()
         
     def updateSettings( sender=None, value=None, user_data=None ):
+        from classes.ramon  import Ramon
         from dearpygui import dearpygui as dpg
         varname     = user_data
         plugin_name = sender.replace('plugin-setting-','').split('-')[0]
@@ -136,9 +137,10 @@ class Plugin:
         plugin.settings[ varname ] = value.replace('|', '') if isinstance(value, str) else value
         Plugin.writeConfig()
         plugin.run()
-        Plugin.compose()
+        Ramon.redraw()
     
     def updateComboSettings( sender=None, value=None, user_data=None ):
+        from classes.ramon  import Ramon
         from dearpygui import dearpygui as dpg
         setname     = user_data.split('|')[0]
         varname     = user_data.split('|')[1]
@@ -148,7 +150,7 @@ class Plugin:
         plugin.settings[ varname ] = f'{setname}|{value}'
         Plugin.writeConfig()
         plugin.run()
-        Plugin.compose()
+        Ramon.redraw()
 
     def setRangedCombo(self, varname, min, max):
         from classes.config import ranges,combos
@@ -168,7 +170,8 @@ class Plugin:
         })
 
     def enable( sender=None, value=None, user_data=None ):
-        from dearpygui import dearpygui as dpg
+        from classes.ramon  import Ramon
+        from dearpygui      import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
         if not value in enabled:
             Plugin.loaded[value].settings['enabled'] = True
@@ -176,13 +179,14 @@ class Plugin:
             enabled.append( value )
             dpg.configure_item('enabled-plugins', items = enabled)
             # Re-generate overlay with enabled plugin
-            Plugin.compose()
+            Ramon.redraw()
             # Run Plugin
             Plugin.loaded[value].run()
     
     
     def disable( sender=None, value=None, user_data=None ):
-        from dearpygui import dearpygui as dpg
+        from classes.ramon  import Ramon
+        from dearpygui      import dearpygui as dpg
         enabled = dpg.get_item_configuration('enabled-plugins')['items']
         if value in enabled:
             Plugin.loaded[value].settings['enabled'] = False
@@ -190,7 +194,7 @@ class Plugin:
             enabled.remove( value )
             dpg.configure_item('enabled-plugins', items = enabled)
             # Re-generate overlay with enabled plugin
-            Plugin.compose()
+            Ramon.redraw()
             # Run Plugin
             Plugin.loaded[value].run()
 
@@ -461,8 +465,7 @@ class Plugin:
                 plugin.run()
             except Exception as E:
                 Log.error(f"Cannot run plugin {name}", E)    
-        Plugin.autoupdate()        
-    
+        
     def cssRule(self):
         return f'#{self.name}'+'{'+f"""
             left        : var(--{self.name}-left);
@@ -479,10 +482,11 @@ class Plugin:
 
     
     def updateOverlaySetting(sender, value, user_data):
+        from classes.ramon import Ramon
         Preferences.settings[sender] = value
         Log.verbose = Endpoints.debug = Plugin.debug = Preferences.settings['debug']
         Plugin.runLoaded()
-        Plugin.compose()
+        Ramon.redraw()
         Preferences.writecfg()
 
     def getNoWelcome():
