@@ -400,6 +400,7 @@ class Ramon:
         payload  = ''
         unlocked = ''
         Ramon.data.recent = []
+        print("RECENT", Ramon.data.recent)
         for d in Ramon.data.cheevos:
             if d.locked: 
                 payload += d.menu() + "\n"
@@ -409,7 +410,8 @@ class Ramon:
                 if len(Ramon.data.recent) < 5: 
                     Ramon.data.recent.append(d)
                 unlocked += '* '+ d.menu() + "\n"
-                
+        print("RECENT", Ramon.data.recent)
+        Plugin.autoupdate()
         dpg.set_value('stdout'  , payload)
         dpg.set_value('unlocked', unlocked)
         dpg.set_item_pos('unlocked', (31,(26*Cheevo.global_index)))

@@ -6,17 +6,26 @@
         <style>
             {% fullsized %}
             * { overflow: hidden; padding: 0px; margin: 0px; box-sizing: border-box;}
-            #{% name %}, #{% name %} img {
+            #{% name %} {
+                perspective: {% perspective %};
+            }
+            #{% name %} div {
+                transform: rotateY({% angle %});
+            }
+            #{% name %}, #{% name %} div {
                 width           : 100%;
                 height          : 100%;
                 image-rendering : pixelated;
-                background-image: var(--backdrop-color);
+                background-size : auto 100%;
+                background-repeat: no-repeat no-repeat;
+                background-position: 50% 50%;
+                background-image: url('./files/logos/{% game %}.png');
             }
         </style>
     </head>
     <body>
         <div id="{% name %}">
-            <img src="./files/logos/{% game %}.png">
+            <div></div>        
         </div>        
         
         <script>

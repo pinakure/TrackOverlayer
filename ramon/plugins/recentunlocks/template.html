@@ -163,7 +163,6 @@
                 getData: function(){
                     // Read from localStorage and clear localStorage after reading
                     if( localStorage.getItem('debug')=='1'){
-                        debugger
                         {% Name %}.list = [
                             [ "Cheevo with a very long name"                                        , "Not a Very long description"                                 , "../current_cheevo.png" ],
                             [ "Cheevo with an even longer name"                                     , "Just a tiny bit longer description"                          , "../current_cheevo.png" ],
@@ -193,7 +192,6 @@
                         ]
                         return;
                     }
-                    {% Name %}.list = null;
                     try {
                         {% Name %}.list = JSON.parse(localStorage.getItem('recent'));
                     } catch(e) {}

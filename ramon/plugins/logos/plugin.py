@@ -29,8 +29,8 @@ class plugin(Plugin):
     def composerVars(self):
         factor = (self.scale / 2)+1
         return {
-            'width'   : px( self.width ),
-            'height'  : px( self.height ),
+            'width'   : px( self.settings['size-x']),
+            'height'  : px( self.settings['size-y']),
             'left'    : px( self.settings['pos-x']),
             'top'     : px( self.settings['pos-y']),
             'scale'   : self.scale,

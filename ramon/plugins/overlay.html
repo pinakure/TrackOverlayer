@@ -319,8 +319,13 @@ Special thanks:
                         TO.dom.plugins[ plugin_name ] = document.getElementById(`${ plugin_name }`)                        
                     }
                     TO.settings.sound = true;
-                    document.getElementById('overlay').className = 'fadeout';
-                    setTimeout(function(){ document.getElementById('overlay').remove();}, 2000);
+                    try{
+                        document.getElementById('overlay').className = 'fadeout';
+                        setTimeout(function(){ document.getElementById('overlay').remove();}, 
+                        2000);
+                    }catch(e){
+
+                    }
                 },
 
                 log     : {
