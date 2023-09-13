@@ -15,61 +15,34 @@
         </style>
     </head>
     <body>
-    <!--id="{%-name-%}" 
-        This is the main container, it should have the same id as the name of the plugin, 
-        which is conveniently autotranslated by writing this {% name %} tag 
-    --> <div id="{% name %}">
+        <div id="{% name %}">
             <img src="./files/logos/{% game %}.png">
         </div>        
         
         <script>
-            // {%-plugin-%} Injects common globals (True, False, alternate, forwards, backwards...)
             {% plugin %}
 
-            // Main object should follow this nomenclacy for clarity sake
-            // {%-Name-%} translates as the name of the plugin with first letter uppercased            
             var {% Name %} = {
                 
-                // Fill this object with direct pointers to each manageable node
                 dom : {
 
-                    // {%-name-%} translates to the name of the plugin all lowercased
-                    // {%-name-%} should match the id of the main plugin container, so for convenience we use 
-                    // the same tag for the plugin. 
-                    // This practice, altough being hard to make up to, allows to mangle the frontend elements
-                    // and have multiple instances of the same plugin running inside the same environment.
                     {% name %}      : document.getElementById('{% name %}'),
                     parent          : document.getElementById('output'),
                 },
 
                 
-                // {%-framework-%} Injects common plugin methods ( loadSettings, updateCSS, messageHandler, common attributes )
                 {% framework %}
                 
        
                 update : function(){
-                    // Read localstorage and do actions, this is called 
-                    // periodically, most specific when 'update-data' js-event
-                    // is sent from the parent. 
                 },
                 
                 start : function(){
-                    // Do initializations here, there is some work done 
-                    // in the hoods which may be automatically injected 
-                    // from the backend at some point, if feasible
-                    
-                    // Declare and load initial plugin settings (same as autoinjected css vars, but in js)
                     {% Name %}.loadSettings();
-
-                    // Register messageHandler (crucial for autoupdate)
                     {% Name %}.messageHandler();
-                    
-                    // If plugin needs it, make a first call to update
-                    // before entering sleep mode
                     {% Name %}.update();       
                 }
             }
-            // Dont forget to start the plugin after defining its class!
             {% Name %}.start()
         </script>
     </body>
