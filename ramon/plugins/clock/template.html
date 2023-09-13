@@ -30,8 +30,8 @@
             var {% Name %} = {
                 // TODO: more clock modes, including 'set a variable to catch by another plugin
                 //       when a set alarm is reach', for example
-                mode            : 'clock',
-                alarm           : '12:00:00',
+                mode            : '{% clock-type %}',
+                alarm           : Date('01/01/01 {% clock-alarm %}'),
                 
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
@@ -39,13 +39,31 @@
 
                 {% framework %}
                 
+                update_clock    : function( date ){
+                    return `${date}`.split('GMT')[0].split(' ')[4];
+                },
+                
+                update_alarm    : function( date ){
+                    {% Name %}.alarm = Date(`01/01/01 ${{% Name %}.settings["clock-alarm"] }`);
+                    return `${date}`.split('GMT')[0].split(' ')[4];
+                },
+                
+                update_countdown: function( date ){
+                    now = `01/01/01 `+`${date}`.split('GMT')[0].split(' ')[4];
+                    {% Name %}.alarm = Date(`01/01/01 ${{% Name %}.settings["clock-alarm"] }`);
+                    diff = {% Name %}.alarm - now;
+                    return `${diff}`.split('GMT')[0].split(' ')[4];
+                },
+
                 update          : function(){
                     var date = new Date;
-                    {% Name %}.dom.{% name %}.innerHTML = `${date}`.split('GMT')[0].split(' ')[4];                    
+                    mode = {% Name %}.mode.split('.')[2];
+                    {% Name %}.dom.{% name %}.innerHTML = eval(`{% Name %}Mode.${mode}.second_callback(date)`)
                     if( {% Name %}.standalone ) { setTimeout({% Name %}.update, 1000);}
                 },
 
-                start : function(){
+                start : function( clock_mode ){
+                    {% Name %}.mode = clock_mode;
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 1 };
                     //{% Name %}.messageHandler();
@@ -70,7 +88,18 @@
                     
                 },
             };
-            {% Name %}.start();
+            var {% Name %}Mode = {
+                'clock' : {
+                    second_callback : {% Name %}.update_clock,
+                },
+                'timer' : {
+                    second_callback : {% Name %}.update_alarm,
+                },
+                'countdown' : {
+                    second_callback : {% Name %}.update_countdown,
+                },
+            };
+            {% Name %}.start('{% clock-type %}');
         </script>
     </body>
 </html>

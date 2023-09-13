@@ -1,98 +1,17 @@
 from classes.preferences    import Preferences
 from classes.tools          import parseBool, parseColor, parseFloat, parseInt
 from classes.tools          import isBool   , isColor   , isFloat   , isInt
+from classes.tools          import px, pc, cvar, sane, jsvalue
+from classes.endpoints      import Endpoints
 from classes.log            import Log
 import importlib, json, os
 
-
-
-
-def px(value):
-    return f'{value}px'
-
-def pc(value):
-    return f'{value}%'
-
-def cvar(name, value):
-    return f'--{name}:{value},'+"\n"
-
-def sane( insane ):
-    return insane.replace("'", "`").replace(r'\`', '`')
-
-class Endpoints:
-
-    debug = False
-    
-    def notifications():
-        from classes.ramon import Ramon
-        return sane(json.dumps(Ramon.data.notifications))
-    
-    
-    def current_cheevo():
-        from classes.ramon import Ramon
-        from classes.plugin import Plugin        
-        return sane(json.dumps( Ramon.data.cheevo if not Plugin.debug else "Test cheevo\nTest description"))
-    
-    def username():
-        return Preferences.settings['username'] 
-    
-    
-    def twitch_username():
-        return Preferences.settings['twitch-username']
-    
-    
-    def recent():
-        from classes.ramon import Ramon
-        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Ramon.data.recent] ))
-    
-    
-    def progress():
-        from classes.ramon import Ramon
-        from classes.plugin import Plugin
-        if Plugin.debug: 
-            import random
-            Ramon.data.progress = f'{str(int(random.random()*100))}%'
-        return Ramon.data.progress 
-    
-    def last_progress():
-        from classes.ramon import Ramon
-        lp = Ramon.data.last_progress if Ramon.data.last_progress != '' else Ramon.data.progress
-        Ramon.data.last_progress = Ramon.data.progress
-        return lp
-    
-    
-    def nop():
-        return ''
-
-    def getAll():
-        return {
-            'notifications'     : Endpoints.notifications(),
-            'username'          : Endpoints.username(),
-            'twitch-username'   : Endpoints.twitch_username(),
-            'current-cheevo'    : Endpoints.current_cheevo().replace("'", "`"),
-            'progress'          : Endpoints.progress(),
-            #'last-progress'     : Endpoints.last_progress(),
-            'recent'            : Endpoints.recent(),
-            'superchat'         : Endpoints.nop(),
-        }
-
-    byName = {
-        'notifications'     : notifications,
-        'username'          : username,
-        'twitch-username'   : twitch_username,
-        'current-cheevo'    : current_cheevo,
-        'progress'          : progress,
-        #'last-progress'     : last_progress,
-        'recent'            : recent,
-        'superchat'         : nop,
-    }
-
 class Plugin:
 
-    loaded = {}
-    width  = 1440
-    debug  = False
-    rate   = 5
+    loaded  = {}
+    width   = 1440
+    debug   = False
+    rate    = 5
     
     def __init__(self, name):
         import random
@@ -110,6 +29,8 @@ class Plugin:
         self.files          = []
         self.color          = f'rgb( { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))}, { int(127 + (random.random()*128))})' # Debugging purposes
         self.defaults       = {}
+        self.dicts          = ''
+        self.strings        = []
         self.settings       = {
             'enabled' : False,
         }
@@ -127,6 +48,29 @@ class Plugin:
         self.setHelp        ('auto-hide' , "Automatically hide plugin when no game or cheevo is selected")
 
     
+    def setup(self, settings):
+        self.settings.update(settings)
+        self.introspect()
+
+    def introspect(self):
+        # Search for special values in settings and take note of them:
+        
+        # combo dictionaries
+        self.dicts = []
+        for k,v in self.settings.items():
+            if not isinstance(v, str): continue
+            if v.find('|') > 0:
+                self.dicts.append(v.split('|')[0])
+
+    def dumpDicts(self):
+        dicts = []
+        for dictname in self.dicts:
+            obj = eval(f'self.{dictname}')
+            print(dictname)
+            jsvars = [ f"{ k } : { jsvalue(v,k) }" for k,v in obj.items()]
+            dicts.append( dictname + ' : {\n' + ",\n\t".join( jsvars ) + "}," )
+        return '\n'.join(dicts)
+
     def templateVars(self):
         return {
 
@@ -143,8 +87,9 @@ class Plugin:
             target = f'plugin-setting-{plugin}-{key}'
             print(target,'=',value)
             dpg.set_value(target, value)
+            self.settings[key] = value
+        Plugin.writeConfig()
 
-    
     def updateColor( sender=None, value=None, user_data=None ):
         varname =user_data
         plugin_name = sender.replace('plugin-setting-', '').split('-')[0]
@@ -156,7 +101,6 @@ class Plugin:
         plugin.settings[ varname ] = value
         Plugin.writeConfig()        
         plugin.run()
-
     
     def selectFilename( sender=None, value=None, user_data=None ):
         from dearpygui import dearpygui as dpg
@@ -364,7 +308,7 @@ class Plugin:
                         }
                     });
                 },
-                """
+                """+self.dumpDicts()
 
     def getLoadSettingsMethod(self):
         #sort variables longer first
@@ -432,6 +376,11 @@ class Plugin:
             value = self.settings[key]
             if   key.endswith('-color'  ) : value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
             elif key.endswith('-type'   ) : value = f'`{value}`'
+            elif key in self.strings      : value = f'`{value}`'
+            if isinstance(value, str):
+                # Combo value, definition should exist in target client class with same name (autogenerated)
+                if value.find('|')>0:
+                    value = f"{self.name.capitalize()}.{(value.replace('|', '.').replace('`', ''))}"
             self.rendered = self.rendered.replace('{% '+key+' %}', str(value))
 
     def render( self, payload='' ):

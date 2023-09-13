@@ -1,7 +1,6 @@
 import json
 
 def elegant( filthy ):
-    # TODO: move to tools
     return filthy.replace('_', ' ').replace('-', ' ').capitalize()
 
 class Color:
@@ -55,6 +54,18 @@ def readfile(filename):
     except:
         return ""
 
+def px(value):
+    return f'{value}px'
+
+def pc(value):
+    return f'{value}%'
+
+def cvar(name, value):
+    return f'--{name}:{value},'+"\n"
+
+def sane( insane ):
+    return insane.replace("'", "`").replace(r'\`', '`')
+
 def ascii(string):
     table = {
         'ū' : 'u',
@@ -67,3 +78,14 @@ def ascii(string):
     for key, value in table.items():
         string = string.replace(key, value)
     return str(string)
+
+def jsvalue(value, name=''):
+    if isinstance( value, bool ): return 'true' if value else 'false'
+    if isinstance( value, float): return value
+    if isinstance( value, int  ): return value
+    if isinstance( value, list ): return f'rgba({value[0],value[1],value[2],value[3]})' if 'color' in name else json.dumps(value)
+    if isinstance( value, str  ): return f'"{value}"'
+    return 'non-interpretable-property'
+        
+    
+    

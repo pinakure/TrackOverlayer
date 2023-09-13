@@ -15,7 +15,7 @@ class plugin(Plugin):
         self.scale       = 1
         
         #@ Settings
-        self.settings.update({
+        self.setup({
             'pos-x'                     : 0,
             'size-x'                    : self.width,
             'pos-y'                     : 0,

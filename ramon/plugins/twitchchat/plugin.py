@@ -21,7 +21,7 @@ class plugin(Plugin):
         self.setRangedCombo('message-count', 1, 25)
         self.setRangedCombo('message-time' , 1, 25)
 
-        self.settings.update({
+        self.setup({
             "pos-x"                     : self.x,
             "size-x"                    : self.width,
             "pos-y"                     : self.y,

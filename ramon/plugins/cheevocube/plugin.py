@@ -24,7 +24,7 @@ class plugin(Plugin):
         self.y           = 0
 
         #@ Settings
-        self.settings.update({
+        self.setup({
             "pos-x"                     : self.x,
             "size-x"                    : self.width,
             "pos-y"                     : self.y,

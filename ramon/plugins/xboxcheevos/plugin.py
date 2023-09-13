@@ -22,7 +22,7 @@ class plugin(Plugin):
         self.picture_size= 80
         
         #@ Settings
-        self.settings.update({
+        self.setup({
             'pos-x'                     : 0,
             'pos-y'                     : 0,
             "angle"                     : 0,

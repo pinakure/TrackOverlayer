@@ -22,7 +22,7 @@ class plugin(Plugin):
         self.setRangedCombo('text-speed'    ,  1, 20)
 
         #@ Settings
-        self.settings.update({
+        self.setup({
             "pos-x"                 : self.x,
             "size-x"                : self.width,
             "pos-y"                 : self.y,

@@ -18,7 +18,7 @@ class plugin(Plugin):
         
         
         #@ Settings
-        self.settings.update({
+        self.setup({
             'pos-x'                     : self.x,
             'size-x'                    : self.width,
             'pos-y'                     : self.y,

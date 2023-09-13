@@ -1,11 +1,8 @@
 #from classes.collections    import Collections
 from dearpygui              import dearpygui as D
+from classes.tools          import elegant
 
-# not-proud-of-this-class 
-
-def elegant( filthy ):
-    # TODO: move to tools
-    return filthy.replace('_', ' ').replace('-', ' ').capitalize()
+#HACK:not-proud-of-this-class 
 
 class Attribute:
     groupname   = ''

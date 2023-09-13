@@ -8,6 +8,12 @@ from classes.plugin import Plugin, px
 
 class plugin(Plugin):
 
+    modes = {
+        'clock'     : "Clock",
+        'countdown' : "Countdown",
+        'timer'     : "Timer",
+    }
+
     def __init__(self):
         Plugin.__init__(self, 'clock')
         #@ Plugin Settings
@@ -21,13 +27,21 @@ class plugin(Plugin):
         self.scale       = 2
         self.x           = 50
         self.y           = 600
+        
+        self.interactive = True
+
+        self.strings.append('clock-alarm') #force clock-alarm setting to be translated as string
 
         #@ Settings
-        self.settings.update({
+        self.setup({
             "pos-x"                 : self.x,
             "size-x"                : self.width,
             "pos-y"                 : self.y,
             "size-y"                : self.height,
+            
+            "clock-countdown"       : 60,
+            "clock-type"            : 'modes|clock',
+            "clock-alarm"           : '12:00:00',
 
             "analogic"              : False,
 
@@ -45,6 +59,7 @@ class plugin(Plugin):
             "digits-shadow-pos-y"   : 0,
             "digits-border-color"   : [0,0,0,0],
             "digits-border-width"   : 0,
+
         })
 
     def composerVars(self):

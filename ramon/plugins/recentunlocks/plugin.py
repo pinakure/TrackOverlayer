@@ -23,7 +23,7 @@ class plugin(Plugin):
         self.setHelp('row-count'     , "Number of rows of recent cheevos to be displayed")
         
         #@ Settings
-        self.settings.update({
+        self.setup({
             "pos-x"                     : self.x,
             "size-x"                    : self.width,
             "pos-y"                     : self.y,

@@ -77,8 +77,8 @@ class Log:
 
     
     def error(text, exception=None):
-        if not Log.stdout:
-            dpg.show_item('log_window')
+        # if not Log.stdout:
+        #     dpg.show_item('log_window')
         Log.print("\t"+('-'*80)+"\n")
         Log.print("\t"+f'ERROR: {text}'+(('\n\t'+str(exception)) if exception else '')+"\n")
         if Log.verbose: 

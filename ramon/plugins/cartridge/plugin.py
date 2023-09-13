@@ -56,20 +56,18 @@ class plugin(Plugin):
         self.setHelp('auto-update'      , "Try to guess which game is currently active")
         
         #@ Settings
-        self.settings.update(
-            {
-                'pos-x'                     : 110,
-                'size-x'                    : 300,
-                'pos-y'                     : 570,
-                'size-y'                    : 240,
-                'rotation-speed'            : 1.5,
-                'zoom'                      : self.zoom,
-                'cartridge-type'            : 'platforms|neogeo',
-                'cartridge-game'            : 'mslugx',
-                'auto-hide'                 : False,
-                'auto-update'               : False,
-            }
-        )
+        self.setup({
+            'pos-x'                     : 110,
+            'size-x'                    : 300,
+            'pos-y'                     : 570,
+            'size-y'                    : 240,
+            'rotation-speed'            : 1.5,
+            'zoom'                      : self.zoom,
+            'cartridge-type'            : 'platforms|neogeo',
+            'cartridge-game'            : 'mslugx',
+            'auto-hide'                 : False,
+            'auto-update'               : False,
+        })
 
     def composerVars(self):
         return {
