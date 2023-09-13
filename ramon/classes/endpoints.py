@@ -11,24 +11,16 @@ class Endpoints:
         from classes.ramon import Ramon
         return sane(json.dumps(Ramon.data.getNotifications()))
     
+    def username():
+        return Preferences.settings['username'] 
     
+    def twitch_username():
+        return Preferences.settings['twitch-username']
+        
     def current_cheevo():
         from classes.ramon import Ramon
         from classes.plugin import Plugin        
         return sane(json.dumps( Ramon.data.cheevo if not Plugin.debug else "Test cheevo\nTest description"))
-    
-    def username():
-        return Preferences.settings['username'] 
-    
-    
-    def twitch_username():
-        return Preferences.settings['twitch-username']
-    
-    
-    def recent():
-        from classes.ramon import Ramon
-        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Ramon.data.recent] ))
-    
     
     def progress():
         from classes.ramon import Ramon
@@ -38,12 +30,24 @@ class Endpoints:
             Ramon.data.progress = f'{str(int(random.random()*100))}%'
         return Ramon.data.progress 
     
-    def last_progress():
+    def game():
         from classes.ramon import Ramon
-        lp = Ramon.data.last_progress if Ramon.data.last_progress != '' else Ramon.data.progress
-        Ramon.data.last_progress = Ramon.data.progress
-        return lp
+        return sane(json.dumps({ 
+            'name'      : Ramon.data.game.name,
+            'id'        : Ramon.data.game.id,
+            'picture'   : Ramon.data.game.picture,
+        }))
     
+    def score():
+        from classes.ramon import Ramon
+        return sane(json.dumps({ 
+            'site_rank' : Ramon.data.site_rank,
+            'score'     : Ramon.data.score,            
+        }))
+    
+    def recent():
+        from classes.ramon import Ramon
+        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Ramon.data.recent] ))
     
     def nop():
         return ''
@@ -55,7 +59,8 @@ class Endpoints:
             'twitch-username'   : Endpoints.twitch_username(),
             'current-cheevo'    : Endpoints.current_cheevo().replace("'", "`"),
             'progress'          : Endpoints.progress(),
-            #'last-progress'     : Endpoints.last_progress(),
+            'game'              : Endpoints.game(),
+            'score'             : Endpoints.score(),
             'recent'            : Endpoints.recent(),
             'superchat'         : Endpoints.nop(),
         }
@@ -66,7 +71,8 @@ class Endpoints:
         'twitch-username'   : twitch_username,
         'current-cheevo'    : current_cheevo,
         'progress'          : progress,
-        #'last-progress'     : last_progress,
+        'game'              : game,
+        'score'             : score,
         'recent'            : recent,
         'superchat'         : nop,
     }

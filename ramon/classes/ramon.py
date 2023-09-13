@@ -427,6 +427,7 @@ class Ramon:
         dpg.set_value('unlocked', '')
     
     def refresh(sender=None, user_data=None, args=None):
+        Ramon.requesting = True
         Ramon.timer = None
         Cheevo.global_index = 0
         
@@ -443,9 +444,12 @@ class Ramon:
             Ramon.data.write()
             Plugin.runLoaded()
             dpg.set_viewport_title('tRAckOverlayer - '+("Offline Mode" if Preferences.settings["offline"] else "Ready"))
-            return True
         else:
             dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')        
+            Ramon.requesting = False
+            return False
+        Ramon.requesting = False
+        return True
     
 import json
 
@@ -459,9 +463,14 @@ class Server:
     async def handleRequest(websocket):
         from classes.endpoints import Endpoints
         async for message in websocket:
+            if Server.ramon.requesting: return
             print(f"WS : {message}")
-            if   message=='get-data'                    : await websocket.send( encodeResponse('data'           ,  Endpoints.getAll())  )
-            elif message.startswith('get-notifications'): await websocket.send( encodeResponse('notifications'  ,  Server.ramon.data.getNotifications())  )
+            if   message=='get-data'                    : await websocket.send( encodeResponse('data'           ,  Endpoints.getAll()                   ))
+            elif message.startswith('get-game')         : await websocket.send( encodeResponse('game'           ,  Endpoints.game()                     ))
+            elif message.startswith('get-score')        : await websocket.send( encodeResponse('score'          ,  Endpoints.score()                    ))
+            elif message.startswith('get-recent')       : await websocket.send( encodeResponse('recent'         ,  Endpoints.recent()                   ))
+            elif message.startswith('get-notifications'): await websocket.send( encodeResponse('notifications'  ,  Server.ramon.data.getNotifications() ))
+            elif message.startswith('get-progress')     : await websocket.send( encodeResponse('progress'       ,  Endpoints.progress()                 ))
             elif message.startswith('mark-notification'): Server.ramon.data.markNotification(message.split('|')[1])
             else:await websocket.send(encodeResponse('error', f'Unknown endpoint "{message}"'))
 

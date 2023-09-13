@@ -128,7 +128,8 @@ class Scraper:
             self.session = requests.Session()
             self.session.headers.update({
                 'Host'                      : self.host,
-                'User-Agent'                : 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31',
+                # 'User-Agent'                : 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31',
+                'User-Agent'                : f'tRAckOverlayer/{self.login_username}',
                 'Accept'                    : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                 'Accept-Language'           : 'ES,es;q=0.9,en;q=0.8,fr;q=0.7,gl;q=0.6',
                 'Accept-Encoding'           : 'gzip, deflate',

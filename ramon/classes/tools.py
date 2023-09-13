@@ -87,5 +87,5 @@ def jsvalue(value, name=''):
     if isinstance( value, str  ): return f'"{value}"'
     return 'non-interpretable-property'
         
-    
-    
+def tag( name ):
+    return '{% '+name+' %}'
