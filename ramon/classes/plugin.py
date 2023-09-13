@@ -604,7 +604,7 @@ class Plugin:
         try:
             with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
                 file.write( payload )
-            Ramon.data.notifications = []
+            #Ramon.data.notifications = []
         except Exception as E:
             Log.error("PLUGIN : Cannot write Autoupdate data script file", E)
         return payload

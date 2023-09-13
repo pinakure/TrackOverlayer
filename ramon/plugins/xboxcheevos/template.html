@@ -133,7 +133,7 @@
             {% plugin %}
 
             var {% Name %} = {
-                
+                socket          : undefined,
                 notified        : {},
                 timeout         : 5,
                 queue           : [],
@@ -148,8 +148,6 @@
                 {% framework %}
                 
                 update : function(){
-                    {% Name %}.feed();
-                    console.log("XBOX Update", {% Name %}.queue)
                     if( {% Name %}.queue.length > 0){
                         if(!{% Name %}.notification){
                             {% Name %}.notification = {% Name %}.queue[0];
@@ -158,23 +156,17 @@
                                 {% Name %}.notification.show();
                             {% Name %}.notified[ {% Name %}.notification.name ] =true
                         }
-                    }                    
+                    } 
                 },
 
                 enqueue     : function( name, description, picture ){
+                    
                     {% Name %}.queue[{% Name %}.queue.length] = new Notification( 
                         name, description, picture
                     )
                 },
 
-                feed : function(){
-                    var notifications = [];
-                    try {
-                        notifications = JSON.parse(localStorage.getItem('notifications'))
-                        localStorage.setItem('notifications', '[]')
-                    }catch(e){
-                        console.warn("notifications : failed to parse as json");
-                    }
+                feed : function( notifications ){
                     for( notification_index in notifications ){
                         notification = notifications[notification_index]
                         {% Name %}.enqueue( 
@@ -184,11 +176,26 @@
                         );                    
                     }
                 },
+
+                connect : function(){
+                    const socket = new WebSocket("ws://localhost:8765");
+                    socket.addEventListener("open", (event) => {
+                        socket.send("get-notifications");
+                    });
+                    socket.addEventListener("message", (event) => {
+                        payload = JSON.parse(event.data);
+                        if(payload.response=='notifications'){
+                            console.log("WS (XBOX) : Got new notification data : ", payload.data)
+                            {% Name %}.feed( payload.data );
+                        }
+                    });
+                },
                 
                 start : function(){
                     {% Name %}.loadSettings();
                     {% Name %}.messageHandler();
                     {% Name %}.sound = new Audio('{% sound-file %}');
+                    {% Name %}.connect();
                     {% Name %}.update();
                 }
             }

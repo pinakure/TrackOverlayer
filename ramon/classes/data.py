@@ -77,11 +77,10 @@ class Data(Scraper):
             self.setActiveCheevo(cheevo.index)
             self.cheevo = cheevo.name + "\n" + cheevo.description
             self.writeCheevo()
-        if last:
-            Log.info("Ready")
         if redraw or last:
             if last: 
                 Plugin.compose()
+                Log.info("Ready")
             self.parent.redraw()
 
     def parseCheevos(self, game):

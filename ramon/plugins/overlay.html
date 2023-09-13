@@ -326,6 +326,30 @@ Special thanks:
                     }catch(e){
 
                     }
+
+                    TO.connect();
+                },
+                  
+                connect : function(){
+                    TO.socket = new WebSocket("ws://localhost:8765");
+                    TO.socket.addEventListener("open", (event) => {
+                        TO.socket.send("get-data");
+                    });
+                    TO.socket.addEventListener("message", (event) => {
+                        try {
+                            payload  = JSON.parse( event.data );                            
+                            response = payload.response
+                            data     = payload.data
+                            if(response=='error'){
+                                console.error("WS (OVERLAY) : ", data);
+                            } else {
+                                console.log("WS (OVERLAY) : ", response);
+                                console.log("WS (OVERLAY) : ", data);
+                            }
+                        } catch(e){
+                            console.error("WS (OVERLAY) : ", e);
+                        }
+                    });
                 },
 
                 log     : {
