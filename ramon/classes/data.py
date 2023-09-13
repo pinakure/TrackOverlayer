@@ -347,6 +347,11 @@ class Data(Scraper):
                 ''')                
             file.write('''</tbody><table>''')
 
+    def markNotification(self, notification_name):
+        from classes.cheevo import Cheevo
+        cheevo = Cheevo.get(Cheevo.name==notification_name)
+        cheevo.notified = True
+        cheevo.save()
     
     def getNotifications(self):
         notifications = []
@@ -358,7 +363,7 @@ class Data(Scraper):
             )
         for cheevo in cheevos:
             notifications.append( [ cheevo.name, cheevo.description, cheevo.picture.rstrip('.png').rstrip('_lock') ] )
-            cheevo.notified = True
+            #cheevo.notified = True
             try:
                 cheevo.save()
             except:

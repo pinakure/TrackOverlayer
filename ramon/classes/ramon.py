@@ -459,12 +459,11 @@ class Server:
     async def handleRequest(websocket):
         from classes.endpoints import Endpoints
         async for message in websocket:
-            print(f"WS : {message})")
-            if   message=='get-data'         : await websocket.send( encodeResponse('data'           ,  Endpoints.getAll())  )
+            print(f"WS : {message}")
+            if   message=='get-data'                    : await websocket.send( encodeResponse('data'           ,  Endpoints.getAll())  )
             elif message.startswith('get-notifications'): await websocket.send( encodeResponse('notifications'  ,  Server.ramon.data.getNotifications())  )
-            elif message.startswith('mark-notification'): Server.ramon.markNotification(message)
-            else: 
-                await websocket.send(encodeResponse('error', f'Unknown endpoint "{message}"'))
+            elif message.startswith('mark-notification'): Server.ramon.data.markNotification(message.split('|')[1])
+            else:await websocket.send(encodeResponse('error', f'Unknown endpoint "{message}"'))
 
     def thread(main_class):
         asyncio.run(Server.main(main_class))

@@ -118,12 +118,13 @@
                 self = this;
                 {% Name %}.sound.play();
                 self.target.className = 'notification notification-show';
+                {% Name %}.mark(self.name);
                 setTimeout( function(){ self.hide(); }, {% Name %}.timeout * 1000 );
             }
 
             Notification.prototype.hide = function(){   
                 self.target.className = 'notification notification-hide';
-                setTimeout( function(){ self.target.remove(); {% Name %}.notification=null;}, 1000 );
+                setTimeout( function(){ self.target.remove(); {% Name %}.notification=null; {% Name %}.update(); }, 1000 );
             }
         </script>
     </head>
@@ -152,11 +153,19 @@
                         if(!{% Name %}.notification){
                             {% Name %}.notification = {% Name %}.queue[0];
                             {% Name %}.queue.splice(0,1);
-                            if(!{% Name %}.notified[ {% Name %}.notification.name ])
+                            if({% Name %}.notified[ {% Name %}.notification.name ]){
+                                // Discard already notified 
+                                {% Name %}.mark({% Name %}.notification.name);
+                                {% Name %}.notification = null
+                            } else {
+                                // Show new notification
                                 {% Name %}.notification.show();
-                            {% Name %}.notified[ {% Name %}.notification.name ] =true
+                                {% Name %}.notified[ {% Name %}.notification.name ] =true
+                            }
                         }
-                    } 
+                    } else setTimeout( function(){
+                        {% Name %}.socket.send('get-notifications');                        
+                    }, 5000);
                 },
 
                 enqueue     : function( name, description, picture ){
@@ -179,6 +188,7 @@
 
                 connect : function(){
                     const socket = new WebSocket("ws://localhost:8765");
+                    {% Name %}.socket = socket;
                     socket.addEventListener("open", (event) => {
                         socket.send("get-notifications");
                     });
@@ -186,9 +196,13 @@
                         payload = JSON.parse(event.data);
                         if(payload.response=='notifications'){
                             console.log("WS (XBOX) : Got new notification data : ", payload.data)
-                            {% Name %}.feed( payload.data );
+                            {% Name %}.feed( payload.data );                            
                         }
                     });
+                },
+
+                mark : function( notification_name ){
+                    {% Name %}.socket.send(`mark-notification|${ notification_name }`);
                 },
                 
                 start : function(){
@@ -196,7 +210,6 @@
                     {% Name %}.messageHandler();
                     {% Name %}.sound = new Audio('{% sound-file %}');
                     {% Name %}.connect();
-                    {% Name %}.update();
                 }
             }
             {% Name %}.start()
