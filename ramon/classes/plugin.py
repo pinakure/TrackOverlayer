@@ -342,6 +342,7 @@ class Plugin:
         return 'plugins: {'+",".join([f"{x}:undefined" for x in Plugin.loaded.keys() if Plugin.loaded[x].settings['enabled']])+"},"
 
     def injectScripts(self):
+        from classes.ramon import Ramon
         from classes.fonts import fonts
         from dearpygui import dearpygui as dpg
                 
@@ -349,6 +350,7 @@ class Plugin:
             for key,value in {
                 'Name'              : self.name.capitalize(),
                 'name'              : self.name,
+                'game'              : Ramon.data.game.id,
                 'fullsized'         : "html { width : 100%; height : 100%; } body { width : 100%; height : 100%; top: 0px; left: 0px; } html { position: absolute; } body { position: absolute; }",
                 'framework'         : self.getFrameworkMethods(),
                 'plugin'            : "const False = false; const True = true; alternate='alternate'; forwards='forwards'; backwards='backwards';",
