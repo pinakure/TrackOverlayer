@@ -487,9 +487,8 @@ class Plugin:
             { ('border: 2px dashed '+self.color+';') if Plugin.debug else ''} 
         """+'}\n\t\t\t'
 
-    def iframe(self):
+    def __iframe__(self):
         return f'<iframe style="{"pointer-events: none;" if not self.interactive else ""} overflow: hidden;" id="{self.name}" autoplay="true" src="./{self.name}.html"></iframe>'+"\n\t\t"
-
     
     def updateOverlaySetting(sender, value, user_data):
         from classes.ramon import Ramon
@@ -519,7 +518,7 @@ class Plugin:
         for name, plugin in Plugin.loaded.items():
             if plugin.settings['enabled']:
                 cvars += plugin.getCVars()
-                html  += plugin.iframe()
+                html  += plugin.__iframe__()
                 css   += plugin.cssRule()
         # Get template
         try:
