@@ -3,13 +3,17 @@ from classes.tools          import sane
 import json
 
 
+def response( raw ):
+    return sane(json.dumps(raw))
+
+
 class Endpoints:
 
     debug = False
     
     def notifications():
         from classes.ramon import Ramon
-        return sane(json.dumps(Ramon.data.getNotifications()))
+        return response(Ramon.data.getNotifications())
     
     def username():
         return Preferences.settings['username'] 
@@ -20,7 +24,7 @@ class Endpoints:
     def current_cheevo():
         from classes.ramon import Ramon
         from classes.plugin import Plugin        
-        return sane(json.dumps( Ramon.data.cheevo if not Plugin.debug else "Test cheevo\nTest description"))
+        return response( Ramon.data.cheevo if not Plugin.debug else "Test cheevo\nTest description")
     
     def progress():
         from classes.ramon import Ramon
@@ -32,23 +36,45 @@ class Endpoints:
     
     def game():
         from classes.ramon import Ramon
-        return sane(json.dumps({ 
+        return response({ 
             'name'      : Ramon.data.game.name,
             'id'        : Ramon.data.game.id,
             'picture'   : Ramon.data.game.picture,
-        }))
+        })
     
     def score():
         from classes.ramon import Ramon
-        return sane(json.dumps({ 
+        return response({ 
             'site_rank' : Ramon.data.site_rank,
             'score'     : Ramon.data.score,            
-        }))
+        })
     
     def recent():
         from classes.ramon import Ramon
-        return sane(json.dumps([ [ r.name, r.description, r.picture] for r in Ramon.data.recent] ))
+        return response([ 
+            [ r.name, r.description, r.picture] for r in Ramon.data.recent
+        ])
     
+    def plugins():
+        from classes.plugin import Plugin
+        import inspect
+        payload = {}
+        for name,plugin in Plugin.loaded.items():
+            settings = {}
+            for key, value in inspect.getmembers(plugin):
+                if key.startswith('_'): continue
+                if isinstance(value, str) or isinstance(value, float) or isinstance(value, int) or isinstance(value, list):
+                    settings.update({
+                        key : value,
+                    })
+            payload.update({
+                name        : { 
+                    'name'      : name, 
+                    'settings'  : json.dumps(settings),
+                }
+            })
+        return json.dumps( payload )
+
     def nop():
         return ''
 
@@ -62,6 +88,7 @@ class Endpoints:
             'game'              : Endpoints.game(),
             'score'             : Endpoints.score(),
             'recent'            : Endpoints.recent(),
+            'plugins'           : Endpoints.plugins(),
             'superchat'         : Endpoints.nop(),
         }
 
@@ -74,6 +101,7 @@ class Endpoints:
         'game'              : game,
         'score'             : score,
         'recent'            : recent,
+        'plugins'           : plugins,
         'superchat'         : nop,
     }
 

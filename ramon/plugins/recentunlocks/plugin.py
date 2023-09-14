@@ -1,4 +1,5 @@
-from classes.plugin import Plugin, px
+from classes.plugin import Plugin
+from classes.tools  import px
 from classes.config import ranges, combos
 
 class plugin(Plugin):

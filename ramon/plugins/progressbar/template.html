@@ -4,10 +4,11 @@
         <link rel="stylesheet" type="text/css" href="./css/{% name %}.css"/>
         <style>
             {% fonts %}
-
+            {% non-interactive %}
             * {
                 padding     : 0px 0px 0px 0px;
                 margin      : 0px 0px 0px 0px;
+                overflow    : hidden;
             }
 
             span, img, div {
@@ -152,5 +153,6 @@
             };
             {% Name %}.start();            
         </script>
+        {% monitor %}
     </body>
 </html>

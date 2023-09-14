@@ -1,4 +1,4 @@
-import json
+import json, os
 
 def elegant( filthy ):
     return filthy.replace('_', ' ').replace('-', ' ').capitalize()
@@ -89,3 +89,15 @@ def jsvalue(value, name=''):
         
 def tag( name ):
     return '{% '+name+' %}'
+
+def templatetag( name ):
+    return '{%_'+name+'_%}'
+
+def mkdir(dirname):
+    from classes.preferences import Preferences
+    if not os.path.exists(f'{Preferences.root}/{dirname}'):
+        #Log.info(f"PLUGIN : Created directory '{dirname}'")
+        os.mkdir(f'{Preferences.root}/{dirname}')
+    else:
+        #Log.info(f"PLUGIN : Using directory '{dirname}'")
+        pass

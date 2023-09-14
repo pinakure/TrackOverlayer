@@ -91,7 +91,6 @@ class Data(Scraper):
             self.enqueueCheevoPayload( c )        
         Log.info(f'SCRAPER : Enqueued {len(self.parent.queue)} cheevos.')
         return []
-        
     
     def getRank( self, usersummary ):
         try:
@@ -99,7 +98,6 @@ class Data(Scraper):
             self.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
         except Exception as E:
             Log.error("Cannot extract User Rank", E)
-            
     
     def getDate( self, usersummary ):
         try:
@@ -108,7 +106,6 @@ class Data(Scraper):
             self.last_activity  = (datetime.strptime(self.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
         except Exception as E:
             Log.error("Cannot extract User Timestamp", E)
-        
     
     def getScore( self, usersummary ):
         try:
@@ -116,7 +113,6 @@ class Data(Scraper):
             self.score = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
         except Exception as E:
             Log.error("Cannot extract User Score", E)
-
     
     def getGame( self, usersummary_raw ):
         try:
@@ -142,7 +138,6 @@ class Data(Scraper):
             Preferences.table_game.update()
         except Exception as E:
             Log.error("Cannot parse Game Data", E)
-
     
     def getUserSummary(self):
         try:
@@ -156,14 +151,12 @@ class Data(Scraper):
         except Exception as E:
             Log.error("Cannot parse payload getting User Summary", E)
     
-    
     def setActiveCheevo(self, index):
         Cheevo.active_index = index
         Preferences.settings['current_cheevo'] = Cheevo.active_index                
         for i in range(0,Cheevo.max):
             dpg.set_value(f'cheevo[{i+1}]', False)
             dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
-            
      
     def getCheevos(self):
         import random
@@ -197,7 +190,6 @@ class Data(Scraper):
             Log.error("Cannot get RA Payload")
             return False
         return True
-    
     
     def parse(self):
         # Try to parse profile HTML and extract metadata
@@ -259,7 +251,6 @@ class Data(Scraper):
                 #Log.info("Added image 'current_cheevo_image'.")
             except Exception as E:
                 Log.error("Cannot create static texture 'current_cheevo_img'.", E)
-                
     
     def getCurrentCheevo( self, picture ):
         # try first if image is in cache
@@ -274,85 +265,15 @@ class Data(Scraper):
             # Log.info(f'Using cached image {picture}')
             data[1] = file.read()
         return data
-        
     
-    def writeCheevo(self):
-        if Preferences.settings['username'] == '': return
-        for d in self.cheevos:
-            if d.index == Cheevo.active_index:
-                with open(f'{Preferences.root}/data/current_cheevo.txt' , 'w') as file:   
-                    file.write(str(d.name))
-                    file.write('\n')
-                    file.write(str(d.description))
-                    self.cheevo = d.name + "\n" + d.description
-                    # get achievement picture
-                    data = self.getCurrentCheevo( d.picture )
-                    if len(data)>0:
-                        with open(f"{Preferences.root}/data/current_cheevo.png", 'wb') as picture:
-                            picture.write(data[0] )
-                        with open(f"{Preferences.root}/data/current_cheevo_lock.png", 'wb') as picture:
-                            picture.write(data[1] )
-                        self.updatePictures()
-                
-    
-    def getReloadSnippet(self):
-        return """<script>function refresh(){ window.location.reload(); } setInterval(refresh, """+str(self.reload_rate*500)+""")</script>"""
-
-    
-    def writeCheevos(self):
-        script = self.getReloadSnippet()
-        rid = random.random()
-        with open(f'{Preferences.root}/data/cheevos.html'         , 'w') as file:   
-            with open(f'{Preferences.root}/data/cheevos_locked.html'  , 'w') as locked:   
-                with open(f'{Preferences.root}/data/cheevos_unlocked.html'  , 'w') as unlocked:   
-                    file.write     ( f'<link rel="stylesheet" type="text/css" href="../css/cheevos.css?{rid}">{script}')
-                    locked.write   ( f'<link rel="stylesheet" type="text/css" href="../css/locked.css?{rid}">{script}')
-                    unlocked.write ( f'<link rel="stylesheet" type="text/css" href="../css/unlocked.css?{rid}">{script}')
-                    file.write     ( '<div class="table">')
-                    locked.write   ( '<div class="table">')
-                    unlocked.write ( '<div class="table">')
-                    count = 0
-                    for d in self.cheevos:
-                        self.parent.setProgress( count / len(self.cheevos) )
-                        file.write( ascii(str(d)) + '\n' )
-                        if d.locked:
-                            locked.write( ascii(str(d)) + '\n' )
-                        else:
-                            unlocked.write( ascii(str(d)) + '\n' )
-                        count+=1
-                    file.write     ('</div>')
-                    locked.write   ('</div>')
-                    unlocked.write ('</div>')
-                    self.parent.setProgress(1.0)
-        
-    
-    def writeRecent(self):
-        script = self.getReloadSnippet()
-        rid = random.random()
-        with open(f'{Preferences.root}/data/recent.html'        , 'w') as file:   
-            file.write(f'''<link rel="stylesheet" type="text/css" href="../css/recent.css?{rid}">''')
-            file.write(f'''{script}<table><tbody>''')
-            for r in self.recent:
-                file.write(f'''
-                            <tr><td colspan="2"><hr/></td></tr>
-                            <tr>
-                                <td rowspan="2">
-                                    <img style="border-radius: none !important" src="cache/{r.picture}">
-                                </td>
-                                <td><b>{ascii(r.name)}</b></td>
-                            </tr>
-                            <tr>
-                                <td>{ascii(r.description)}</td>
-                            </tr>
-                ''')                
-            file.write('''</tbody><table>''')
-
+    #TODO: Move to endpoints
     def markNotification(self, notification_name):
         from classes.cheevo import Cheevo
         cheevo = Cheevo.get(Cheevo.name==notification_name)
         cheevo.notified = True
         cheevo.save()
     
+    #TODO: Move to endpoints
     def getNotifications(self):
         notifications = []
         cheevos = (Cheevo
@@ -368,16 +289,21 @@ class Data(Scraper):
                 cheevo.save()
             except:
                 pass
-        print(notifications)
+        print("NOTIFICATIONS:",notifications)
         return notifications
-        
     
-    def writeNotifications(self):
-        notifications = self.getNotifications()
-        self.notifications = notifications
-        data = json.dumps(notifications)
-        print(data)
-        
+    def writeCheevo(self):
+        for d in self.cheevos:
+            if d.index == Cheevo.active_index:
+                self.cheevo = d.name + "\n" + d.description
+                # get achievement picture
+                data = self.getCurrentCheevo( d.picture )
+                if len(data)>0:
+                    with open(f"{Preferences.root}/data/current_cheevo.png", 'wb') as picture:
+                        picture.write(data[0] )
+                    with open(f"{Preferences.root}/data/current_cheevo_lock.png", 'wb') as picture:
+                        picture.write(data[1] )
+                    self.updatePictures()
     
     def write(self):
         if Preferences.settings['username'] == '': return
@@ -385,7 +311,5 @@ class Data(Scraper):
         with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(self.last_seen     ))
         with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(self.site_rank     )
         with open(f'{Preferences.root}/data/score.txt'          , 'w') as file:   file.write(self.score         )        
-        #self.writeNotifications()
         self.writeCheevo()
-        self.writeCheevos()
-        self.writeRecent()
+        

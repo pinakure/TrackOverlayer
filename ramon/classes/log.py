@@ -85,3 +85,4 @@ class Log:
         if Log.verbose: 
             Log.print("\t"+(traceback.format_exc() if exception else 'Sorry!')+"\n")
         Log.print('\t'+('-'*80)+"\n")
+        print("\t"+f'ERROR: {text}'+(('\n\t'+str(exception)) if exception else '')+"\n")
