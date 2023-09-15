@@ -198,6 +198,10 @@
                     ]
                 },
 
+                data            : {
+                    
+                },
+
                 usrpic : 'https://static-cdn.jtvnw.net/jtv_user_pictures/30c1196b-441f-4081-a48e-2e5d96912c3b-profile_image-70x70.png',
 
                 {% framework %}
@@ -309,7 +313,24 @@
                 
                 update : function(){
                     if( {% Name %}.hidden ){
-                        if( {% Name %}.feed() ) {% Name %}.show();                    
+                        if( {% Name %}.feed() ) {% Name %}.show();         
+                        else { setTimeout( function(){
+                            {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);
+                        }, 5000)}
+                    }
+                    
+                },
+
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        {% Name %}.data = JSON.parse(payload.data);
+                        /*this payload comes double encoded because of the decimals*/
+                        {% Name %}.data = JSON.parse({% Name %}.data);                        
+                        console.log("{% Name %} : WSDATA =", {% Name %}.data)
+                        {% Name %}.update();                            
                     }
                 },
                 
@@ -317,7 +338,7 @@
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 5 };
                     {% Name %}.messageHandler();
-                    {% Name %}.update();
+                    {% Name %}.connect();
                 },
             };
             {% Name %}.start();        

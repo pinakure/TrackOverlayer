@@ -73,7 +73,7 @@
             html { height: 100%; }
             body { height: 100%; }
             .progressbar {
-                height: 100%;
+                height: 100%; 
             }
             #theonlybar {
                 filter          : opacity({% bar-opacity %});
@@ -95,9 +95,12 @@
             
             var {% Name %} = {
 
-                progress        : "0%",
-                last_progress   : "0%",
+                last_progress   : 0,
                 sfx             : null,
+
+                data            : {
+                    progress        : 0,
+                },
 
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
@@ -109,18 +112,15 @@
 
                 update : function(){ 
                     document.getElementById('pc').className="percent";
-                    {% Name %}.progress         = localStorage.getItem('progress');
-                    {% Name %}.last_progress    = localStorage.getItem('last-progress');
-                    //console.log({% Name %}.progress,{% Name %}.last_progress);
                     {% Name %}.dom.bar.style.transitionProperty = 'none';
-                    {% Name %}.dom.bar.style.width = {% Name %}.last_progress;
+                    {% Name %}.dom.bar.style.width = `${{% Name %}.last_progress}%`;
                     {% Name %}.dom.bar.style.transitionProperty = 'width';
                     {% Name %}.dom.pc.innerHTML = {% Name %}.last_progress;
-                    if( {% Name %}.progress != {% Name %}.last_progress ){
-                        {% Name %}.dom.bar.style.width = {% Name %}.last_progress;
+                    if( {% Name %}.data.progress != {% Name %}.last_progress ){
+                        {% Name %}.dom.bar.style.width = `${{% Name %}.last_progress}%`;
                         
                         setTimeout(function(){
-                            if( parseInt({% Name %}.progress) > parseInt({% Name %}.last_progress)) {
+                            if( parseInt({% Name %}.data.progress) > parseInt({% Name %}.last_progress)) {
                                 {% Name %}.dom.bar.className = 'completion glow';
                                 try {
                                     {% Name %}.sfx.play();
@@ -130,25 +130,43 @@
                             }                
                             {% Name %}.dom.pc.className="percent fadeout";
                             {% Name %}.dom.bar.style.transitionProperty = 'width';
-                            {% Name %}.dom.bar.style.width = {% Name %}.progress;
+                            {% Name %}.dom.bar.style.width = `${{% Name %}.data.progress}%`;
                             setTimeout(function(){
-                                {% Name %}.dom.pc.innerHTML={% Name %}.progress;                                
-                                localStorage.setItem('last-progress', {% Name %}.progress );
-                                localStorage.setItem('progress'     , {% Name %}.progress );
+                                {% Name %}.dom.pc.innerHTML = {% Name %}.data.progress;                                
+                                {% Name %}.last_progress    = {% Name %}.data.progress;
+                                {% Name %}.data.progress    = {% Name %}.data.progress;
                                 {% Name %}.dom.bar.className = 'completion';                                
                             }, 3000);
                         }, 1000);                     
                     } 
+
                     /* Hide widget if no cheevo is selected or program is not yet ready */
                     {% require-cheevo %}
+                    
+                    /* Request data */
+                    if( {% Name %}.connected )
+                        {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);
                 },
 
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        {% Name %}.last_progress = {% Name %}.data.progress;
+                        {% Name %}.data          = JSON.parse(payload.data);
+                        setTimeout( {% Name %}.update, {% update-rate %});                       
+                    }
+                },
+           
                 start : function(){
                     {% Name %}.sfx = new Audio('{% sound-file %}');                                    
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 5 };
                     {% Name %}.messageHandler();
                     {% Name %}.update();
+                    {% Name %}.connect();
                 },
             };
             {% Name %}.start();            

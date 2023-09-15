@@ -7,7 +7,7 @@ class plugin(Plugin):
         Plugin.__init__(self, 'mascots')
         #@ Plugin Settings
         self.description = 'Auto display related Mascots'
-        self.endpoint    = None
+        self.endpoint    = 'game'
         
         #@ Composer Settings
         self.z_index     = 19

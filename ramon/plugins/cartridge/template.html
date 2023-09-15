@@ -56,7 +56,7 @@
                 border      : none;
             }
 
-            #label {
+            #label-front, #label-back {
                 width       : 256px;
                 height      : 256px;
                 left        : calc( 50% - 128px );
@@ -96,44 +96,80 @@
                 background-size   : 100% 100%;
                 image-rendering   : pixelated;    
             }
-        </style>
-        <script>
-            {% plugin %}
-            var current_face=1;
-
-            function refresh(){ 
-                faces = [ 'front', 'right', 'back', 'left']
-                current_face++;
-
-                items = [
-                    document.getElementsByClassName(faces[current_face%4]),
-                ]
-                
-                for( item in items){
-                    rid                           = parseInt(Math.random()*65535);
-                    node                          = items[item][0]
-                    // read localstorage and change url of picture
-            //        node.style.backgroundImage    = `url('current_cheevo.png?${rid}')`;
-            //        node.children[0].src          = `current_cheevo_lock.png?${rid}`;
-                    //node.children[0].style.width  = '100%';
-                    //node.children[0].style.height = '100%';
-                }                
-            } 
-
-            setInterval(refresh, 3000)            
-        </script>
+            img {
+                color: #4f0;
+                text-shadow: 0px 0px 4px #4f0;
+            }
+        </style>        
     </head>
     <body>        
         <div class="container">
             <div id="cube">
-                <div class="front"  style="background-image:url('./files/cartridge/neogeo-cart-front.png') !important"><img id="label" src="./files/cartridge/neogeo/{% cartridge-game %}.png"/></div>
-                <div class="back"   style="background-image:url('./files/cartridge/neogeo-cart-front.png') !important"><img id="label" src="./files/cartridge/neogeo/{% cartridge-game %}.png"/></div>
-                <div class="right"  style="background-image:url('./files/cartridge/neogeo-cart-side.png') !important"></div>
-                <div class="left"   style="background-image:url('./files/cartridge/neogeo-cart-side.png') !important"></div>
+                <div id="front" class="front"  style="background-image:url('./files/cartridge/arcade-cart-front.png') !important"><img id="label-front" onerror="this.src='data:image/gif;base64,R0lGODlhAQABALMAAP8A/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAQCEEQAOw=='" /></div>
+                <div id="back"  class="back"   style="background-image:url('./files/cartridge/arcade-cart-front.png') !important"><img id="label-back"  onerror="this.src='data:image/gif;base64,R0lGODlhAQABALMAAP8A/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAQCEEQAOw=='" /></div>
+                <div id="right" class="right"  style="background-image:url('./files/cartridge/arcade-cart-side.png') !important"></div>
+                <div id="left"  class="left"   style="background-image:url('./files/cartridge/arcade-cart-side.png') !important"></div>
                 <div class="top"    style="display: none"></div>
                 <div class="bottom" style="display: none"></div>
             </div>
         </div>
+        <script>
+            {% plugin %}
+            
+            var {% Name %} = {
+
+                data            : {
+                    name            : 'Game Name',
+                    description     : 'Game Description',
+                    picture         : '000001',
+                    platform        : 'arcade',
+                    id              : 0,
+                },
+
+                dom            : {
+                    {% name %}      : document.getElementById('{% name %}'),
+                    label_front     : document.getElementById('label-front'),
+                    label_back      : document.getElementById('label-back'),
+                    front           : document.getElementById('front'),
+                    back            : document.getElementById('back'),
+                    left            : document.getElementById('left'),
+                    right           : document.getElementById('right'),
+                },
+
+                {% framework %}
+
+                update : function(){
+                    {% Name %}.dom.front.style.backgroundImage = `./files/{% name %}/${ {% Name %}.data.platform }-cart-front.png`;
+                    {% Name %}.dom.back.style.backgroundImage  = `./files/{% name %}/${ {% Name %}.data.platform }-cart-front.png`;
+                    {% Name %}.dom.left.style.backgroundImage  = `./files/{% name %}/${ {% Name %}.data.platform }-cart-side.png`;
+                    {% Name %}.dom.right.style.backgroundImage = `./files/{% name %}/${ {% Name %}.data.platform }-cart-side.png`;
+                    {% Name %}.dom.label_front.alt = {% Name %}.data.id;
+                    {% Name %}.dom.label_back.alt  = {% Name %}.data.id;
+                    {% Name %}.dom.label_front.src = `./files/{% name %}/${ {% Name %}.data.platform }/${ {% Name %}.data.id }.png`;
+                    {% Name %}.dom.label_back.src  = `./files/{% name %}/${ {% Name %}.data.platform }/${ {% Name %}.data.id }.png`;
+                    {% Name %}.socket.send(`get-${{% Name %}.endpoint }`);
+                },
+
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        {% Name %}.data = JSON.parse(payload.data);
+                        //{% Name %}.feed( payload.data );    
+                        setTimeout({% Name %}.update, 5000); 
+                    }
+                },
+
+                start : function(){
+                    {% Name %}.loadSettings();
+                    {% Name %}.messageHandler();
+                    {% Name %}.connect();                    
+                },
+            };
+            {% Name %}.start();            
+        </script>
         {% monitor %}
     </body>
 </html>

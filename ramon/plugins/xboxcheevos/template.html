@@ -142,7 +142,7 @@
                 callback        : null,
                 sound           : null,
 
-                 dom            : {
+                dom            : {
                     {% name %}      : document.getElementById('{% name %}'),
                 },
 
@@ -164,7 +164,7 @@
                             }
                         }
                     } else setTimeout( function(){
-                        {% Name %}.socket.send('get-notifications');                        
+                        {% Name %}.socket.send(`get-${{% Name %}.endpoint }`);
                     }, 5000);
                 },
 
@@ -186,19 +186,15 @@
                     }
                 },
 
-                connect : function(){
-                    const socket = new WebSocket("ws://localhost:8765");
-                    {% Name %}.socket = socket;
-                    socket.addEventListener("open", (event) => {
-                        socket.send("get-notifications");
-                    });
-                    socket.addEventListener("message", (event) => {
-                        payload = JSON.parse(event.data);
-                        if(payload.response=='notifications'){
-                            console.log("WS (XBOX) : Got new notification data : ", payload.data)
-                            {% Name %}.feed( payload.data );                            
-                        }
-                    });
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        {% Name %}.feed( payload.data );                            
+                        {% Name %}.update(); 
+                    }
                 },
 
                 mark : function( notification_name ){
@@ -216,4 +212,4 @@
         </script>
         {% monitor %}        
     </body>
-</html>
+</html

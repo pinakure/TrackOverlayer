@@ -12,7 +12,9 @@
                 margin                      : 0px 0px 0px 0px;
                 box-sizing                  : border-box;
                 border-collapse             : collapse;
-                position                    : absolute;   
+                position                    : absolute;  
+                width                       : 100%;
+                height                      : 100%;
             }
 
             #output {
@@ -195,24 +197,20 @@
 
                 update : function(){
                     {% Name %}.getData();
-                    {% Name %}.socket.send("get-recent");
+                    {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);
                     {% require-cheevo %}
                 },
-
-                connect : function(){
-                    const socket = new WebSocket("ws://localhost:8765");
-                    {% Name %}.socket = socket;
-                    socket.addEventListener("open", (event) => {
-                        socket.send("get-recent");
-                    });
-                    socket.addEventListener("message", (event) => {
-                        payload = JSON.parse(event.data);
-                        if(payload.response=='recent'){
-                            console.log("WS (RECENT) : Got new recent data : ", payload.data)
-                            {% Name %}.list= JSON.parse(payload.data);
-                            {% Name %}.render();                    
-                        }
-                    });
+                
+                {% websocket %}
+                
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if(payload.response=='recent'){
+                        console.log("WS (RECENT) : Got new recent data : ", payload.data)
+                        {% Name %}.list= JSON.parse(payload.data);
+                        {% Name %}.render();
+                        setTimeout( {% Name %}.update, 5000 );
+                    }
                 },
 
                 start : function(){

@@ -7,7 +7,7 @@ class plugin(Plugin):
         Plugin.__init__(self, 'logos')
         #@ Plugin Settings        
         self.description = 'Current Game logo Display'
-        self.endpoint    =  None
+        self.endpoint    =  'game'
         
         #@ Composer Settings
         self.z_index     = 10

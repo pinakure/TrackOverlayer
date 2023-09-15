@@ -19,7 +19,7 @@ class plugin(Plugin):
         Plugin.__init__(self, 'clock')
         #@ Plugin Settings
         self.description = 'Personalizable Clock Display'
-        self.endpoint    = None #@deprecated : replaced by overlay autoupdate using localStorage
+        self.endpoint    = 'clock'
         
         #@ Composer Settings
         self.z_index     = 10

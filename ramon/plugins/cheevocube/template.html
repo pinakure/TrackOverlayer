@@ -4,7 +4,9 @@
         <link rel="stylesheet" type="text/css" href="./css/{% name %}.css"/>
         <style>
             {% fonts %}
-      
+            html {
+                overflow: hidden;
+            }
             body {
                 padding     : 0px 0px 0px 0px;
                 margin      : 0px 0px 0px 0px;
@@ -68,7 +70,7 @@
                 position            : absolute;
                 transition          : filter 3s ease-out;
                 transform-style     : preserve-3d; -webkit-transform-style: preserve-3d;
-                animation           : rotatecube 12s linear infinite; -webkit-animation : rotatecube 12s linear infinite;
+                animation           : -rotatecube 12s linear infinite; -webkit-animation : rotatecube 12s linear infinite;
             }
 
             #{% name %} div img {
@@ -167,8 +169,17 @@
             var {% Name %} = {
 
                 last_cheevo     : undefined,
+                name            : '',
+                id              : 0,
+                picture         : '',
                 current_face    : 0,
                 faces           : [ 'front', 'right', 'back', 'left'],
+                
+                data            : {
+                    name            : 'Cheevo Name',
+                    description     : 'Cheevo Description',
+                    picture         : '000001',
+                },
             
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
@@ -191,42 +202,42 @@
                         
                         rid                           = parseInt(Math.random()*65535);
                         node                          = items[item][0]
-                        node.style.backgroundImage    = 'url(\'{% texture-file %}?'+rid+'\')';
-                        node.children[0].src          = `{% glow-file %}?${rid}`;
+                        node.style.backgroundImage    = `url('./cache/${ {% Name %}.data.picture }.png')`;
+                        node.children[0].src          = `./cache/${ {% Name %}.data.picture }_lock.png`;
                         node.children[0].style.width  = '100%';
                         node.children[0].style.height = '100%';
-                        //node.className = ({% Name %}.last_cheevo != current_cheevo) ? 'flash' : '';
-                    }
-                
-                    current_cheevo = localStorage.getItem('current-cheevo').replaceAll('"', '');
-                    /* Blink @change */
-                    if ({% Name %}.last_cheevo != current_cheevo){
-                        {% Name %}.last_cheevo = current_cheevo
                     }
 
-                    {/* Hide widget if no cheevo is selected or program is not yet ready */
-                    if (current_cheevo!=''){
-                        {% Name %}.dom.{% name %}.style.display = "inline-block";
-                        {% Name %}.dom.description.style.display = "inline-block";
-                        {% Name %}.dom.name.style.display = "inline-block";
-                        {% Name %}.dom.name.innerHTML = current_cheevo.split('\n')[0];
-                        {% Name %}.dom.description.innerHTML = current_cheevo.split('\n')[1];
-                    } else {
-                        {% Name %}.dom.name.innerHTML = "---";
-                        {% Name %}.dom.description.innerHTML = "---";
-                        if({% Name %}.settings.auto.hide){
-                            {% Name %}.dom.{% name %}.style.display = "none";
-                            {% Name %}.dom.description.style.display = "none";
-                            {% Name %}.dom.name.style.display = "none";                            
-                        }
-                    }}                    
+                    {% Name %}.dom.name.innerHTML         = {% Name %}.data.name;
+                    {% Name %}.dom.description.innerHTML  = {% Name %}.data.description;
+                    {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);
+                    {% require-cheevo %}
+                },
+
+                {% websocket %}
+                
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        {% Name %}.data = JSON.parse(payload.data);                        
+                    }
+                },
+
+                stop_rotation : function(){
+                    {% Name %}.dom.{% name %}.style.animationName = 'no-rotatecube';
+                },
+
+                start_rotation : function(){
+                    {% Name %}.dom.{% name %}.style.animationName = 'rotatecube';
                 },
 
                 start : function(){
                     {% Name %}.loadSettings();
                     {% Name %}.settings.update = { rate : 5 };
                     {% Name %}.messageHandler();
-                    {% Name %}.update();
+                    {% Name %}.connect();
+                    {% Name %}.start_rotation();
                     setInterval(function(){ {% Name %}.update();{% Name %}.current_face++;}, 3000);
                 },
             };

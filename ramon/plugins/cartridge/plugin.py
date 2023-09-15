@@ -44,7 +44,7 @@ class plugin(Plugin):
         Plugin.__init__(self, 'cartridge')
         #@ Plugin Settings
         self.description = 'Rotating 3D Cartridge'
-        self.endpoint    = None
+        self.endpoint    = 'game'
         
         #@ Composer Settings
         self.z_index     = 0
@@ -52,6 +52,8 @@ class plugin(Plugin):
         self.height      = 1080
         self.scale       = 1
         self.zoom        = 8
+
+        self.strings.append( 'cartridge-game' )
         
         self.setHelp('cartridge-game'   , "Sorry about this, in the future we will be able to autodetect the game")
         self.setHelp('auto-update'      , "Try to guess which game is currently active")

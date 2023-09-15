@@ -16,14 +16,13 @@
                 image-rendering : pixelated;
                 background-size : auto 100%;
                 background-repeat: no-repeat no-repeat;
-                background-position: 50% 50%;
-                background-image: url('./files/mascots/{% game %}.gif');
+                background-position: 50% 50%;                
             }
         </style>
     </head>
     <body>
         <div id="{% name %}">
-            <div></div>
+            <div id="{% name %}_content"></div>
         </div>        
         
         <script>
@@ -31,21 +30,41 @@
 
             var {% Name %} = {
                 
+                data            : {
+                    name            : 'Game Name',
+                    description     : 'Game Description',
+                    picture         : '000001',
+                    id              : {% game %},
+                },
+
                 dom : {
 
                     {% name %}      : document.getElementById('{% name %}'),
-                    parent          : document.getElementById('output'),
+                    content         : document.getElementById('{% name %}_content'),
                 },
 
                 {% framework %}
                 
                 update : function(){
+                    {% Name %}.dom.content.style.backgroundImage = `url('./files/{% name %}/${{% Name %}.data.id}.gif')`;
+                    {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);
+                },
+
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        {% Name %}.data = JSON.parse(payload.data); 
+                        setTimeout( {% Name %}.update, 5000);                       
+                    }
                 },
                 
                 start : function(){
                     {% Name %}.loadSettings();
                     {% Name %}.messageHandler();
-                    {% Name %}.update();       
+                    {% Name %}.connect();       
                 }
             }
             {% Name %}.start()

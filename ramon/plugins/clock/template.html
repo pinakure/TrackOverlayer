@@ -28,8 +28,14 @@
             {% plugin %}
 
             var {% Name %} = {
-                mode            : '{% clock-type %}',
-                alarm           : Date('01/01/01 {% clock-alarm %}'),
+                
+                data            : {
+                    time            : `${new Date}`.split('GMT')[0].split(' ')[4],
+                    mode            : 'modes|clock',
+                    tmode           : 'modes|clock',
+                    alarm           : Date('01/01/01 {% clock-alarm %}'),
+                    countdown       : 60
+                },
                 
                 dom             : {
                     {% name %}      : document.getElementById('{% name %}'),
@@ -42,48 +48,44 @@
                 },
                 
                 update_alarm    : function( date ){
-                    {% Name %}.alarm = Date(`01/01/01 ${{% Name %}.settings["clock-alarm"] }`);
+                    {% Name %}.data.alarm = Date(`01/01/01 ${{% Name %}.settings["clock-alarm"] }`);
                     return `${date}`.split('GMT')[0].split(' ')[4];
                 },
                 
                 update_countdown: function( date ){
                     now = `01/01/01 `+`${date}`.split('GMT')[0].split(' ')[4];
-                    {% Name %}.alarm = Date(`01/01/01 ${{% Name %}.settings["clock-alarm"] }`);
-                    diff = {% Name %}.alarm - now;
+                    {% Name %}.data.alarm = Date(`01/01/01 ${{% Name %}.settings["clock-alarm"] }`);
+                    diff = {% Name %}.data.alarm - now;
                     return `${diff}`.split('GMT')[0].split(' ')[4];
                 },
 
                 update          : function(){
-                    var date = new Date;
-                    mode = {% Name %}.mode.split('.')[2];
-                    {% Name %}.dom.{% name %}.innerHTML = eval(`{% Name %}Mode.${mode}.second_callback(date)`)
-                    if( {% Name %}.standalone ) { setTimeout({% Name %}.update, 1000);}
+                    mode = {% Name %}.data.mode.split('|')[1];
+                    {% Name %}.dom.{% name %}.innerHTML = {% Name %}.data.time;
+                },
+
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        //console.log("{% Name %} : WSDATA =", payload.data)
+                        {% Name %}.data = JSON.parse(payload.data );
+                        {% Name %}.update();
+                    }
                 },
 
                 start : function( clock_mode ){
-                    {% Name %}.mode = clock_mode;
                     {% Name %}.loadSettings();
-                    {% Name %}.settings.update = { rate : 1 };
-                    //{% Name %}.messageHandler();
-                    
-                    window.addEventListener( 'message', function(e){ 
-                        if(e.data.split('|')[0]=='update-css'){
-                            var rid = parseInt(Math.random()*655356);
-                            var par  = document.getElementsByTagName('head')[0];
-                            var old  = document.getElementsByTagName('link')[0];
-                            var link = document.createElement('link');
-                            link.rel = "stylesheet";
-                            link.type = "text/css";
-                            link.href = `./{% name %}.css?${ rid }`;
-                            par.append(link);
-                            {% Name %}.log.print("style updated");
+                    {% Name %}.data.mode = clock_mode;
+                    {% Name %}.messageHandler();
+                    {% Name %}.connect();
+                    //setInterval({% Name %}.update, 1000);
+                    setInterval(function(){
+                        if( {% Name %}.connected ){
+                            {% Name %}.socket.send(`get-${{% Name %}.endpoint }`);
                         }
-                    });
-                        
-                    window.addEventListener( 'load', function(e){ 
-                        {% Name %}.update();
-                    });
-                    
+                    }, 1000);
                 },
             };
             var {% Name %}Mode = {

@@ -7,7 +7,7 @@ class plugin(Plugin):
         Plugin.__init__(self, 'flysim')
         #@ Plugin Settings
         self.description = 'Fly Simulator : Programable RetroPixel Overlay Demo'
-        self.endpoint    = None
+        self.endpoint    = 'vpu'
         
         #@ Composer Settings
         self.z_index     = 999 # on top of other plugins but bezel

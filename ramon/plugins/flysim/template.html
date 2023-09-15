@@ -34,6 +34,12 @@
             {% plugin %}
         
             var {% Name %} = {
+
+                app  : Swarm,
+
+                data : {
+
+                },
         
                 dom : {
                     {% name %}      : document.getElementById('canvas'),
@@ -41,19 +47,40 @@
 
                 {% framework %}
                 
-       
                 update : function(){
+                    // Do something with the data, which is probably fresh
+                    {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);
+                },
+
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        // Update data object
+                        {% Name %}.data = JSON.parse(payload.data);
+                    }
+                },                
+
+                init : function(){
+                    Swarm.init();
+                },
+
+                loop : function(){
+                    Swarm.loop();
                     
                 },
                 
                 start : function(){
-                    {% Name %}.loadSettings();
-                    {% Name %}.messageHandler();
-                    {% Name %}.update();       
                     VPU.init();
-                    Swarm.init();
-                    setInterval(function(){Swarm.loop()}, Swarm.update_speed);
-                    setInterval(function(){Swarm.render()}, Swarm.redraw_speed);
+                    {% Name %}.loadSettings();
+                    {% Name %}.connect();
+                
+                    // Demo init
+                    {% Name %}.init();
+                    setInterval(Swarm.loop  , 20);
+                    setInterval(Swarm.render, 16);
                 }
             }
             {% Name %}.start()
