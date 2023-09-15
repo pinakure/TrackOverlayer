@@ -25,7 +25,7 @@ class DDBB(Model):
         from classes.superchat  import Superchat
         from classes.ramon      import Ramon
         try:
-            print("Connecting DB...")
+            Log.info("Connecting DB...")
             DDBB.db.connect()
             DDBB.db.create_tables([DDBB, Game, Cheevo, Superchat ])
             try: 
@@ -48,7 +48,7 @@ class DDBB(Model):
             cfg = DDBB(version=Ramon.version)
             # Re-set db version
             cfg.save()
-            print("DB connected.")
+            Log.info("DB connected.")
             
         except Exception as E:
             Log.warning(str(E))

@@ -58,7 +58,7 @@ class Tags:
     
     def framework(self):
         if self is None:
-            print("WARNING: framework tag summoned outside plugin template!")
+            Log.warning("framework tag summoned outside plugin template!")
             return ''
         return Tags.load_config(self) + r"""
                 
@@ -196,7 +196,7 @@ class Tags:
 
     def load_config(self):
         if self is None:
-            print("WARNING: load_config tag summoned outside plugin template!")
+            Log.warning("load_config tag summoned outside plugin template!")
             return ''
         def aux(payload):
             from io import StringIO
@@ -243,7 +243,7 @@ class Tags:
     
     def update_css(self):
         if self is None:
-            print("WARNING: update-css tag summoned outside plugin template!")
+            Log.warning("update-css tag summoned outside plugin template!")
             return ''
         from classes.plugin import Plugin
         if not Plugin.debug: return ""
@@ -278,7 +278,7 @@ class Tags:
     
     def name(self):
         if self is None:
-            print("WARNING: name tag summoned outside plugin template!")
+            Log.warning("name tag summoned outside plugin template!")
             return ''
         return self.name
     

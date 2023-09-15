@@ -87,7 +87,6 @@ class Plugin:
         for key,value in self.defaults.items():
             if key=='enabled': continue
             target = f'plugin-setting-{plugin}-{key}'
-            print(target,'=',value)
             dpg.set_value(target, value)
             self.settings[key] = value
         Plugin.writeConfig()

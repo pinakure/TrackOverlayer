@@ -43,7 +43,7 @@ class Cheevo(Model):
             
     def build_cache(self):
         try:
-            print(f"Caching cheevo picture {self.picture}...")
+            Log.info(f"Caching cheevo picture {self.picture}...")
             Cheevo._build_cache(self.picture)
             self.cached = True
             self.save()

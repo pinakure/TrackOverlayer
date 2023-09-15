@@ -1,5 +1,6 @@
 from classes.endpoints      import Endpoints
 from classes.preferences    import Preferences
+from classes.log            import Log
 from threading              import Thread, Event
 from websockets.server      import serve
 import json, asyncio
@@ -22,6 +23,7 @@ class Server:
     exit    = Event()
 
     async def handleRequest(websocket):
+        from classes.superchat import Superchat
         async for message in websocket:
             if Server.ramon.requesting: return
             if Preferences.settings['debug']: print(f"WS : {message}")
@@ -32,10 +34,11 @@ class Server:
             elif message.startswith('get-current-cheevo'): await websocket.send( encodeResponse('current-cheevo', Endpoints.current_cheevo()            ))
             elif message.startswith('get-score'         ): await websocket.send( encodeResponse('score'         , Endpoints.score()                     ))
             elif message.startswith('get-recent'        ): await websocket.send( encodeResponse('recent'        , Endpoints.recent()                    ))
-            elif message.startswith('get-notifications' ): await websocket.send( encodeResponse('notifications' , Server.ramon.data.getNotifications()  ))
+            elif message.startswith('get-vpu'           ): await websocket.send( encodeResponse('vpu'           , Endpoints.vpu()                       ))
             elif message.startswith('get-progress'      ): await websocket.send( encodeResponse('progress'      , Endpoints.progress()                  ))
             elif message.startswith('get-superchat'     ): await websocket.send( encodeResponse('superchat'     , Endpoints.superchat()                 ))
-            elif message.startswith('get-vpu'           ): await websocket.send( encodeResponse('vpu'           , Endpoints.vpu()                       ))
+            elif message.startswith('mark-superchat'    ): Superchat.mark( message.split( '|' )[1]                                                       )
+            elif message.startswith('get-notifications' ): await websocket.send( encodeResponse('notifications' , Server.ramon.data.getNotifications()  ))
             elif message.startswith('mark-notification' ): Server.ramon.data.markNotification( message.split( '|' )[1]                                   )
             else                                         : await websocket.send( encodeResponse('error'         , f'Unknown endpoint "{message}"'       ))
 
@@ -49,7 +52,7 @@ class Server:
 
     async def main(main_class):
         Server.ramon = main_class
-        print("Starting Live Data Service, listening port 8765")
+        Log.info("Starting Live Data Service, listening port 8765")
         async with serve(Server.handleRequest, 'localhost', 8765):
             while not Server.exit.isSet():
                 await asyncio.Future()

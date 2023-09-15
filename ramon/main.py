@@ -85,7 +85,6 @@ try:
     from classes.preferences    import Preferences
     from pathlib                import Path
 except ImportError as E:
-    print(str(E))
     os.system('pip install requests requests_toolbelt beautifulsoup4 dearpygui pynput peewee pyinstaller')
     os.system('pip install --upgrade websockets')
     os.system(f'pause')

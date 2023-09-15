@@ -444,15 +444,16 @@ class Ramon:
             Ramon.data.last_seen     = Preferences.settings['last_game']
             Ramon.data.site_rank     = Preferences.settings['rank']
             Ramon.data.score         = Preferences.settings['score']
-        print("Querying...")
+        Log.info("Scraping data...")
         if Ramon.data.query():
-            print("Query OK")
+            Log.info("Scraping done.")
             Ramon.clear()
             Ramon.redraw()
             Ramon.data.write()
             Plugin.runLoaded()
             dpg.set_viewport_title('tRAckOverlayer - '+("Offline Mode" if Preferences.settings["offline"] else "Ready"))
         else:
+            Log.warning("Scraping failed.")
             dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')        
             Ramon.requesting = False
             return False

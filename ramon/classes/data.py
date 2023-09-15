@@ -210,11 +210,10 @@ class Data(Scraper):
         self.login_username = Preferences.settings['username']
         self.target_url     = self.url(f"user/{ self.login_username }" )
         if Preferences.settings['offline']:
-            print("Faking request")
             Log.info("DATA : Faking request to retroachievements")
             self.response_text = readfile(f'{Preferences.settings["root"]}/data/profile.html')
             return self.parse()
-        print("Performing real request")
+        Log.info("Performing real request")
         return self.get()
     
     def updatePictures(self):
@@ -226,11 +225,7 @@ class Data(Scraper):
         with dpg.texture_registry(show=False):
             try:
                 dpg.delete_item('current_cheevo_img')
-                #dpg.delete_item('current-game-img')
-                #Log.info("deleted static_texture 'current_cheevo_img'.")
-                dpg.delete_item('current_cheevo_image')
-                #dpg.delete_item('current-game-image')
-                #Log.info("deleted image 'current_cheevo_image'.")
+                dpg.delete_item('current_cheevo_image')               
             except:
                 pass
             try:
@@ -240,7 +235,6 @@ class Data(Scraper):
                     default_value   = data, 
                     tag             = "current_cheevo_img",
                 )
-                #Log.info("Added static texture 'current_cheevo_img'.")
                 dpg.add_image(
                     parent          = 'main',
                     tag             = 'current_cheevo_image', 
@@ -249,7 +243,6 @@ class Data(Scraper):
                     width           = 64,
                     height          = 64,
                 )
-                #Log.info("Added image 'current_cheevo_image'.")
             except Exception as E:
                 Log.error("Cannot create static texture 'current_cheevo_img'.", E)
     
@@ -260,10 +253,8 @@ class Data(Scraper):
             Cheevo.getPicture( cheevo_id )
         data = {}
         with open(f'{Preferences.root}/data/cache/{cheevo_id}.png', 'rb') as file:
-            # Log.info(f'Using cached image {picture}')
             data[0] = file.read()
         with open(f'{Preferences.root}/data/cache/{cheevo_id}_lock.png', 'rb') as file:
-            # Log.info(f'Using cached image {picture}')
             data[1] = file.read()
         return data
     
@@ -285,12 +276,10 @@ class Data(Scraper):
             )
         for cheevo in cheevos:
             notifications.append( [ cheevo.name, cheevo.description, cheevo.picture.rstrip('.png').rstrip('_lock') ] )
-            #cheevo.notified = True
             try:
                 cheevo.save()
             except:
                 pass
-        #print("NOTIFICATIONS:",notifications)
         return notifications
     
     def writeCheevo(self):
