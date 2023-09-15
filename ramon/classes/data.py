@@ -48,6 +48,8 @@ class Data(Scraper):
         self.cheevo         = ''
         self.cheevos_raw    = []
         self.cheevos        = []
+        self.locked         = []
+        self.unlocked       = []
         self.mine           = True
         self.notifications  = []
         self.recent         = []

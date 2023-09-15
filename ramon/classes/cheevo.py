@@ -3,6 +3,11 @@ from classes.log        import Log
 from classes.game       import Game
 from classes.database   import DDBB
 from peewee             import *
+from classes.scraper    import Scraper
+
+
+class CheevoScraper(Scraper):
+    pass
 
 
 class Cheevo(Model):

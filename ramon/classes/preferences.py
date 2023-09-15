@@ -1,7 +1,6 @@
 import json
 from dearpygui              import dearpygui as dpg
 from classes.config         import Config as cfg 
-from classes.cheevo         import Cheevo
 from classes.log            import Log
 from classes.ui             import UI
 from classes.attribute      import Attribute
@@ -283,6 +282,7 @@ class Preferences:
         Preferences.parent.restart = restart
     
     def loadcfg():
+        from classes.cheevo import Cheevo
         Preferences.settings = Preferences.defaults
         Preferences.settings.update({'version' : Preferences.parent.version})
         Preferences.root     = Preferences.settings['root']

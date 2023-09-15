@@ -2,7 +2,11 @@ import requests, os
 from classes.log        import Log
 from classes.database   import DDBB
 from peewee import *
+from classes.scraper    import Scraper
 
+
+class GameScraper(Scraper):
+    pass
 
 class Game(Model):
     id      = IntegerField(unique=True, primary_key=True)

@@ -25,7 +25,8 @@ class Scraper:
         self.login_form_url         = self.url( login_form_url )
         self.login_post_url         = self.url( login_post_url )
         self.target_url             = self.url( target_url )
-        self.user_agent             = '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"'
+        #self.user_agent             = '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"'
+        self.user_agent             = f'tRAckOverlayer/{ login_username }',
         self.form_data              = None        
         self.login_last_username    = None
         self.response               = None
