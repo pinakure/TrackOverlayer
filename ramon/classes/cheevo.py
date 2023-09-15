@@ -1,7 +1,7 @@
 import requests, os, json
 from classes.log        import Log
-from classes.database   import db
 from classes.game       import Game
+from classes.database   import DDBB
 from peewee             import *
 
 
@@ -23,7 +23,7 @@ class Cheevo(Model):
     game        = ForeignKeyField(Game, backref='cheevos')
 
     class Meta:
-        database = db
+        database = DDBB.db
 
     def menu(self):
         return f'{self.name.ljust(Cheevo.min_width, " ")}'+"\n"+(" "*9)+f'{self.description}'
@@ -53,7 +53,6 @@ class Cheevo(Model):
     
     def __str__(self):
         return f'<img class="{"active" if self.index == Cheevo.active_index else ""} round" width="48" height="48" src="cache/{self.picture}" title="{self.description}" name="{self.name}">'
-
     
     def parse( game, payload ):
         name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'")
@@ -100,8 +99,3 @@ class Cheevo(Model):
             )
 
 
-try:
-    db.connect()
-    db.create_tables([Game, Cheevo])
-except Exception as E:
-    Log.warning(str(E))

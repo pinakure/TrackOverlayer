@@ -1,6 +1,6 @@
 import requests, os
 from classes.log        import Log
-from classes.database   import db
+from classes.database   import DDBB
 from peewee import *
 
 
@@ -17,7 +17,7 @@ class Game(Model):
     _cheevos= []
     
     class Meta:
-        database = db
+        database = DDBB.db
 
     
     def loadOrCreate(game_id, name=None, picture=None, subset='', cheevos=1, platform=platform):

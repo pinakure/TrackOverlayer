@@ -211,173 +211,6 @@ class Plugin:
         with open( f"{Preferences.settings['root']}/data/{self.name}.html", 'w') as file:
             file.write( self.rendered )
             
-    def getCssAutoupdateSnippet():
-        return r"""
-        function updatecss(){
-            console.log("Erasing css...");
-            var rid = parseInt(Math.random()*655356);
-            var par  = document.getElementsByTagName('head')[0];
-            var old  = document.getElementsByTagName('link')[0];
-            var link = document.createElement('link');
-            link.rel = "stylesheet";
-            link.type = "text/css";
-            link.href = `./css/{% name %}.css?${ rid }`;
-            par.append(link);
-            setTimeout(function(){ old.remove();}, 500);
-            setTimeout(updatecss, 1000);
-        }
-        updatecss();
-        """
-    
-    def getAutoHideSnippet():
-        return r"""
-        if({% Name %}.settings.auto.hide){
-            current_cheevo = localStorage.getItem('current-cheevo').replaceAll('"', '');
-            if (current_cheevo!=''){
-                {% Name %}.dom.{% name %}.style.display = "inline-block";                        
-            } else {
-                {% Name %}.dom.{% name %}.style.display = "none";                        
-            }
-        }
-        """
-    
-    def aux(payload):
-        from io import StringIO        
-        file = StringIO(payload)
-        ini = {}
-        for line in file:
-            try :
-                node = ini
-                key, value = line.rstrip().split(' = ')
-                *parents, key = key.split('-')
-                for parent in parents:
-                    node[parent] = node = node.get(parent, {})
-                node[key] = value
-            except Exception as E: 
-                Log.error("Cannot translate plugin settings", E)            
-        return ini
-    
-    def getFrameworkMethods(self):
-        return self.getLoadSettingsMethod() + r"""
-                
-                standalone : true,
-
-                send  : function(msg, data=[]){
-                    window.parent.postMessage(`{% name %}|${msg}|${JSON.stringify(data)}`, '*');
-                },
-
-                log   : {
-                    print : function(text){
-                        window.parent.postMessage(`{% name %}|print|${text}`, '*');
-                    },
-                    clear : function(text){
-                        window.parent.postMessage("|log-clear|", '*');
-                    }
-                },
-
-                messageHandler : function(){
-                    // 'Event coming from parent' handler 
-                    window.addEventListener('message', function(e) {
-                        try{ message = e.data.split('|')[0]; } catch(e){ {% name %}.log.print(`Malformed message: ${e.data}`); return; }
-                        try{ data = JSON.parse(e.data.split('|')[1]); } catch(e){data = null;}
-                        switch( message ){
-                            
-                            case 'update-css':
-                                var rid = parseInt(Math.random()*655356);
-                                var par  = document.getElementsByTagName('head')[0];
-                                var old  = document.getElementsByTagName('link')[0];
-                                var link = document.createElement('link');
-                                link.rel = "stylesheet";
-                                link.type = "text/css";
-                                link.href = `./css/{% name %}.css?${ rid }`;
-                                par.append(link);
-                                {% Name %}.log.print("style updated");
-                                return;
-
-                            case 'update-settings':
-                                {% Name %}.settings = data;
-                                {% Name %}.log.print("settings updated");
-                                {% Name %}.send('request-data');
-                                return;
-                                
-                            case 'update-data':
-                                {% Name %}.standalone = false;
-                                {% Name %}.update();
-                                {% Name %}.log.print("data updated");
-                                return;
-                            
-                            default:
-                                try { 
-                                    {% Name %}.handleMessage( message, data );
-                                } catch(e){
-                                    {% Name %}.log.print(`Error ${e}`);
-                                }
-                        }
-                    });
-                },
-                """+self.dumpDicts()
-
-    def getLoadSettingsMethod(self):
-        #sort variables longer first
-        sorted = []
-        longest = 1
-        for key in self.settings.keys():
-            if len(key)>longest: longest = len(key)
-        for length in range(longest+1, 0, -1):
-            for key in self.settings.keys():
-                if len(key)==length: sorted.append(key)
-
-        payload = ""
-        for key in sorted:
-            parts = key.split('-')
-            o = len(parts)
-            tkey = ''
-            for i, pkey in enumerate(parts):
-                tkey += pkey
-                if i==o-1: 
-                    # dirty workaround for quotes
-                    if pkey in ["file", "font", "color"]:
-                        continue
-                    else:
-                        payload+=f'{tkey} = {templatetag(tkey)}'+'\n'                        
-                else:
-                    tkey+='-'
-        payload = json.dumps( Plugin.aux(payload) ).replace('"', '').replace('_', ' ')
-        return "loadSettings    : function(){\n\t\t\t\t\ttry {\n\t\t\t\t\t\t{% Name %}.settings = JSON.parse(localStorage.getItem('{% name %}-settings'));\n\t\t\t\t\t\tsettings.update.rate = 1;\n\t\t\t\t\t} catch (e){\n\t\t\t\t\t\t{% Name %}.settings = "+payload+";\n\t\t\t\t\t}\n\t\t\t\t},"
-             
-    def injectScripts(self):
-        from classes.ramon import Ramon
-        from classes.fonts import fonts
-        from dearpygui import dearpygui as dpg
-                
-        for i in range(0,2):
-            for key,value in {
-                'Name'              : self.name.capitalize(),
-                'name'              : self.name,
-                'game'              : Ramon.data.game.id,
-                'fullsized'         : "html { width : 100%; height : 100%; } body { width : 100%; height : 100%; top: 0px; left: 0px; } html { position: absolute; } body { position: absolute; }",
-                'framework'         : self.getFrameworkMethods(),
-                'plugin'            : "const False = false; const True = true; alternate='alternate'; forwards='forwards'; backwards='backwards';",
-                'debug'             : 'true' if Plugin.debug else 'false',
-                'password'          : dpg.get_value('twitch-password'),
-                # deprecated
-                'fonts'             : "\n\t\t".join([value for value in fonts.values()]),
-                'update-css'        : Plugin.getCssAutoupdateSnippet() if Plugin.debug else '',
-                'load-config'       : self.getLoadSettingsMethod(),
-                'require-cheevo'    : Plugin.getAutoHideSnippet(),
-                'monitor'           : Plugin.getMonitorSnippet(),
-            }.items():         
-                self.rendered = self.rendered.replace( tag(key), str(value))        
-            self.rendered = Icons.replaceTags(self.rendered)
-
-    def getMonitorSnippet():
-        return """<div style="mix-blend-mode: screen; font-family: 'square'; font-weight: 800; overflow: visible !important; display: inline-block; position: absolute; right: -96px; bottom: 0px; color: #ff0000; width: 128px; height: 32px;">
-            <img title="{% Name %} has lost connection with tRAckOverlayer" src="{% icon|disconnected %}">
-            <!--<div style="display: inline-block; position: absolute; left: 36px; top: 40%;">
-                {% Name %}
-            </div>-->
-        </div>"""
-
     def injectSettings(self):
         #sort variables longer fists
         sorted = []
@@ -411,7 +244,8 @@ class Plugin:
         self.rendered = self.rendered.replace( '<!--HTML-->', self.getHTML()    )
         self.rendered = self.rendered.replace( '/*JS*/'     , payload           )
         # Inject plugin settings in the template, Django style
-        self.injectScripts()  # Note: These scripts can also inject variables before translation !
+        self.rendered = Tags.replace(self.rendered, self)
+        self.rendered = Icons.replaceTags(self.rendered)
         self.injectSettings()
         self.write()
         Log.time(True)
@@ -498,7 +332,22 @@ class Plugin:
         Ramon.redraw()
         Preferences.writecfg()
 
+    def getOverlayTemplate():
+        data = None
+        try:
+            with open(f'{Preferences.settings["root"]}/plugins/overlay.html', "r") as file:
+                data = file.read()
+        except Exception as E:
+            Log.error("Cannot read Plugin Overlay template file", E)
+        return data
     
+    def writeOverlayTemplate( data ):
+        try:
+            with open(f'{Preferences.settings["root"]}/data/overlay.html', "w") as file:
+                file.write( data )
+        except Exception as E:
+            Log.error("Cannot write Plugin Overlay template file", E)
+        
     def compose():
         # Generates overlay.html file:
         # This file holds an iframe per each one of the plugins, shaping their geometry from info inside each plugin.py
@@ -521,28 +370,21 @@ class Plugin:
                 html  += plugin.__iframe__()
                 css   += plugin.cssRule()
         # Get template
-        try:
-            with open(f'{Preferences.settings["root"]}/plugins/overlay.html', "r") as file:
-                data = file.read()
-        except Exception as E:
-            Log.error("Cannot read Plugin Overlay template file", E)
+        data = Plugin.getOverlayTemplate()
+        if not data: return
         #
         # Inject payloads 
         data = data.replace( '/*VARS*/'         , cvars )
         data = data.replace( '/*CSS*/'          , css   )
         data = data.replace( '<!--HTML-->'      , html  )
-        data = Tags.replace(data)
+        plug = Plugin('overlay')
+        data = Tags.replace(data, plug)
         data = Icons.replaceTags(data)
         #
         # Dump data into rendered template
-        try:
-            with open(f'{Preferences.settings["root"]}/data/overlay.html', "w") as file:
-                file.write( data )
-        except Exception as E:
-            Log.error("Cannot write Plugin Overlay template file", E)
+        if not Plugin.writeOverlayTemplate( data ): return
         #
         # Create plugin data feeder js script 
-        #Plugin.autoupdate()
         Log.time(True)  
     
     def getOverlayCSS():
@@ -588,32 +430,6 @@ class Plugin:
                 config += f'{ key }={ value }'+"\n"
         with open(f'{Preferences.settings["root"]}/plugins.cfg', "w") as file: 
             file.write(config)
-
-    def autoupdate():
-        return
-        from classes.ramon   import Ramon
-        reload  = "setTimeout(function(){ location.reload(); }, 5000);"
-        body    = 'transition: background-color 500ms ease-in-out;' if Plugin.debug else ''
-        ls      = { (f"""localStorage.setItem('{ plugin.name }-settings', '{ json.dumps(plugin.settings) }');"""+'\n') for name,plugin in Plugin.loaded.items()}
-        ls.update({ (f"""localStorage.setItem('{ name        }'         , '{ value                       }');"""+'\n') for name,value in Endpoints.getAll().items()})
-        payload = f'''<!DOCTYPE html>
-<html>
-<head>
-</head>
-    <body style="width: 100%; height:100%; overflow: hidden; {body}"><script>
-            localStorage.setItem('debug', '{1 if Plugin.debug else 0 }'  );
-            {"".join(ls)}
-            window.parent.postMessage('auto-update|auto-update|', '*');
-            {reload}
-    </script></body>
-</html>'''
-        try:
-            with open(f'{Preferences.settings["root"]}/data/autoupdate.html', "w") as file:
-                file.write( payload )
-            #Ramon.data.notifications = []
-        except Exception as E:
-            Log.error("PLUGIN : Cannot write Autoupdate data script file", E)
-        return payload
 
     def copyDir(self, dirname):
         # Recursively copy a given directory

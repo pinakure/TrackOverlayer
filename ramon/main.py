@@ -62,7 +62,21 @@ Progressbar personalization
 ---------------------------
 - Plugin configuration auto generated tab per each plugin, now fancier :P
 - Fixed bug causing an error per plugin loaded if plugin.cfg didnt exist
-
+---------------------------
+Plugins now communicating via websocket instead of js events:
+- cheevocube
+- recentunlocks 
+- logos 
+- mascots
+- progressbar
+- xboxcheevos
+- clock
+- cartridge ( any arcade label support now )
+- rpgchat
+- flysim
+ These other plugins not needing comminication with T.O. 
+- bezel
+- twitchchat
 """
 try: 
     import os, sys
@@ -70,7 +84,8 @@ try:
     from classes.plugin         import Plugin
     from classes.preferences    import Preferences
     from pathlib                import Path
-except ImportError:
+except ImportError as E:
+    print(str(E))
     os.system('pip install requests requests_toolbelt beautifulsoup4 dearpygui pynput peewee pyinstaller')
     os.system('pip install --upgrade websockets')
     os.system(f'pause')

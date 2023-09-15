@@ -72,11 +72,12 @@ class Ramon:
     padding             = 8    
     restart             = False    
     css                 = {}
-    version             = 0.24
+    version             = 1.51
     timer               = None    
     plugins             = []
     data                = None
     run                 = True
+    requesting          = False
     queue               = []
     
     def updateCheevoManually(sender=None, args=None, user_data=None):
@@ -180,9 +181,11 @@ class Ramon:
 
 
     def start():
-        from classes.server import Server # private import needed here to avoid import loop
+        from classes.database   import DDBB
+        from classes.server     import Server # private import needed here to avoid import loop
         Preferences.parent = Ramon
         Preferences.loadcfg()
+        DDBB.init()
         os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
         Ramon.copy(
             f'{Preferences.settings["root"]}/plugins/default.png',
@@ -308,7 +311,6 @@ class Ramon:
             # Create preferences window
             Preferences.create( Ramon )
         
-
     def setPosition(x,y):
         Ramon.x = x
         Ramon.y = y
@@ -321,22 +323,34 @@ class Ramon:
             dpg.set_value('progress', value)
             dpg.show_item('process-window')
 
-    
     def compile():
+        # Create plugins.zip
+        import shutil
+        mkdir('xplugins')
+        os.system('xcopy plugins xplugins\\plugins\\ /i /s /q /y ')
+        os.system('erase xplugins\\plugins\\*.py  /S /Q')
+        os.system('erase xplugins\\plugins\\*.pyc /S /Q')
+        shutil.make_archive('plugins', 'zip', 'xplugins')
+        os.system('@rmdir /q /s xplugins')
+        
         with open("./compile.bat", "w") as file:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
+            file.write(f'''@title Compiling tRAckOverlayer v.{Ramon.version}...'''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
+            file.write(f'''@rmdir /q /s xplugins''' +"\n")
             file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
             file.write(f'''@python3 -m PyInstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
+            file.write(f'''@rmdir /q /s build'''+"\n")
+            file.write(f'''@rmdir /q /s dist''' +"\n")
+            file.write(f'''@erase main.spec'''+"\n")
+            file.write(f'''@erase compile.bat && exit'''+"\n")
         os.system('start compile.bat')
-        dpg.set_viewport_title('tRAckOverlayer - Compiled "compile.bat" script succesfully')
-
+        dpg.set_viewport_title('tRAckOverlayer - Launched "compile.bat" script succesfully')
     
     def msg(text):
         dpg.set_value('stdout', text)
         dpg.render_dearpygui_frame()        
 
     def render():
-        import time
         if Preferences.settings['fullscreen'] : 
             dpg.toggle_viewport_fullscreen()
         dpg.show_viewport()
@@ -355,7 +369,12 @@ class Ramon:
         return Ramon.exit()
         
     def exit():
+        from classes.server   import Server
+        from classes.database import DDBB
         try:
+            Server.exit.set()
+            DDBB.db.close()
+            #Server._thread.stop()
             if Ramon.timer:
                 Ramon.timer.cancel()
                 Ramon.timer = None

@@ -1,7 +1,8 @@
 from classes.preferences    import Preferences
 from classes.tools          import sane
+from classes.superchat      import Superchat
 import json
-
+from datetime import datetime
 
 def response( raw ):
     return sane(json.dumps(raw))
@@ -32,21 +33,33 @@ class Endpoints:
         if Plugin.debug: 
             import random
             Ramon.data.progress = f'{str(int(random.random()*100))}%'
-        return Ramon.data.progress 
+        Ramon.data.progress = '0%' if Ramon.data.progress == '' else Ramon.data.progress
+        return response({
+            'progress'      : int(Ramon.data.progress.replace('%', '')),
+        })
     
     def game():
         from classes.ramon import Ramon
         return response({ 
-            'name'      : Ramon.data.game.name,
-            'id'        : Ramon.data.game.id,
-            'picture'   : Ramon.data.game.picture,
+            'name'          : Ramon.data.game.name      if Ramon.data.game else 'no game',
+            'id'            : Ramon.data.game.id        if Ramon.data.game else 0,
+            'platform'      : Ramon.data.game.platform  if Ramon.data.game else 'unknown',
+            'picture'       : Ramon.data.game.picture   if Ramon.data.game else '',
+        })
+    
+    def current_cheevo():
+        from classes.ramon import Ramon
+        return response({ 
+            'name'          : Ramon.data.the_cheevo.name                        if Ramon.data.the_cheevo else 'No Cheevo Active',
+            'description'   : Ramon.data.the_cheevo.description                 if Ramon.data.the_cheevo else '---',
+            'picture'       : Ramon.data.the_cheevo.picture.split('_lock')[0]   if Ramon.data.the_cheevo else 'default',
         })
     
     def score():
         from classes.ramon import Ramon
         return response({ 
-            'site_rank' : Ramon.data.site_rank,
-            'score'     : Ramon.data.score,            
+            'site_rank'     : Ramon.data.site_rank,
+            'score'         : Ramon.data.score,            
         })
     
     def recent():
@@ -54,6 +67,19 @@ class Endpoints:
         return response([ 
             [ r.name, r.description, r.picture] for r in Ramon.data.recent
         ])
+    
+    def clock():
+        from classes.plugin import Plugin
+        now = datetime.now()
+        return response({
+            'time'      : now.strftime('%H:%M:%S'),
+            'alarm'     : Plugin.loaded['clock'].settings['clock-alarm'],
+            'countdown' : Plugin.loaded['clock'].settings['clock-countdown'],
+            'mode'      : Plugin.loaded['clock'].settings['clock-type'],
+        })
+    
+    def superchat():
+        return response( Superchat.getUnmarked() )
     
     def plugins():
         from classes.plugin import Plugin
@@ -78,6 +104,11 @@ class Endpoints:
     def nop():
         return ''
 
+    def vpu():
+        return response({
+            'app'  : '',            
+        })
+    
     def getAll():
         return {
             'notifications'     : Endpoints.notifications(),
@@ -89,7 +120,9 @@ class Endpoints:
             'score'             : Endpoints.score(),
             'recent'            : Endpoints.recent(),
             'plugins'           : Endpoints.plugins(),
-            'superchat'         : Endpoints.nop(),
+            'superchat'         : Endpoints.superchat(),
+            'clock'             : Endpoints.clock(),
+            'vpu'               : Endpoints.vpu(),
         }
 
     byName = {
@@ -102,6 +135,10 @@ class Endpoints:
         'score'             : score,
         'recent'            : recent,
         'plugins'           : plugins,
-        'superchat'         : nop,
+        'superchat'         : superchat,
+        'clock'             : clock,
+        'vpu'               : vpu,
     }
 
+    
+    

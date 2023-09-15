@@ -134,12 +134,12 @@ class Preferences:
                             'subset',
                             'picture',
                             'cached',
-                            'cheevos',
                             'current',
+                            'platform',
                         ], 
-                        editable=['romname', 'name', 'subset']
+                        editable=['romname', 'name']
                     )
-                    Preferences.table_game = DBTable.create(
+                    Preferences.table_cheevo = DBTable.create(
                         'cheevo', 
                         fields=[
                             'id',
@@ -154,6 +154,20 @@ class Preferences:
                         ], 
                         editable=['description', 'name', 'notified']
                     )
+                    Preferences.table_superchat = DBTable.create(
+                        'superchat', 
+                        fields=[
+                            'id',
+                            'avatar',
+                            'user',
+                            'quantity',
+                            'currency',
+                            'text',
+                            'acknowledged',                    
+                        ], 
+                        editable=['acknowledged']
+                    )
+                    
         Preferences.table_game.update()        
 
     def createPluginsTab():

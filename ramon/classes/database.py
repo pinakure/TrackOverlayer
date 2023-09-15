@@ -3,14 +3,58 @@ from peewee import *
 from classes.tools  import elegant, Color
 from classes.log    import Log
 
-db = SqliteDatabase('ramon.db')
 
 
 def readonly(sender, value, user_data):
     dpg.set_value(sender, not value)
 
-class DBTable:
+
+db = SqliteDatabase('ramon.db')
     
+class DDBB(Model):
+
+    version = DecimalField(max_digits=2, decimal_places=3, default=0.0)
+    db      = db
+
+    class Meta:
+        database = db
+
+    def init():        
+        from classes.cheevo     import Cheevo
+        from classes.game       import Game
+        from classes.superchat  import Superchat
+        from classes.ramon      import Ramon
+        try:
+            print("Connecting DB...")
+            DDBB.db.connect()
+            DDBB.db.create_tables([DDBB, Game, Cheevo, Superchat ])
+            try: 
+                rows = [ x for x in DDBB.select().dicts()]
+                if len(rows)>0:
+                    row = rows[0]
+                    r   = str(row['version'])
+                    if r != str(Ramon.version):
+                        a = 0/0
+                    Log.info(f"Found v{r} database file")
+            except Exception as E:
+                Log.warning("Database file is incompatible, purging to fix structure...")
+                # version didnt exist or file was corrupt
+                Game.drop_table()
+                Cheevo.drop_table()
+                Superchat.drop_table()
+                DDBB.db.create_tables([DDBB, Game, Cheevo, Superchat ])
+
+            DDBB.truncate_table()
+            cfg = DDBB(version=Ramon.version)
+            # Re-set db version
+            cfg.save()
+            print("DB connected.")
+            
+        except Exception as E:
+            Log.warning(str(E))
+        
+class DBTable:
+
     def __init__(self,name,fields=['id'],editable=[]):
         self.name       = name
         self.classname  = elegant(self.name)
@@ -35,7 +79,6 @@ class DBTable:
         fields      = self.fields
         editable    = self.editable
         rows        = self.rows
-      
 
         for index,row in enumerate(rows):
             with dpg.table_row(
@@ -89,7 +132,7 @@ class DBTable:
             exec(f'''{instaname} = {classname}.get(id={id})''')
             exec(f'''{instaname}.{fieldname}={ f'"{value}"' if isinstance(value, str) else value }''')
             exec(f'''{instaname}.save()''')
-            db.close()
+            #Database.db.close()
             Log.info("Stored data on DB")
         except Exception as E:
             Log.error("Cannot save data to DB", E)
@@ -117,5 +160,3 @@ class DBTable:
                         editable,
                     )
         return table
-
-        

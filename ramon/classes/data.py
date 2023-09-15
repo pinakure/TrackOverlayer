@@ -1,7 +1,8 @@
 import os, random, json
 from dearpygui              import dearpygui as dpg
 from datetime               import datetime, timedelta
-from classes.cheevo         import Cheevo,Game, db
+from classes.cheevo         import Cheevo
+from classes.game           import Game
 from classes.preferences    import Preferences
 from classes.log            import Log
 from classes.plugin         import Plugin
@@ -30,7 +31,7 @@ class Data(Scraper):
                 'password'  : password,
             },
             login_tokens    = [ '_token'    , '_method'                     ],
-            cookies   = [ 'XSRF-TOKEN', 'retroachievements_session'   ],
+            cookies         = [ 'XSRF-TOKEN', 'retroachievements_session'   ],
         )
         self.parent         = parent        
         self.echo           = False
@@ -175,7 +176,7 @@ class Data(Scraper):
                 dpg.set_value('stdout', 'Asuming no achievements, since no progressbar was found.')
                 return True
             Log.info("SCRAPER : Parsing payload...")
-            self.stats = stats.split('<div class="mb-5">')[1].split('</div>')[0]
+            self.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
             self.cheevos_raw    = self.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
             self.cheevos        = self.parseCheevos(self.game)
             
@@ -289,12 +290,13 @@ class Data(Scraper):
                 cheevo.save()
             except:
                 pass
-        print("NOTIFICATIONS:",notifications)
+        #print("NOTIFICATIONS:",notifications)
         return notifications
     
     def writeCheevo(self):
         for d in self.cheevos:
             if d.index == Cheevo.active_index:
+                self.the_cheevo = d
                 self.cheevo = d.name + "\n" + d.description
                 # get achievement picture
                 data = self.getCurrentCheevo( d.picture )
