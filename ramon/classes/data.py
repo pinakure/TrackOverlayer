@@ -74,6 +74,8 @@ class Data(Scraper):
             last   = True
         self.parent.queue = self.parent.queue[1:] if len( self.parent.queue)>1 else []
         cheevo = Cheevo.parse(self.game, head)
+        if cheevo.locked:
+            self.locked.append(cheevo)
         self.cheevos.append( cheevo )
         if cheevo.index == Cheevo.active_index:
             redraw = True
@@ -82,8 +84,10 @@ class Data(Scraper):
             self.writeCheevo()
         if redraw or last:
             if last: 
+                Cheevo.checkAll()
                 Plugin.compose()
                 Log.info("Ready")
+                # Set flag stating its safe to scan cheevos now
             self.parent.redraw()
 
     def parseCheevos(self, game):
@@ -180,6 +184,7 @@ class Data(Scraper):
             Log.info("SCRAPER : Parsing payload...")
             self.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
             self.cheevos_raw    = self.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
+            self.locked         = []
             self.cheevos        = self.parseCheevos(self.game)
             
         except Exception as E:

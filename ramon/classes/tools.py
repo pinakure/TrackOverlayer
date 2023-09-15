@@ -66,6 +66,14 @@ def cvar(name, value):
 def sane( insane ):
     return insane.replace("'", "`").replace(r'\`', '`')
 
+def copy(fin, fout):
+    try:
+        with open(fin, 'rb') as sin:
+            with open(fout, 'wb') as sout:
+                sout.write(sin.read())
+    except:
+        pass
+
 def ascii(string):
     table = {
         'ū' : 'u',
@@ -101,3 +109,10 @@ def mkdir(dirname):
     else:
         #Log.info(f"PLUGIN : Using directory '{dirname}'")
         pass
+
+def extract(mess, begin, end):
+    try :
+        return mess.split(begin)[1].split(end)[0]
+    except Exception as E:
+        return mess
+

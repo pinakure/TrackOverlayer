@@ -3,8 +3,13 @@ from requests_toolbelt      import MultipartEncoder
 from bs4                    import BeautifulSoup    
 from classes.preferences    import Preferences
 from classes.log            import Log
+from classes.database       import DDBB
+from peewee import *
 
 class Scraper:
+
+    class Meta:
+        database = DDBB.db
 
     def __init__(self, protocol="https", host="locahost", port=None, needs_login=False, login_form_url='', login_post_url='', login_username='', login_password='', target_url='', login_fields=[], login_tokens=[], cookies=[], form_boundary=False):
         # Please check if this association is even used on the code or remove it
@@ -26,7 +31,7 @@ class Scraper:
         self.login_post_url         = self.url( login_post_url )
         self.target_url             = self.url( target_url )
         #self.user_agent             = '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"'
-        self.user_agent             = f'tRAckOverlayer/{ login_username }',
+        self.user_agent             = f'tRAckOverlayer/{ login_username }'
         self.form_data              = None        
         self.login_last_username    = None
         self.response               = None
@@ -167,7 +172,6 @@ class Scraper:
 
     def getMultiPartBoundaryFormData( self ):
             import random, string
-            from requests_toolbelt import MultipartEncoder
             boundary_token = ''.join(
                 random.sample(
                     string.ascii_letters + string.digits, 
