@@ -86,6 +86,10 @@ class Cheevo(Model):
             #cheevo.check()
 
     def check(self):
+        if Preferences.settings['offline']: 
+            Log.info(f"Skipping cheevo '{ self.name }' checking due to offline mode")
+            return
+    
         if self.locked: 
             Log.info(f"Checking cheevo '{ self.name }'...")
             self.scraper.get()
