@@ -128,7 +128,17 @@ class Ramon:
         Preferences.parent = Ramon
         Preferences.loadcfg()
         DDBB.init()
-        os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
+        
+
+        Ramon.data  = Data(Ramon)
+        Ramon.data.retrieveSession()
+
+        HotKeys.install()
+        mkdir('data')
+        mkdir('data/cache')
+        mkdir('data/css')
+        try: os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
+        except: pass
         copy(
             f'{Preferences.settings["root"]}/plugins/default.png',
             f'{Preferences.settings["root"]}/data/current_cheevo.png',
@@ -137,12 +147,6 @@ class Ramon:
             f'{Preferences.settings["root"]}/plugins/default.png',
             f'{Preferences.settings["root"]}/data/current_cheevo_lock.png',
         )
-
-        Ramon.data  = Data(Ramon)
-        HotKeys.install()
-        mkdir('data')
-        mkdir('data/cache')
-        mkdir('data/css')
         if Preferences.settings['vertical']:
             w, h = Ramon.width,Ramon.height
             Ramon.height = w
@@ -334,10 +338,14 @@ class Ramon:
     def exit():
         from classes.server   import Server
         from classes.database import DDBB
+        import asyncio
         try:
-            Server.exit.set()
+            Ramon.data.storeSession()
+            
+            asyncio.run(Server.exit())
+            
             DDBB.db.close()
-            #Server._thread.stop()
+            
             if Ramon.timer:
                 Ramon.timer.cancel()
                 Ramon.timer = None

@@ -3,7 +3,7 @@ from classes.preferences    import Preferences
 from classes.log            import Log
 from threading              import Thread, Event
 from websockets.server      import serve
-import json, asyncio
+import json, asyncio,os 
 
 def encodeResponse(response_type, payload):
     return '{'+f''' "response":"{response_type}","data":{ json.dumps(payload) }'''+"}"
@@ -20,14 +20,26 @@ class Server:
     '''
     _thread = None
     ramon   = None
-    exit    = Event()
+
+    async def exit():
+        import websockets
+        async with websockets.connect('ws://localhost:8765') as websocket:
+            while 1:
+                try:
+                    #a = readValues() #read values from a function
+                    #insertdata(a) #function to write values to mysql
+                    await websocket.send("exit")
+                except Exception as e:
+                    print(e)
+        
 
     async def handleRequest(websocket):
         from classes.superchat import Superchat
         async for message in websocket:
             if Server.ramon.requesting: return
             if Preferences.settings['debug']: print(f"WS : {message}")
-            if   message == 'get-data'                   : await websocket.send( encodeResponse('data'          , Endpoints.getAll()                    ))
+            if message.startswith('exit'                ): os._exit(0)
+            elif message.startswith('get-data'          ): await websocket.send( encodeResponse('data'          , Endpoints.getAll()                    ))
             elif message.startswith('get-plugins'       ): await websocket.send( encodeResponse('plugins'       , Endpoints.plugins()                   ))
             elif message.startswith('get-clock'         ): await websocket.send( encodeResponse('clock'         , Endpoints.clock()                     ))
             elif message.startswith('get-game'          ): await websocket.send( encodeResponse('game'          , Endpoints.game()                      ))
@@ -54,5 +66,6 @@ class Server:
         Server.ramon = main_class
         Log.info("Starting Live Data Service, listening port 8765")
         async with serve(Server.handleRequest, 'localhost', 8765):
-            while not Server.exit.isSet():
+            #while 1:
+                print("Websocket Server is Running...")
                 await asyncio.Future()

@@ -86,8 +86,8 @@ class Preferences:
                 UI.numeric      ("Y Position"       , 'y-pos'                               , callback=Preferences.updateSettingVideo )
                 UI.jump()
                 
-                # UI.setColumns   (last_count, last_width)
-                # last_width,last_count = UI.setColumns(4, Preferences.width/4)
+                UI.setColumns   (last_count, last_width)
+                last_width,last_count = UI.setColumns(4, Preferences.width/4)
                 
                 UI.label        ("Twitch"           , Color.grape       , left_align=True   )
                 UI.jump()
@@ -103,7 +103,6 @@ class Preferences:
                 UI.textfield    ("API Key"          , 'ra-app-key'      , password=True     )
                 UI.jump()
                 UI.jump()
-                UI.setColumns   (last_count, last_width)
                 UI.label        ("RA Scraper Setup" , Color.grape        , left_align=True   ); UI.jump()
                 UI.checkbox     ("Offline Mode"     , 'offline'                             )
                 UI.checkbox     ("Auto Refresh"     , 'auto_update'                         )
@@ -321,6 +320,18 @@ class Preferences:
             for field in json_fields:                
                 Preferences.settings[field] = json.loads( str(Preferences.settings[field]) )
             Cheevo.active_index = Preferences.settings['current_cheevo']
+
+            # Restore last session if any
+            if 'session' in Preferences.settings.keys():
+                Log.info("Found session data in config file")
+                sessiondata = json.loads(Preferences.settings['session'])
+                if len(sessiondata):
+                    Log.info("Attempting session restore...")
+                    session = sessiondata
+            else: 
+                session = None
+            
+
         except Exception as E:
             Log.error("PREFERENCES : Cannot parse/load config.txt", E)
             return 

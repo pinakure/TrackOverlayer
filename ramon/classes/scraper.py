@@ -122,6 +122,12 @@ class Scraper:
     def sameLoginUsername(self):
         return self.login_last_username == self.login_username
     
+    def storeSession(self):
+        return
+        
+    def retrieveSession(self):
+        return
+    
     def login(self):
         try:
             # Avoid double login, but keep ability to re-login if username changes during execution
@@ -131,7 +137,7 @@ class Scraper:
             Log.info("SCRAPER : Logging in...")
             
             # Inject headers for future requests
-            self.session = requests.Session()
+            self.session = requests.Session() if self.session is None else self.session
             self.session.headers.update({
                 'Host'                      : self.host,
                 # 'User-Agent'                : 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31',
