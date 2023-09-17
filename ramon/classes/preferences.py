@@ -71,8 +71,8 @@ class Preferences:
             with dpg.child_window():
                 UI.setCursor(0,0)
                 last_width,last_count = UI.setColumns(4, (Preferences.width/4)-8)
-                UI.label        ("Interface"        , Color.grape        , left_align=True   ); UI.jump()
-                UI.checkbox     ("Simple UI"        , 'simple_ui'                           , enabled = False)
+                UI.label        ("Interface"        , Color.grape        , left_align=True  ); UI.jump()
+                UI.checkbox     ("Simple UI"        , 'simple_ui'                           )
                 UI.checkbox     ("Fullscreen"       , 'fullscreen'                          )
                 UI.checkbox     ("Vertical Layout"  , 'vertical'                            )
                 UI.jump()

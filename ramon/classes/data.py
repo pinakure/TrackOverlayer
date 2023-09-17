@@ -161,9 +161,10 @@ class Data(Scraper):
     def setActiveCheevo(self, index):
         Cheevo.active_index = index
         Preferences.settings['current_cheevo'] = Cheevo.active_index                
-        for i in range(0,Cheevo.max):
-            dpg.set_value(f'cheevo[{i+1}]', False)
-            dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
+        if not Preferences.settings['simple_ui']:
+            for i in range(0,Cheevo.max):
+                dpg.set_value(f'cheevo[{i+1}]', False)
+                dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
      
     def getCheevos(self):
         import random

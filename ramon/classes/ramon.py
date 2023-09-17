@@ -7,7 +7,7 @@ from classes.preferences    import Preferences
 from classes.log            import Log
 from classes.plugin         import Plugin
 from classes.ui             import UI , row as ROW, column as COLUMN
-from classes.tools          import mkdir, copy
+from classes.tools          import mkdir, copy, elegant
 from classes.hotkeys        import HotKeys
 from threading              import Timer
 
@@ -45,9 +45,10 @@ class Ramon:
         Ramon.data.game.current = Cheevo.active_index
         Preferences.settings['current_cheevo'] = Cheevo.active_index
         Ramon.data.game.save()
-        for i in range(0,Cheevo.max):
-            dpg.set_value(f'cheevo[{i+1}]', False)
-        dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
+        if not Preferences.settings['simple_ui']:
+            for i in range(0,Cheevo.max):
+                dpg.set_value(f'cheevo[{i+1}]', False)
+            dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
         Ramon.data.writeCheevo()
         Plugin.runLoaded()
         Ramon.redraw()
@@ -65,42 +66,31 @@ class Ramon:
         os.system(f'start {web}')
     
     def createMenu():
-        # menu = {
-        #     'Actions'   : { 
-        #         'Redump'                : Ramon.data.write,
-        #         'Refresh'               : Ramon.refresh,
-        #         'Compile'               : Ramon.compile,
-        #         'Exit'                  : Ramon.exit,
-        #     },
-        #     'Options'   : { 
-        #         'Preferences'           : Preferences.show,
-        #         'Message Log'           : Log.show,
-        #     },
-        #     'Links'   : { 
-        #         'Message Log'           : Log.show,
-        #         'Twitch'   : { 
-        #         },
-        #         'RetroAchievements'   : { 
-        #         },
-        #     },
-        # }
-        with dpg.menu_bar():
-            with dpg.menu(label="Actions"):
-                dpg.add_menu_item(label="Force Overlay Rebuild "   , callback=Plugin.compose    , tag="menu-compose")
-                dpg.add_menu_item(label="Update profile data   "   , callback=Ramon.refresh)
-                dpg.add_menu_item(label="Refresh locked cheevos"   , callback=Cheevo.checkAll)
-                dpg.add_menu_item(label="Compile               "   , callback=Ramon.compile)
-                dpg.add_menu_item(label="Exit                  "   , callback=Ramon.trigger_exit)
-            with dpg.menu(label="Options"):
-                dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )                
-            with dpg.menu(label="Links"):
-                dpg.add_menu_item(label="TO Overlay"           , tag="overlay-link" , callback=Ramon.openWeb, user_data="overlay"  )
-                with dpg.menu(label="Twitch"):
-                    dpg.add_menu_item(label="Chat"              , tag="twitch_chat" , callback=Ramon.openWeb, user_data="twitch-chat"  )
-                with dpg.menu(label="RetroAchievements"):
-                    dpg.add_menu_item(label="User Profile"      , tag="ra_user_profile" , callback=Ramon.openWeb, user_data="ra-user"     )
-                    dpg.add_menu_item(label="Game Profile"      , tag="ra_game_profile" , callback=Ramon.openWeb, user_data="ra-game"     )
-                    dpg.add_menu_item(label="Cheevo Page"       , tag="ra_cheevo_page"  , callback=Ramon.openWeb, user_data="ra-cheevo"   )
+        data = {
+            'actions'   : { 
+                'force-overlay-rebuild' : [Plugin.compose   ,None],
+                'update-profile-data'   : [Ramon.refresh    ,None],
+                'refresh-locked-cheevos': [Cheevo.checkAll  ,None],
+                'compile'               : [Ramon.compile    ,None],
+                'exit'                  : [Ramon.exit       ,None],
+            },
+            'options'   : { 
+                'preferences'           : [Preferences.show ,None],
+            },
+            'links'   : { 
+                'to-overlay'            : [Ramon.openWeb    ,'overlay'],
+                'twitch'                : {
+                    'chat'                  : [Ramon.openWeb    ,'twitch-chat'  ],
+                },
+                'retroachievements'     : {
+                    'user-profile'          : [Ramon.openWeb    ,'ra-user'      ],
+                    'game-profile'          : [Ramon.openWeb    ,'ra-game'      ],
+                    'cheevo-page'           : [Ramon.openWeb    ,'ra-cheevo'    ],
+                },
+            },
+        }
+        with dpg.menu_bar( tag='menu-root' ):
+            menu( data, 'menu-root' )
 
     def resizeViewport(a,pos):
         Ramon.height        = dpg.get_viewport_height() 
@@ -158,6 +148,7 @@ class Ramon:
         Ramon.setPosition( Preferences.settings['x-pos'], Preferences.settings['y-pos'] )
         if not Preferences.settings['username'] or len(Ramon.data.cheevos) == 0:
             Ramon.setProgress(1.0)
+        Ramon.loadPictures()
         Server.start()
         return True
     
@@ -175,6 +166,27 @@ class Ramon:
         dpg.set_viewport_large_icon     (f"{Preferences.settings['root']}/icon.ico")
         dpg.setup_dearpygui()
         
+    def loadPictures():
+        dirname = Preferences.settings['root']+'/data/cache'
+       
+        pictures = {}
+        with dpg.texture_registry(show=False):
+            for file in [ x  for x in os.listdir( dirname ) if os.path.isfile(f'{dirname}/{x}') and x[0] != '.']:
+                try:   
+                    width, height, depth, data = dpg.load_image(f'{dirname}/{file}')                
+                    pictures.update({
+                        file : data,
+                    })
+                    dpg.add_static_texture(
+                        width           = width, 
+                        height          = height, 
+                        default_value   = data, 
+                        tag             = f"texture[{file}]",
+                    )
+                except Exception as E:
+                    Log.error(f"Cannot load '{file}'", E)
+
+
     def createInterface():
         with dpg.window(
             tag                         = 'main',
@@ -375,6 +387,51 @@ class Ramon:
             return False
 
     def redraw():
+        if not Preferences.settings['simple_ui']: return Ramon.olredraw()
+        try:
+            Ramon.clear()
+            for i in range(0,Cheevo.max):
+                dpg.delete_item(f'cheevo[{i+1}]')
+        except Exception as E: 
+            pass
+
+        dpg.set_value('game'  , Ramon.data.game.name      )
+        dpg.set_value('rank'  , Ramon.data.site_rank      )
+        dpg.set_value('score' , Ramon.data.score          )
+        dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
+        dpg.set_value('cheevo', Ramon.data.cheevo         )
+        Ramon.data.recent = []
+
+
+        left = 0
+        items = int(Ramon.inner_width/80)
+        group_index = 0        
+        
+        for d in Ramon.data.cheevos:
+            if left==0:
+                group_index+=1
+                try:dpg.delete_item(f'simple-group[{group_index}]')
+                except: pass
+                dpg.add_group(tag=f"simple-group[{group_index}]", horizontal=True, parent='main-content')
+                left = items+1
+            if d.locked: 
+                tag = f"cheebox[{d.picture}]"
+                try:dpg.delete_item(tag)
+                except: pass
+                dpg.add_image_button(
+                    tag=tag,
+                    width=64,
+                    height=64,
+                    texture_tag=f'texture[{d.picture}]',
+                    parent=f'simple-group[{group_index}]',
+                    user_data=d.index,
+                    callback=Ramon.updateCheevo,
+                )
+                with dpg.tooltip( tag ):
+                    dpg.add_text(d.name+"\n"+d.description)  
+            left -= 1              
+        
+    def olredraw():
         Ramon.clear()
         dpg.set_value('game'  , Ramon.data.last_seen      )
         dpg.set_value('rank'  , Ramon.data.site_rank      )
@@ -393,7 +450,6 @@ class Ramon:
                 if len(Ramon.data.recent) < 5: 
                     Ramon.data.recent.append(d)
                 unlocked += '* '+ d.menu() + "\n"
-        #Plugin.compose()
         dpg.set_value('stdout'  , payload)
         dpg.set_value('unlocked', unlocked)
         dpg.set_item_pos('unlocked', (31,(26*Cheevo.global_index)))
@@ -430,3 +486,16 @@ class Ramon:
         Ramon.requesting = False
         return True
     
+def menu(node, parent):
+    for name,value in node.items():
+        if isinstance(value, dict):
+            newmenu = dpg.add_menu(label=elegant(name), parent=parent)
+            menu(value, newmenu )
+        else:
+            dpg.add_menu_item(
+                label       = elegant(name), 
+                callback    = value[0],
+                user_data   = value[1],
+                tag         = f"menu-{name.lower()}",
+                parent      = parent,
+            )
