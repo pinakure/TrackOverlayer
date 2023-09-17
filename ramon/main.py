@@ -77,6 +77,19 @@ Plugins now communicating via websocket instead of js events:
  These other plugins not needing comminication with T.O. 
 - bezel
 - twitchchat
+--------------------------------------
+-TODO:
+- Turn 'Disconnected Icon' optional
+- Turn 'Show completed cheevos' optional
+- Auto adjust column widths @ interface ( create layout class to handle )
+- Create / destroy checkbox controls DYNAMICALLY
+- Create Score/Ranking plugin
+- Caption option @ every plugin
+- Add optional current game display @ recentunlocks (match Leslie layout)
+- Allow editing plugin position and size from the overlay itself (edit mode)
+- Re-compose layout @ debug toggle
+- Re-compose layout @ plugin toggle
+--------------------------------------
 """
 try: 
     import os, sys

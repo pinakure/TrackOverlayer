@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html type="plugin" version="0.?" author="smiker@m4gtracker.com">
+    <head>
+        <link rel="stylesheet" type="text/css" href="./css/{% name %}.css">
+        <title>{% Name %}</title>
+        <style>
+            {% fullsized %}
+
+            html {
+                width           : 100%;
+                height          : 100%;
+                overflow        : hidden;
+            }
+            body {
+                width           : 100%;
+                height          : 100%;
+                overflow        : hidden;
+                image-rendering : pixelated;
+                background-image: var(--backdrop-file);
+                background-size : 100% 100%;
+            }
+        </style>
+    </head>
+    <body id="{% name %}">
+
+        <button id="startBtn" onclick="openCam()">Open Webcam</button>
+        <br/><br/>
+        <video id="videoCam"></video>
+        <script>
+            function openCam(){
+                let All_mediaDevices=navigator.mediaDevices
+                if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
+                    console.log("getUserMedia() not supported.");
+                    return;
+                }
+                All_mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                })
+                .then(function(vidStream) {
+                    var video = document.getElementById('videoCam');
+                    if ("srcObject" in video) {
+                    video.srcObject = vidStream;
+                    } else {
+                    video.src = window.URL.createObjectURL(vidStream);
+                    }
+                    video.onloadedmetadata = function(e) {
+                    video.play();
+                    };
+                })
+                .catch(function(e) {
+                    console.log(e.name + ": " + e.message);
+                });
+            }
+        </script>
+
+        <script>
+            {% plugin %}
+
+            var {% Name %} = {
+                
+                data : {
+
+                },
+
+                dom : {
+                    {% name %} : document.getElementById('{% name %}'),                    
+                },
+
+                {% framework %}
+                
+                update : function(){
+                },
+
+                {% websocket %}
+
+                socketHandle : function( event ){
+                    payload = JSON.parse(event.data);
+                    if( payload.response == {% Name %}.endpoint ){
+                        console.log("{% Name %} : WSDATA =", payload.data)
+                        // Update data object
+                        {% Name %}.data = JSON.parse(payload.data);
+                    }
+                },                
+            
+                start : function(){
+                    {% Name %}.loadSettings();
+                    {% Name %}.messageHandler();
+                    {% Name %}.update();       
+                }
+            }
+            {% Name %}.start()
+        </script>
+    </body>
+</html>

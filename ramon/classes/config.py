@@ -69,6 +69,7 @@ combos = [
 ]
 
 help = {    
+    'username'                  : "RA Username.\nPlease press ENTER and restart program if value is changed.",
     'no-welcome'                : "Hide initial authorization screen in overlay.html",
     'plugin-rate'               : "How often the plugins will try to update their data",
     'auto_update'               : "Request cheevo information to RetroAchievements periodically",

@@ -86,6 +86,7 @@ class Cheevo(Model):
             #cheevo.check()
 
     def check(self):
+        from classes.ramon import Ramon
         if Preferences.settings['offline']: 
             Log.info(f"Skipping cheevo '{ self.name }' checking due to offline mode")
             return
@@ -99,11 +100,13 @@ class Cheevo(Model):
                 '</a>'
             )
             if not '_lock' in data:
-                Log.info(f"Cheevo { self.id } has just been unlocked!")
+                Log.info(f"    Cheevo { self.id } has just been unlocked!")
+                self.notified = False
                 self.locked = False
+                Ramon.data.locked.remove(self)
                 self.save()
                 return
-            Log.info(f"Cheevo is still locked.")
+            Log.info(f"    Cheevo is still locked.")
 
     def dispatchQueue():
         from classes.ramon import Ramon

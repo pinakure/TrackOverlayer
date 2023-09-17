@@ -268,6 +268,7 @@ class Data(Scraper):
     #TODO: Move to endpoints
     def markNotification(self, notification_name):
         from classes.cheevo import Cheevo
+        Log.info(f"Marking cheevo '{notification_name}' as notified.")
         cheevo = Cheevo.get(Cheevo.name==notification_name)
         cheevo.notified = True
         cheevo.save()
@@ -305,9 +306,5 @@ class Data(Scraper):
     
     def write(self):
         if Preferences.settings['username'] == '': return
-        with open(f'{Preferences.root}/data/last_activity.txt'  , 'w') as file:   file.write(self.last_activity.strftime("%d %b %Y, %H:%M").upper() )
-        with open(f'{Preferences.root}/data/last_seen.txt'      , 'w') as file:   file.write(ascii(self.last_seen     ))
-        with open(f'{Preferences.root}/data/site_rank.txt'      , 'w') as file:   file.write(self.site_rank     )
-        with open(f'{Preferences.root}/data/score.txt'          , 'w') as file:   file.write(self.score         )        
         self.writeCheevo()
         

@@ -34,8 +34,13 @@ class Plugin:
         self.defaults       = {}
         self.dicts          = ''
         self.strings        = []
+        self.edit           = False
         self.settings       = {
-            'enabled' : False,
+            'enabled'   : False,
+            'pos-x'     : 0,
+            'size-x'    : 128,
+            'pos-y'     : 0,
+            'size-y'    : 128,
         }
         self.endpoint       = None #defines which kind of data payload will be fed from @rendering
         self.template       = 'template.html'
@@ -80,6 +85,11 @@ class Plugin:
 
     def saveDefaults(self):
         self.defaults.update(self.settings)
+
+    def toggleEdit(sender, value, plugin):
+        Plugin.loaded[plugin].edit ^= 1
+        Plugin.compose()
+        
 
     def setDefaults(sender, value, plugin):
         from dearpygui import dearpygui as dpg
@@ -310,7 +320,7 @@ class Plugin:
                 Log.error(f"Cannot run plugin {name}", E)    
         
     def cssRule(self):
-        return f'#{self.name}'+'{'+f"""
+        return f'#{self.name}, #{self.name}-border'+'{'+f"""
             left        : var(--{self.name}-left);
             top         : var(--{self.name}-top);
             width       : var(--{self.name}-width);
@@ -347,7 +357,7 @@ class Plugin:
         except Exception as E:
             Log.error("Cannot write Plugin Overlay template file", E)
         
-    def compose():
+    def compose(sender=None, user_data=None):
         # Generates overlay.html file:
         # This file holds an iframe per each one of the plugins, shaping their geometry from info inside each plugin.py
         # so it will be the only file to be included in OBS, which contains all the plugins running at once in a single
@@ -355,6 +365,7 @@ class Plugin:
         # This action needs to be done once per execution, as all plugins load their configuration in loadtime, and that 
         # settings are hardcoded in each plugin.py file, so we will have to stick with static configuration for a while
         Log.time()
+        if sender=='menu-compose':Plugin.runLoaded()
         #
         Log.info("Merging plugins into single overlay...")
         cvars = Plugin.getOverlayCVars()

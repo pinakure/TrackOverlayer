@@ -106,11 +106,11 @@ class Scraper:
             if not self.login():
                 Log.error("SCRAPER : Login failed")
                 return False
-        Log.info("SCRAPER : Getting payload...")
+        print("SCRAPER : Getting payload...")
         if not self.getPayload():
             Log.error("SCRAPER : Cannot parse get payload HTML")
             return False
-        Log.info("SCRAPER : Parsing payload...")
+        print("SCRAPER : Parsing payload...")
         return self.parse()
     
     def validateLoginUsername(self):

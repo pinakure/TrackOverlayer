@@ -59,6 +59,7 @@ class Endpoints:
         from classes.ramon import Ramon
         return response({ 
             'site_rank'     : Ramon.data.site_rank,
+            'site_rank'     : Ramon.data.site_rank,
             'score'         : Ramon.data.score,            
         })
     
@@ -68,6 +69,61 @@ class Endpoints:
             [ r.name, r.description, r.picture] for r in Ramon.data.recent
         ])
     
+    def resize(args):
+        from classes.ramon  import Ramon
+        from classes.plugin import Plugin
+        target = args.split('|')[1]
+        anchor = args.split('|')[2]
+        offset = int(args.split('|')[3])
+        plugin = Plugin.loaded[target]
+        print("Resize "+anchor+" of "+target+f" {offset} pixels")
+        if anchor == 'right'    : plugin.settings['size-x']+=offset
+        if anchor == 'bottom'   : plugin.settings['size-y']+=offset
+        if anchor=='left': 
+            plugin.settings['size-x']-=offset
+            plugin.settings['pos-x']+=offset
+        if anchor=='top' : 
+            plugin.settings['size-y']-=offset
+            plugin.settings['pos-y']+=offset
+        Plugin.writeConfig()
+        plugin.run()
+        Plugin.compose()
+        return response({
+            "target" : target,
+            "size"   : {
+                "x"     : plugin.settings['size-x'],
+                "y"     : plugin.settings['size-y'],
+            },
+            "position"   : {
+                "x"     : plugin.settings['pos-x'],
+                "y"     : plugin.settings['pos-y'],
+            },
+        })
+
+    def move(args):
+        from classes.ramon  import Ramon
+        from classes.plugin import Plugin
+        print("Move", args)
+        target = args.split('|')[1]
+        offset = [
+            int(args.split('|')[2]),
+            int(args.split('|')[3]),
+        ]
+        plugin = Plugin.loaded[target]
+        print("Move plugin "+target+f" {offset[0]}, {offset[1]} pixels")
+        plugin.settings['pos-x']+=offset[0]
+        plugin.settings['pos-y']+=offset[1]
+        Plugin.writeConfig()
+        plugin.run()
+        Plugin.compose()
+        return response({
+            "target" : target,
+            "position"   : {
+                "x"     : plugin.settings['pos-x'],
+                "y"     : plugin.settings['pos-y'],
+            },
+        })
+
     def clock():
         from classes.plugin import Plugin
         now = datetime.now()

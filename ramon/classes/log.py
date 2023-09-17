@@ -8,7 +8,7 @@ class Log:
     BR      = '\n'
     width   = 800
     height  = 0
-    
+    buffer  = []    
     
     def create(parent):
         Log.parent = parent 
@@ -58,8 +58,21 @@ class Log:
                 ),
             )
             print(text, end=Log.BR)
-            
+        
+        Log.buffer.append(text)            
+        if len(Log.buffer) > 256:
+            with open('trackoverlayer.log', 'a') as file:
+                  file.write( Log.BR.join( Log.buffer ) )
+            Log.buffer = []
     
+    def open():
+        with open('trackoverlayer.log', 'w') as file:
+            pass
+
+    def close():
+        with open('trackoverlayer.log', 'a') as file:
+            file.write( "\n".join( Log.buffer ) )
+        
     def warning(text):
         Log.print("WARNING:\n\t"+text+"\n")
 

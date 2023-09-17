@@ -45,6 +45,8 @@ class Server:
             elif message.startswith('get-game'          ): await websocket.send( encodeResponse('game'          , Endpoints.game()                      ))
             elif message.startswith('get-current-cheevo'): await websocket.send( encodeResponse('current-cheevo', Endpoints.current_cheevo()            ))
             elif message.startswith('get-score'         ): await websocket.send( encodeResponse('score'         , Endpoints.score()                     ))
+            elif message.startswith('resize'            ): await websocket.send( encodeResponse('resize'        , Endpoints.resize(message)             ))
+            elif message.startswith('move'              ): await websocket.send( encodeResponse('move'          , Endpoints.move(message)               ))
             elif message.startswith('get-recent'        ): await websocket.send( encodeResponse('recent'        , Endpoints.recent()                    ))
             elif message.startswith('get-vpu'           ): await websocket.send( encodeResponse('vpu'           , Endpoints.vpu()                       ))
             elif message.startswith('get-progress'      ): await websocket.send( encodeResponse('progress'      , Endpoints.progress()                  ))

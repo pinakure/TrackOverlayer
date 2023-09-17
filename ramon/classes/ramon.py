@@ -52,7 +52,7 @@ class Ramon:
         Plugin.runLoaded()
         Ramon.redraw()
     
-    def exit():
+    def trigger_exit(sender=None, user_data=None):
         Ramon.run = False         
 
     def openWeb(sender, args, type):
@@ -86,13 +86,13 @@ class Ramon:
         # }
         with dpg.menu_bar():
             with dpg.menu(label="Actions"):
-                dpg.add_menu_item(label="Redump                "   , callback=Ramon.data.write)
-                dpg.add_menu_item(label="Refresh               "   , callback=Ramon.refresh)
+                dpg.add_menu_item(label="Force Overlay Rebuild "   , callback=Plugin.compose    , tag="menu-compose")
+                dpg.add_menu_item(label="Update profile data   "   , callback=Ramon.refresh)
+                dpg.add_menu_item(label="Refresh locked cheevos"   , callback=Cheevo.checkAll)
                 dpg.add_menu_item(label="Compile               "   , callback=Ramon.compile)
-                dpg.add_menu_item(label="Exit                  "   , callback=Ramon.exit  )
+                dpg.add_menu_item(label="Exit                  "   , callback=Ramon.trigger_exit)
             with dpg.menu(label="Options"):
-                dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )
-                dpg.add_menu_item(label="Log"               , tag="view_log"    , callback=Log.show             )
+                dpg.add_menu_item(label="Preferences"       , tag="preferences" , callback=Preferences.show     )                
             with dpg.menu(label="Links"):
                 dpg.add_menu_item(label="TO Overlay"           , tag="overlay-link" , callback=Ramon.openWeb, user_data="overlay"  )
                 with dpg.menu(label="Twitch"):
@@ -125,6 +125,7 @@ class Ramon:
     def start():
         from classes.database   import DDBB
         from classes.server     import Server # private import needed here to avoid import loop
+        Log.open()
         Preferences.parent = Ramon
         Preferences.loadcfg()
         DDBB.init()
@@ -341,7 +342,6 @@ class Ramon:
         try:
             Ramon.data.storeSession()
             
-            asyncio.run(Server.exit())
             
             DDBB.db.close()
             
@@ -349,8 +349,7 @@ class Ramon:
                 Ramon.timer.cancel()
                 Ramon.timer = None
             # Begin deinitialization, begin dumping the log 
-            with open('ramon.log', "w") as file:
-                file.write(dpg.get_value('log'))
+            Log.close()
             # Unbind messages from log to see them while ui is deinitializedlog             
             Log.stdout = True
             # Store window position and shape at exit
@@ -366,7 +365,10 @@ class Ramon:
             dpg.remove_alias("main") 
             dpg.delete_item('main')
             dpg.destroy_context()        
-            Log.info("Closed succesfully")       
+            Log.info("Closed succesfully")
+            print("Program end reached.")
+            Ramon.run = False
+            asyncio.run(Server.exit())
             return True
         except Exception as E:
             Log.error("Error during deinitialization", E)
@@ -417,7 +419,7 @@ class Ramon:
             Log.info("Scraping done.")
             Ramon.clear()
             Ramon.redraw()
-            Ramon.data.write()
+            Ramon.data.writeCheevo()
             Plugin.runLoaded()
             dpg.set_viewport_title('tRAckOverlayer - '+("Offline Mode" if Preferences.settings["offline"] else "Ready"))
         else:

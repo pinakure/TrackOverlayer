@@ -150,7 +150,7 @@ class Preferences:
                             'cached',
                             'game',                            
                         ], 
-                        editable=['description', 'name', 'notified']
+                        editable=['description', 'name', 'locked', 'notified']
                     )
                     Preferences.table_superchat = DBTable.create(
                         'superchat', 
@@ -228,6 +228,7 @@ class Preferences:
                     #
                     dpg.add_button(label="Preview", pos=( cfg.width - 96, 8), callback=Preferences.parent.openWeb,  user_data=plugin.name)
                     dpg.add_button(label="Default", pos=( cfg.width - 96,48), callback=Plugin.setDefaults, user_data=plugin.name)
+                    dpg.add_checkbox(label="Edit" , pos=( cfg.width - 96,72), callback=Plugin.toggleEdit, user_data=plugin.name)
                 if not _item_details: continue
                 #
                 # Create plugin details window and all expected details controls

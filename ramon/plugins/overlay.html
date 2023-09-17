@@ -185,7 +185,69 @@ Special thanks:
             #overlay.ready:before   { content: "PLEASE CLICK";}
             #overlay.ready:after    { content: "TO START";}
             #overlay.ready img      { width: 64px; height: 64px; }
+
+            iframe,body {
+                user-select: none;
+            }            
+
+            .edit-anchor{
+                pointer-events  : all !important;
+                width           : 8px;
+                height          : 8px;
+                display         : inline-block;
+                position        : absolute;
+                background-color: #f00;
+                user-select     : none;
+            }
+
+            .edit-anchor:nth-child(1){
+                left            : calc( 50% - 4px );
+                top             : -8px;             
+                cursor          : n-resize;
+            }
             
+            .edit-anchor:nth-child(2){
+                right           : -8px;
+                top             : calc( 50% - 4px );
+                cursor          : w-resize;
+            }
+            
+            .edit-anchor:nth-child(3){
+                left            : calc( 50% - 4px );
+                bottom          : -8px;             
+                cursor          : s-resize;
+            }
+            
+            .edit-anchor:nth-child(4){
+                left            : -8px;
+                top             : calc( 50% - 4px );
+                cursor          : e-resize;
+            }
+            
+
+            /* Edition anchor */
+            .edit-border * {
+                display         : none;
+            }
+            .edit-border {
+                pointer-events  : all !important;
+                border-color    : #00f !important;
+                position        : absolute;
+                overflow        : visible;
+                z-index         : 1000;
+                cursor          : move;
+                border          : 2px dashed #00f;
+            }
+            .edit-border:hover,.edit-borderactive {
+                border-color    : #f80 !important;
+            }
+            .edit-border:hover * {
+                display         : inline-block !important;
+            }
+
+        
+                
+
             /* -----------------------------------------------
                             GENERATED CONTENT 
             ----------------------------------------------- */
@@ -216,8 +278,10 @@ Special thanks:
                     con     : document.getElementById('console'),
                     body    : document.getElementsByTagName('body')[0],
                     overlay : document.getElementById('overlay'),
+                    borders : {},
                     /*{% plugins %}*/
                     {% plugins %}
+                    
                     
                 },
 
@@ -299,28 +363,149 @@ Special thanks:
                     });
                     // Create plugins
                     for( plugin_name in TO.dom.plugins ){
+                        // Add widget plugin 
                         iframe          = document.createElement('iframe');
                         iframe.autoplay = true;
                         iframe.id       = `${plugin_name}`;
                         iframe.origin   = `http://localhost`;
                         iframe.sandbox  = 'allow-same-origin allow-scripts allow-top-navigation';
                         iframe.style.overflow = 'hidden';
-                        iframe.src      = `${ plugin_name }.html`;
-                        TO.dom.to.appendChild(iframe)
-                        TO.dom.plugins[ plugin_name ] = document.getElementById(`${ plugin_name }`)                        
-                    }
+                        iframe.src      = `${ plugin_name }.html`;                        
+                        TO.dom.to.appendChild(iframe);
+                        TO.dom.plugins[ plugin_name ] = document.getElementById(`${ plugin_name }`);
+                        // Add widget plugin edition border
+                        div                 = document.createElement('div');
+                        div.id              = `${plugin_name}-border`;
+                        div.className       = `edit-border`;
+                        TO.dom.to.appendChild(div);
+                        TO.dom.borders[ plugin_name ] = document.getElementById(`${ plugin_name }-border`);
+                        /*--------------------------------------------------------------------------*/
+                        anchors             = [
+                            document.createElement('div'),
+                            document.createElement('div'),
+                            document.createElement('div'),
+                            document.createElement('div'),
+                        ];
+                        //anchor.id = `${plugin_name}-border`;
+                        for(i=0; i<4; i++){
+                            anchors[i].className    = `edit-anchor`;
+                            anchors[i].id           = `${plugin_name}-anchor-${i}`;
+                            anchors[i].onmousedown  = TO.resizeHandler.trap;
+                            TO.dom.borders[ plugin_name ].appendChild(anchors[i]);
+                        }
+                        /*--------------------------------------------------------------------------*/                        
+                        TO.dom.borders[ plugin_name ].onmousedown = TO.moveHandler.trap;
+                    };
+
+                    document.onmouseup = TO.resizeHandler.release;
+
                     TO.settings.sound = true;
                     try{
                         document.getElementById('overlay').className = 'fadeout';
-                        setTimeout(function(){ document.getElementById('overlay').remove();}, 
-                        2000);
+                        setTimeout(
+                            function(){ 
+                                document.getElementById('overlay').remove();
+                            }, 
+                            2000
+                        );
                     }catch(e){
-
+                        // no curtain enabled/loaded
                     }
 
                     TO.connect();
                 },
-                  
+
+                moveHandler     : {
+                    target : null,
+                    begin  : {
+                        x : 0,
+                        y : 0,
+                    },
+                    end    : {
+                        x : 0,
+                        y : 0,
+                    },
+
+                    trap    : function(e){
+                        if( TO.resizeHandler.target ) return;
+                        
+                        TO.moveHandler.target   = e.srcElement.id.split('-')[0];
+                        TO.moveHandler.begin.x  = e.clientX;
+                        TO.moveHandler.begin.y  = e.clientY;
+                    }, 
+                    release : function(e){
+                        if( TO.resizeHandler.target ) return;
+                        if( !TO.moveHandler.target  ) return
+                        
+                        TO.moveHandler.end.x    = e.clientX;
+                        TO.moveHandler.end.y    = e.clientY;
+                        TO.moveHandler.move();
+                        TO.moveHandler.target   = null;                        
+                    }, 
+                    move    : function(){
+                        if( ! TO.moveHandler.target ) return;
+                        offset = {
+                            x : TO.moveHandler.end.x - TO.moveHandler.begin.x,
+                            y : TO.moveHandler.end.y - TO.moveHandler.begin.y,
+                        };
+                        // Request resize apply and force render plugin
+                        TO.socket.send(`move|${TO.moveHandler.target}|${offset.x}|${offset.y}`);
+                    },
+                },
+
+                resizeHandler   : {
+                    
+                    anchors: ['top','right','bottom','right'],
+                    anchor : null,
+                    node   : null,
+                    target : null,
+                    begin  : {
+                        x : 0,
+                        y : 0,                        
+                    },
+                    end    : {
+                        x : 0,
+                        y : 0,                        
+                    },
+
+                    trap    : function(e){
+                        
+                        if( TO.moveHandler.target ) return;
+
+                        TO.resizeHandler.target  = e.srcElement.id.split('-')[0];
+                        TO.resizeHandler.anchor  = TO.resizeHandler.anchors[e.srcElement.id.split('-')[2]];
+                        TO.resizeHandler.node    = e.srcElement.parentElement;                        
+                        TO.resizeHandler.begin.x = e.clientX;
+                        TO.resizeHandler.begin.y = e.clientY;
+                    },
+
+                    release : function(e){
+                        if( (  TO.moveHandler.target   ) 
+                        ||  ( !TO.resizeHandler.target )
+                        ||  ( !TO.resizeHandler.anchor )
+                        ) return TO.moveHandler.release(e);
+
+                        TO.resizeHandler.end.x = e.clientX;
+                        TO.resizeHandler.end.y = e.clientY;;
+                        TO.resizeHandler.resize()
+                        TO.resizeHandler.target = null;
+                        TO.resizeHandler.node   = null;
+                        TO.resizeHandler.anchor = null;
+                    },
+
+                    resize : function(){
+                        offset  = 0;
+                        switch( TO.resizeHandler.anchor ){
+                            case 'top'      : offset = TO.resizeHandler.end.y - TO.resizeHandler.begin.y; break;
+                            case 'bottom'   : offset = TO.resizeHandler.end.y - TO.resizeHandler.begin.y; break;
+                            case 'right'    : offset = TO.resizeHandler.end.x - TO.resizeHandler.begin.x; break;
+                            case 'left'     : offset = TO.resizeHandler.end.x - TO.resizeHandler.begin.x; break;
+                        }
+                        // Request resize apply and force render plugin
+                        TO.socket.send(`resize|${TO.resizeHandler.target}|${TO.resizeHandler.anchor}|${offset}`);
+                    },
+                },
+                                  
                 connect : function(){
                     TO.socket = new WebSocket("ws://localhost:8765");
                     TO.socket.addEventListener("open", (event) => {
@@ -341,6 +526,33 @@ Special thanks:
                                     console.warn(e);
                                 }
                                 switch(response){
+                                    case 'resize':
+                                        console.log(response,'->', data);                                
+                                        // Resize an iframe dinamically
+                                        targets = [ document.getElementById(data.target), document.getElementById(`${data.target}-border`)];
+                                        for(ti in targets){
+                                            target              = targets[ti];
+                                            target.style.width  = `${data.size.x}px`;
+                                            target.style.height = `${data.size.y}px`;
+                                            target.style.left   = `${data.position.x}px`;
+                                            target.style.top    = `${data.position.y}px`;
+                                            src                 = target.src;
+                                            target.src          = '';
+                                            target.src          = src;
+                                        }
+                                        break;
+
+                                    case 'move':
+                                        console.log(response,'->', data);                                
+                                        // Resize an iframe dinamically
+                                        targets = [ document.getElementById(data.target), document.getElementById(`${data.target}-border`)];
+                                        for(ti in targets){
+                                            target              = targets[ti];
+                                            target.style.left   = `${data.position.x}px`;
+                                            target.style.top    = `${data.position.y}px`;
+                                        }
+                                        break;
+
                                     case 'plugins':
                                         for(p in data){
                                             data[p].settings = JSON.parse(data[p].settings);
@@ -350,6 +562,10 @@ Special thanks:
                                                 } catch(e){
                                                     continue;
                                                 }
+                                            }
+                                            
+                                            if((p in TO.dom.borders) && !data[p].settings.edit){
+                                                TO.dom.borders[p].style.display = 'none';
                                             }
                                         }
                                         TO.plugins = data;
