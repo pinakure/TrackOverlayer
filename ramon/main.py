@@ -78,18 +78,21 @@ Plugins now communicating via websocket instead of js events:
 - bezel
 - twitchchat
 --------------------------------------
--TODO:
+18/9/23 - Changelog
 - Turn 'Disconnected Icon' optional
+- Simple UI Interface mode
+- Add Score/Ranking plugin
+- Live Edit: Allow editing plugin position and size from the overlay itself (edit mode)
+- Re-compose overlay layout @ debug toggle
+- Re-compose overlay layout @ plugin toggle
+- Add edit option @every plugin (allows live editing on the overlay)
+--------------------------------------
+-TODO:
 - Turn 'Show completed cheevos' optional
 - Auto adjust column widths @ interface ( create layout class to handle )
 - Create / destroy checkbox controls DYNAMICALLY
-- Create Score/Ranking plugin
 - Caption option @ every plugin
 - Add optional current game display @ recentunlocks (match Leslie layout)
-- Allow editing plugin position and size from the overlay itself (edit mode)
-- Re-compose layout @ debug toggle
-- Re-compose layout @ plugin toggle
---------------------------------------
 """
 try: 
     import os, sys

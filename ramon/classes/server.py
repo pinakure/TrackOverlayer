@@ -20,6 +20,7 @@ class Server:
     '''
     _thread = None
     ramon   = None
+    ws      = None
 
     async def exit():
         import websockets
@@ -31,10 +32,18 @@ class Server:
                     await websocket.send("exit")
                 except Exception as e:
                     print(e)
-        
+
+    async def send(message, payload={}):
+        from classes.endpoints import response
+        if Server.ws is None:
+            Log.warning("WEBSOCKET : Attempted to send message to NULL websocket")
+            return
+        await Server.ws.send( encodeResponse(message, response(payload) ) )
+
 
     async def handleRequest(websocket):
         from classes.superchat import Superchat
+        Server.ws = websocket
         async for message in websocket:
             if Server.ramon.requesting: return
             if Preferences.settings['debug']: print(f"WS : {message}")

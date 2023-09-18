@@ -21,6 +21,7 @@ class Config:
         'password'                  : '',
         'twitch-username'           : '',
         'twitch-password'           : '',
+        'show-disconnect-icon'      : True,
         'root'                      : '.',
         'gmt'                       : 2,
         'twitch-app-key'            : '',

@@ -36,17 +36,16 @@
             }
 
             #{% name %} {
-                perspective                 :  800px;
+                perspective                 :  var(--perspective);
             }
 
             #{% name %}-content {
-                transform                   : rotateY(-35deg);
+                transform                   : rotateY( var(--angle) );
                 width                       : 100%;
                 height                      : 100%;
                 top                         : 0px;
                 left                        : 0px;
             }
-            
 
             #{% name %}-caption {
                 text-align                  : left;

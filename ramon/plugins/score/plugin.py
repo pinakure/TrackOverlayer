@@ -23,8 +23,8 @@ class plugin(Plugin):
             'size-x'                    : self.width,
             'pos-y'                     : self.y,
             'size-y'                    : self.height,            
-            'perspective'               : 800,
             'angle'                     : -35,
+            'perspective'               : 800,
             
             'caption-color'             : [ 255, 205, 0 , 255],
             'caption-font-type'         : 'arcade',

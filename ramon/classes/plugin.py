@@ -87,8 +87,11 @@ class Plugin:
         self.defaults.update(self.settings)
 
     def toggleEdit(sender, value, plugin):
+        from classes.server import Server
+        import asyncio
         Plugin.loaded[plugin].edit ^= 1
         Plugin.compose()
+        asyncio.run(Server.send('reload', { 'plugin' : plugin } ))
         
 
     def setDefaults(sender, value, plugin):
@@ -190,11 +193,12 @@ class Plugin:
             Plugin.writeConfig()
             enabled.append( value )
             dpg.configure_item('enabled-plugins', items = enabled)
-            # Re-generate overlay with enabled plugin
-            Ramon.redraw()
             # Run Plugin
             Plugin.loaded[value].run()
-    
+            # Re-generate overlay with enabled plugin
+            Plugin.compose()
+            # Redraw interface. ¿¿¿why???
+            Ramon.redraw()
     
     def disable( sender=None, value=None, user_data=None ):
         from classes.ramon  import Ramon
@@ -205,10 +209,12 @@ class Plugin:
             Plugin.writeConfig()
             enabled.remove( value )
             dpg.configure_item('enabled-plugins', items = enabled)
-            # Re-generate overlay with enabled plugin
-            Ramon.redraw()
             # Run Plugin
             Plugin.loaded[value].run()
+            # Re-generate overlay with disabled plugin
+            Plugin.compose()
+            # Redraw interface. ¿¿¿why???
+            Ramon.redraw()
 
     def open(self):
         with open( f"{Preferences.settings['root']}/plugins/{self.name}/{self.template}", 'r') as file:
@@ -338,6 +344,7 @@ class Plugin:
         Preferences.settings[sender] = value
         Log.verbose = Endpoints.debug = Plugin.debug = Preferences.settings['debug']
         Plugin.runLoaded()
+        Plugin.compose()
         Ramon.redraw()
         Preferences.writecfg()
 

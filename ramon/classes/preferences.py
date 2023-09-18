@@ -114,6 +114,8 @@ class Preferences:
                 UI.checkbox     ("No Welcome"       , 'no-welcome'                              , callback=Plugin.updateOverlaySetting)
                 UI.checkbox     ("Debug Mode"       , 'debug'                                   , callback=Plugin.updateOverlaySetting)
                 UI.numeric      ("Plugin Rate"      , "plugin-rate"                             , callback=Plugin.updateOverlaySetting)
+                UI.jump()
+                UI.checkbox     ("Disconnected icon", "show-disconnect-icon"                    , callback=Plugin.updateOverlaySetting)
                 
 
     
@@ -226,9 +228,9 @@ class Preferences:
                     #
                     # Add buttons on main window
                     #
-                    dpg.add_button(label="Preview", pos=( cfg.width - 96, 8), callback=Preferences.parent.openWeb,  user_data=plugin.name)
-                    dpg.add_button(label="Default", pos=( cfg.width - 96,48), callback=Plugin.setDefaults, user_data=plugin.name)
-                    dpg.add_checkbox(label="Edit" , pos=( cfg.width - 96,72), callback=Plugin.toggleEdit, user_data=plugin.name)
+                    dpg.add_button  (label="Preview"  , pos=( cfg.width - 96, 8), callback=Preferences.parent.openWeb   , user_data=plugin.name)
+                    dpg.add_button  (label="Default"  , pos=( cfg.width - 96,48), callback=Plugin.setDefaults           , user_data=plugin.name)
+                    dpg.add_checkbox(label="Edit"     , pos=( cfg.width - 96,72), callback=Plugin.toggleEdit            , user_data=plugin.name)
                 if not _item_details: continue
                 #
                 # Create plugin details window and all expected details controls
@@ -290,10 +292,14 @@ class Preferences:
         try:
             with open(f'{Preferences.root}/config.txt', 'r') as file:
                 data = file.read().split('\n')
+                # Save settings file backup
+                with open(f'{Preferences.root}/config.bak', 'w') as bak:
+                    bak.write("\n".join(data))
+
                 for setting in data:
                     if len(setting)==0:continue
                     parts = setting.split('=')
-                    Preferences.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]
+                    Preferences.settings[parts[0]] = True if parts[1].lower() == 'true' else False if parts[1].lower() == 'false' else parts[1]                    
             try:
                 if Preferences.settings['version'] == Preferences.parent.version:
                     Log.info(f"PREFERENCES : Found version {Preferences.settings['version']} config file")

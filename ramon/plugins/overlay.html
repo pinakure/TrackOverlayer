@@ -190,6 +190,15 @@ Special thanks:
                 user-select: none;
             }            
 
+            
+            /* -----------------------------------------------
+                            GENERATED CONTENT 
+            ----------------------------------------------- */
+            /*CSS*/
+            /* -----------------------------------------------
+                          GENERATED CONTENT OVERRIDES
+            ----------------------------------------------- */
+
             .edit-anchor{
                 pointer-events  : all !important;
                 width           : 8px;
@@ -231,12 +240,12 @@ Special thanks:
             }
             .edit-border {
                 pointer-events  : all !important;
-                border-color    : #00f !important;
                 position        : absolute;
                 overflow        : visible;
                 z-index         : 1000;
                 cursor          : move;
-                border          : 2px dashed #00f;
+                border          : 2px dashed #88f;
+                display         : none;
             }
             .edit-border:hover,.edit-borderactive {
                 border-color    : #f80 !important;
@@ -244,14 +253,6 @@ Special thanks:
             .edit-border:hover * {
                 display         : inline-block !important;
             }
-
-        
-                
-
-            /* -----------------------------------------------
-                            GENERATED CONTENT 
-            ----------------------------------------------- */
-            /*CSS*/
 
         </style>        
     </head>
@@ -526,6 +527,9 @@ Special thanks:
                                     console.warn(e);
                                 }
                                 switch(response){
+                                    case 'reload':
+
+
                                     case 'resize':
                                         console.log(response,'->', data);                                
                                         // Resize an iframe dinamically
@@ -560,12 +564,13 @@ Special thanks:
                                                 try{
                                                     TO.dom.plugins[p].style.pointerEvents = 'none';
                                                 } catch(e){
+                                                    console.log(e);
                                                     continue;
                                                 }
                                             }
                                             
-                                            if((p in TO.dom.borders) && !data[p].settings.edit){
-                                                TO.dom.borders[p].style.display = 'none';
+                                            if((p in TO.dom.borders) && data[p].settings.edit){
+                                                TO.dom.borders[p].style.display = 'inline-block';
                                             }
                                         }
                                         TO.plugins = data;
