@@ -79,16 +79,19 @@ Plugins now communicating via websocket instead of js events:
 - twitchchat
 --------------------------------------
 18/9/23 - Changelog
-- Turn 'Disconnected Icon' optional
 - Simple UI Interface mode
 - Add Score/Ranking plugin
 - Live Edit: Allow editing plugin position and size from the overlay itself (edit mode)
 - Re-compose overlay layout @ debug toggle
 - Re-compose overlay layout @ plugin toggle
 - Add edit option @every plugin (allows live editing on the overlay)
+- Add parametric perspective @ score & recentcheevos
+- Turn 'Disconnected Icon' optional
+- Fixed bug @ current cheevo display in interface
+- Turn 'Show completed cheevos' optional
+- Rewritten menu code to make easier to add new elements
 --------------------------------------
 -TODO:
-- Turn 'Show completed cheevos' optional
 - Auto adjust column widths @ interface ( create layout class to handle )
 - Create / destroy checkbox controls DYNAMICALLY
 - Caption option @ every plugin

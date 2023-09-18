@@ -74,7 +74,7 @@ class Preferences:
                 UI.label        ("Interface"        , Color.grape        , left_align=True  ); UI.jump()
                 UI.checkbox     ("Simple UI"        , 'simple_ui'                           )
                 UI.checkbox     ("Fullscreen"       , 'fullscreen'                          )
-                UI.checkbox     ("Vertical Layout"  , 'vertical'                            )
+                UI.checkbox     ("Show Unlocks"     , 'show-unlocks'                        )
                 UI.jump()
                 UI.jump()
                 

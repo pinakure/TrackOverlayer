@@ -25,21 +25,12 @@ class Server:
     async def exit():
         import websockets
         async with websockets.connect('ws://localhost:8765') as websocket:
-            while 1:
-                try:
-                    #a = readValues() #read values from a function
-                    #insertdata(a) #function to write values to mysql
-                    await websocket.send("exit")
-                except Exception as e:
-                    print(e)
-
-    async def send(message, payload={}):
-        from classes.endpoints import response
-        if Server.ws is None:
-            Log.warning("WEBSOCKET : Attempted to send message to NULL websocket")
-            return
-        await Server.ws.send( encodeResponse(message, response(payload) ) )
-
+            try:
+                #a = readValues() #read values from a function
+                #insertdata(a) #function to write values to mysql
+                await websocket.send("exit")
+            except Exception as e:
+                print(e)
 
     async def handleRequest(websocket):
         from classes.superchat import Superchat

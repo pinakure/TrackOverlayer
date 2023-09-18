@@ -110,6 +110,7 @@ class Ramon:
             'x-pos'  : Ramon.x,
             'y-pos'  : Ramon.y,
         })
+        UI.resize()
         Preferences.writecfg()
 
     def start():
@@ -399,7 +400,7 @@ class Ramon:
         dpg.set_value('rank'  , Ramon.data.site_rank      )
         dpg.set_value('score' , Ramon.data.score          )
         dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
-        dpg.set_value('cheevo', Ramon.data.cheevo         )
+        dpg.set_value('cheevo', Ramon.data.cheevo.split('\n')[0])
         Ramon.data.recent = []
 
 
@@ -407,6 +408,8 @@ class Ramon:
         items = int(Ramon.inner_width/80)
         group_index = 0        
         
+        Ramon.getRecent()
+
         for d in Ramon.data.cheevos:
             if left==0:
                 group_index+=1
@@ -429,30 +432,38 @@ class Ramon:
                 )
                 with dpg.tooltip( tag ):
                     dpg.add_text(d.name+"\n"+d.description)  
-            left -= 1              
+            left -= 1
         
+    def getRecent():
+        Ramon.data.recent = []
+        unlocked = ''
+        payload  = ''
+        for d in Ramon.data.cheevos:
+            if d.locked: 
+                payload += d.menu() + "\n"                
+            else:
+                if len(Ramon.data.recent) < int(Plugin.loaded['recentunlocks'].settings['row-count']): 
+                    Ramon.data.recent.append(d)
+                unlocked += '* '+ d.menu() + "\n"
+        return payload, unlocked
+
     def olredraw():
         Ramon.clear()
         dpg.set_value('game'  , Ramon.data.last_seen      )
         dpg.set_value('rank'  , Ramon.data.site_rank      )
         dpg.set_value('score' , Ramon.data.score          )
         dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
-        dpg.set_value('cheevo', Ramon.data.cheevo         )
-        payload  = ''
-        unlocked = ''
-        Ramon.data.recent = []
+        dpg.set_value('cheevo', Ramon.data.cheevo.split('\n')[0])
+        payload, unlocked = Ramon.getRecent()
         for d in Ramon.data.cheevos:
             if d.locked: 
-                payload += d.menu() + "\n"
                 dpg.show_item(f'cheevo[{d.index}]')
                 dpg.set_item_label(f'cheevo[{d.index}]', d.name)
-            else:
-                if len(Ramon.data.recent) < 5: 
-                    Ramon.data.recent.append(d)
-                unlocked += '* '+ d.menu() + "\n"
         dpg.set_value('stdout'  , payload)
-        dpg.set_value('unlocked', unlocked)
-        dpg.set_item_pos('unlocked', (31,(26*Cheevo.global_index)))
+        # Turn unlocked cheevo display optional
+        if Preferences.settings['show-unlocks']:
+            dpg.set_value('unlocked', unlocked)
+            dpg.set_item_pos('unlocked', (31,(26*Cheevo.global_index)))
     
     def clear():
         dpg.set_value('stdout', '')

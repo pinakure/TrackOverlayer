@@ -76,15 +76,16 @@ class Endpoints:
         anchor = args.split('|')[2]
         offset = int(args.split('|')[3])
         plugin = Plugin.loaded[target]
+        print(args)
         print("Resize "+anchor+" of "+target+f" {offset} pixels")
         if anchor == 'right'    : plugin.settings['size-x']+=offset
         if anchor == 'bottom'   : plugin.settings['size-y']+=offset
-        if anchor=='left': 
-            plugin.settings['size-x']-=offset
-            plugin.settings['pos-x']+=offset
-        if anchor=='top' : 
-            plugin.settings['size-y']-=offset
-            plugin.settings['pos-y']+=offset
+        if anchor == 'left': 
+            plugin.settings['size-x'] -= offset
+            plugin.settings[ 'pos-x'] += offset
+        if anchor == 'top' : 
+            plugin.settings['size-y'] -= offset
+            plugin.settings[ 'pos-y'] += offset
         Plugin.writeConfig()
         plugin.run()
         Plugin.compose()

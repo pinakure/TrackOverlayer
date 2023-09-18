@@ -22,6 +22,7 @@ class Config:
         'twitch-username'           : '',
         'twitch-password'           : '',
         'show-disconnect-icon'      : True,
+        'show-unlocks'              : True,
         'root'                      : '.',
         'gmt'                       : 2,
         'twitch-app-key'            : '',
@@ -49,6 +50,36 @@ class Config:
     class detail:
         height  = 220
         extra   = 68
+
+
+
+strfields = [
+    '-font',    
+]
+
+urlfields = [
+    '-file',
+    '-image',
+    '-sound',    
+]
+
+degreefields = [
+    'angle',
+]
+
+pxfields = [ 
+    'size-',
+    'pos-',
+    '-font-size',
+    '-border-width',
+    '-border-radius',
+    '-width',
+    '-height',
+    'padding',
+    'margin',
+    'perspective',
+    '-blur',
+]
 
 
 ranges = {

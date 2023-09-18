@@ -26,6 +26,14 @@
                 border-radius               : calc( var(--table-border-radius) * 1px ) calc( var(--table-border-radius) * 1px ) calc( var(--table-border-radius) * 1px ) calc( var(--table-border-radius) * 1px ); 
             }
 
+            body {
+                perspective                 : var(--perspective);                
+            }
+            #{% name %}{
+                left                        : var(--table-pos-x);
+                top                         : var(--table-pos-y);
+                transform                   : rotateY(var(--angle)) translateZ(-100px);                
+            }
             #{% name %}, #output {
                 width                       : 100%;
                 height                      : 100%;
@@ -163,7 +171,7 @@
                 },
 
                 getData: function(){
-                    if( localStorage.getItem('debug')=='1'){
+                    if( {% Name %}.settings.debug ){
                         {% Name %}.list = [
                             [ "Cheevo with a very long name"                                        , "Not a Very long description"                                 , "../current_cheevo.png" ],
                             [ "Cheevo with an even longer name"                                     , "Just a tiny bit longer description"                          , "../current_cheevo.png" ],
@@ -207,7 +215,8 @@
                     payload = JSON.parse(event.data);
                     if(payload.response=='recent'){
                         console.log("WS (RECENT) : Got new recent data : ", payload.data)
-                        {% Name %}.list= JSON.parse(payload.data);
+                        list= JSON.parse(payload.data);
+                        if(list.length > 0) {% Name %}.list= list;
                         {% Name %}.render();
                         setTimeout( {% Name %}.update, 5000 );
                     }

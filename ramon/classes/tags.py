@@ -157,26 +157,28 @@ class Tags:
         return '* { pointer-events: none; }'
 
     def monitor(self):
-        return """
-            <style>
-                #monitor {
-                    mix-blend-mode  : screen; 
-                    font-family     : 'square'; 
-                    font-weight     : 800; 
-                    overflow        : visible !important; 
-                    display         : inline-block; 
-                    position        : absolute; 
-                    color           : #ff0000; 
-                    right           : calc( 50% - 16px); 
-                    bottom          : calc( 50% - 16px); 
-                    width           : 32px; 
-                    height          : 32px;                    
-                }
-            </style>
+        from classes.preferences import Preferences
+        style = """#monitor { display: none !important; }""" if not Preferences.settings['show-disconnect-icon'] else """
+            #monitor {
+                mix-blend-mode  : screen; 
+                font-family     : 'square'; 
+                font-weight     : 800; 
+                overflow        : visible !important; 
+                display         : inline-block; 
+                position        : absolute; 
+                color           : #ff0000; 
+                right           : calc( 50% - 16px); 
+                bottom          : calc( 50% - 16px); 
+                width           : 32px; 
+                height          : 32px;                    
+            }
+        """
+        return f"""<style>{ style }</style>"""+"""
             <div id="monitor">
                 <img title="{% Name %} has lost connection with tRAckOverlayer" src="{% icon|disconnected %}">
             </div>
         """
+            
     
     def require_cheevo(self):
         return r"""

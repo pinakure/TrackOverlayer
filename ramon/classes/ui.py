@@ -1,6 +1,52 @@
 from dearpygui import dearpygui as WM
 from classes.tools import Color, elegant
 
+
+
+
+class Layout:
+
+    def __init__(self, columns):
+        from classes.ramon import Ramon
+        self.fields         = []
+        self.labels         = []
+        self.columns        = []
+        self.column_count   = columns
+        self.column_width   = int(Ramon.inner_width / self.column_count)
+        self.current_column = 0
+        ix = 8
+        for i in range(0, self.column_count):
+            self.columns.append( ix )
+            ix += self.column_width
+            self.fields.append([])
+            self.labels.append([])
+
+    def add(self, field):
+        label = UI.last_label
+        self.fields.append(field)
+        self.labels.append(label)
+        self.current_column += 1
+        self.current_column %= self.column_count
+        
+    def resize(self):
+        from classes.ramon import Ramon
+        self.column_width   = int(Ramon.inner_width / self.column_count)
+        from dearpygui import dearpygui as dpg
+        for i in range(0, len(self.columns)):
+            # Move labels
+            labels = self.fields[i]
+            for label in labels:
+                x = self.columns[i]
+                y = dpg.get_item_pos(label)[1]
+                dpg.configure_item(label, pos=(x,y))
+            # Move fields
+            fields = self.fields[i]
+            for field in fields:
+                x = self.columns[i] + int(self.column_width / 2)
+                y = dpg.get_item_pos(field)[1]
+                dpg.configure_item(field, pos=(x,y))
+            
+
 class row:
     label = 0
     input = 0
@@ -31,14 +77,16 @@ class UI:
     label_len       = int((column_width)/16)
     columns         = [ 8, 8+column_width, 8+(column_width*2) ]
     row_height      = 24
+    last_label      = None
+    layouts         = []
+    layout          = None
 
     def nop(sender, value, user_data):
         print( "NOP", sender, value, user_data )
 
-   
     def label( text="A label", color=(255,255,0), x=None, y=None, left_align=False):
         
-        WM.add_text(
+        UI.last_label = WM.add_text(
             elegant(text).rjust(UI.label_len) if not left_align else text,
             pos     = (
                 8 + (x if x is not None else UI.columns[ column.label ]), 
@@ -53,6 +101,10 @@ class UI:
             column.label = 0
         return id
     
+    def resize():
+        for layout in UI.layouts:
+            layout.resize()
+
     def setColumns(count, width):
         column.label = 0
         column.input = 0
@@ -78,7 +130,9 @@ class UI:
     def jump():
         UI.setCursor(0, row.input+1)
     
-    def updateCursor(x,y):
+    def updateCursor(x,y, varname):
+        if UI.layout:
+            UI.layout.add(varname)        
         column.input += 1 if x is None else 0
         row.input    += 1 if y is None and x is not None else 0
         if column.input >= len(UI.columns): UI.jump()
@@ -102,7 +156,7 @@ class UI:
         if varname in help.keys():
             with WM.tooltip(varname):
                 WM.add_text( help[ varname ] )
-        UI.updateCursor(x,y)
+        UI.updateCursor(x,y, varname)
         return id
     
     def combo( text="A label", varname='a_var_name', x=None, y=None, callback=None, password=False, user_data=None, items=[], settings=None):
@@ -129,7 +183,7 @@ class UI:
         if varname in help.keys():
             with WM.tooltip(varname):
                 WM.add_text( help[ varname ] )
-        UI.updateCursor(x,y)
+        UI.updateCursor(x,y, varname)
         return id
 
     def numeric( text="A label", varname='a_var_name', x=None, y=None, callback=None, user_data=None, settings=None):
@@ -182,7 +236,7 @@ class UI:
                 else:
                     WM.add_text( "Click + Ctrl to type a value" )
 
-            UI.updateCursor(x,y)
+            UI.updateCursor(x,y, varname)
         if varname.endswith('-size-y'): UI.jump()
         if varname.endswith('-perspective'): UI.jump()
         return id
@@ -203,6 +257,6 @@ class UI:
                 WM.add_text( help[ varname ] )
         if not enabled:
             WM.configure_item( varname, enabled=False )
-        UI.updateCursor(x,y)
+        UI.updateCursor(x,y, varname)
         return id
     

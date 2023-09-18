@@ -91,7 +91,7 @@ class Plugin:
         import asyncio
         Plugin.loaded[plugin].edit ^= 1
         Plugin.compose()
-        asyncio.run(Server.send('reload', { 'plugin' : plugin } ))
+        #6asyncio.run(Server.send('reload', { 'plugin' : plugin } ))
         
 
     def setDefaults(sender, value, plugin):
@@ -283,24 +283,36 @@ class Plugin:
         return ''
 
     def translateJSVar(key, value):
-        if   '-color'       in key: value = f'[{value[0]},{value[1]},{value[2]},{value[3]}]'
-        elif '-file'        in key: value = f"`{value}`"
-        elif '-font'        in key: value = f'`{value}`'
-        elif '-type'        in key: value = f'`{value}`'
+        if   '-color'       in key: return f'[{value[0]},{value[1]},{value[2]},{value[3]}]'
+        elif '-file'        in key: return f"`{value}`"
+        elif '-font'        in key: return f'`{value}`'
+        elif '-type'        in key: return f'`{value}`'
         return value
 
     def translateCSSVar(key, value):
-        if   '-color'       in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})'
-        elif '-font-size'   in key: value = f'{value}px'
-        elif '-width'       in key: value = f'{value}px'
-        elif '-height'      in key: value = f'{value}px'
-        elif 'pos-'         in key: value = f'{value}px'
-        elif 'size-'        in key: value = f'{value}px'
-        elif '-blur'        in key: value = f'{value}px'
-        elif '-bold'        in key: value = "800" if value else "400"
-        elif '-italic'      in key: value = "italic" if value else "normal"
-        elif '-file'        in key: value = f"url('{value}')"
-        elif '-font'        in key: value = f'"{value}"'
+        from classes.tools  import px
+        from classes.config import pxfields,urlfields,strfields,degreefields
+        
+        for field in pxfields:
+            if field in key: 
+                return px(value)
+        
+        for field in urlfields:
+            if field in key: 
+                return f"url('{value}')"
+        
+        for field in strfields:
+            if field in key: 
+                return f'"{value}"'
+        
+        for field in degreefields:
+            if field in key: 
+                return f'{value}deg'
+        
+        # Special cases
+        if   '-color'   in key: value = f'rgba({value[0]},{value[1]},{value[2]},{value[3]})';return value
+        elif '-bold'    in key: value = "800" if value else "400"
+        elif '-italic'  in key: value = "italic" if value else "normal"
         return value
 
     def getCSS(self):
