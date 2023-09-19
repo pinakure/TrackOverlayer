@@ -21,14 +21,14 @@ class Layout:
             self.fields.append([])
             self.labels.append([])
 
-    def add(self, field):
-        label = UI.last_label
-        self.fields.append(field)
-        self.labels.append(label)
+    def add(self, field, label):
+        self.fields[self.current_column].append(field)
+        self.labels[self.current_column].append(label)
         self.current_column += 1
         self.current_column %= self.column_count
         
     def resize(self):
+        print("Resizing layout...")
         from classes.ramon import Ramon
         self.column_width   = int(Ramon.inner_width / self.column_count)
         from dearpygui import dearpygui as dpg
@@ -39,6 +39,7 @@ class Layout:
                 x = self.columns[i]
                 y = dpg.get_item_pos(label)[1]
                 dpg.configure_item(label, pos=(x,y))
+                print(f"Moving label {label} to {x},{y}")
             # Move fields
             fields = self.fields[i]
             for field in fields:
@@ -106,6 +107,9 @@ class UI:
             layout.resize()
 
     def setColumns(count, width):
+        print(f"Creating new layout, with {count} columns")
+        UI.layout = Layout(count)
+        UI.layouts.append(UI.layout)
         column.label = 0
         column.input = 0
         last_width = UI.setColumnWidth(width)
@@ -132,7 +136,8 @@ class UI:
     
     def updateCursor(x,y, varname):
         if UI.layout:
-            UI.layout.add(varname)        
+            print(f"Adding field { varname } to layout")
+            UI.layout.add(varname, UI.last_label)
         column.input += 1 if x is None else 0
         row.input    += 1 if y is None and x is not None else 0
         if column.input >= len(UI.columns): UI.jump()

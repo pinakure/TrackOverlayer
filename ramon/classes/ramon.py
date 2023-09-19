@@ -110,7 +110,7 @@ class Ramon:
             'x-pos'  : Ramon.x,
             'y-pos'  : Ramon.y,
         })
-        UI.resize()
+        #UI.resize()
         Preferences.writecfg()
 
     def start():
@@ -421,17 +421,20 @@ class Ramon:
                 tag = f"cheebox[{d.picture}]"
                 try:dpg.delete_item(tag)
                 except: pass
-                dpg.add_image_button(
-                    tag=tag,
-                    width=64,
-                    height=64,
-                    texture_tag=f'texture[{d.picture}]',
-                    parent=f'simple-group[{group_index}]',
-                    user_data=d.index,
-                    callback=Ramon.updateCheevo,
-                )
-                with dpg.tooltip( tag ):
-                    dpg.add_text(d.name+"\n"+d.description)  
+                try:
+                    dpg.add_image_button(
+                        tag=tag,
+                        width=64,
+                        height=64,
+                        texture_tag=f'texture[{d.picture}]',
+                        parent=f'simple-group[{group_index}]',
+                        user_data=d.index,
+                        callback=Ramon.updateCheevo,
+                    )
+                    with dpg.tooltip( tag ):
+                        dpg.add_text(d.name+"\n"+d.description)  
+                except Exception as E:
+                    Log.warning(str(E))
             left -= 1
         
     def getRecent():
@@ -467,6 +470,7 @@ class Ramon:
     
     def clear():
         dpg.set_value('stdout', '')
+        if Preferences.settings['simple_ui']: return
         for i in range(0,Cheevo.max):
             dpg.hide_item(f'cheevo[{i+1}]')
         dpg.set_value('unlocked', '')

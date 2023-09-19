@@ -38,6 +38,22 @@ class Endpoints:
             'progress'      : int(Ramon.data.progress.replace('%', '')),
         })
     
+    def games():
+        #TODO: retrieve selection of games with locked cheevos from ddbb
+        return response({
+            'games' : {
+                'mgs'       : "Metal Gear Solid",
+                'pacman'    : "Pacman",
+                'snow'      : "Snow Bros",
+                'donkey'    : "Donkey Kong",
+                'spaceinv'  : "Space Invaders",
+                'mslug'     : "Metal Slug",
+                'mslugx'    : "Metal Slug X",
+                'xybots'    : "Xybots",
+                'gauntlet'  : "Gauntlet",
+            }
+        })
+
     def game():
         from classes.ramon import Ramon
         return response({ 
@@ -66,7 +82,7 @@ class Endpoints:
     def recent():
         from classes.ramon import Ramon
         return response([ 
-            [ r.name, r.description, r.picture] for r in Ramon.data.recent
+            [ r.name.replace('\'', ""), r.description.replace('\'', ""), r.picture] for r in Ramon.data.recent
         ])
     
     def resize(args):
@@ -173,6 +189,7 @@ class Endpoints:
             'twitch-username'   : Endpoints.twitch_username(),
             'current-cheevo'    : Endpoints.current_cheevo().replace("'", "`"),
             'progress'          : Endpoints.progress(),
+            'games'             : Endpoints.games(),
             'game'              : Endpoints.game(),
             'score'             : Endpoints.score(),
             'recent'            : Endpoints.recent(),
@@ -188,6 +205,7 @@ class Endpoints:
         'twitch-username'   : twitch_username,
         'current-cheevo'    : current_cheevo,
         'progress'          : progress,
+        'games'             : games,
         'game'              : game,
         'score'             : score,
         'recent'            : recent,

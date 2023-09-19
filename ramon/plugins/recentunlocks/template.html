@@ -75,7 +75,7 @@
             }
 
             #description {     
-                /*width                       : var(--size-x);*/
+                width                       : calc( var(--size-x) - calc( 64px - var(--picture-size-x) ) );
                 height                      : calc( var(--row-size-y) - calc( var(--name-pos-y) + var(--description-font-size) ) );
                 left                        : var(--description-pos-x);
                 top                         : var(--description-pos-y);

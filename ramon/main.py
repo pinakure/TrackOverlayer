@@ -90,8 +90,14 @@ Plugins now communicating via websocket instead of js events:
 - Fixed bug @ current cheevo display in interface
 - Turn 'Show completed cheevos' optional
 - Rewritten menu code to make easier to add new elements
+----------------------------------------------------------------------------------------------------------
+ RELEASE CHECKPOINT
+----------------------------------------------------------------------------------------------------------
+20/9/23
+- Layout class, manages horizontal resizes for each input field, auto managed by UI class
+- 
 --------------------------------------
--TODO:
+TODO
 - Auto adjust column widths @ interface ( create layout class to handle )
 - Create / destroy checkbox controls DYNAMICALLY
 - Caption option @ every plugin

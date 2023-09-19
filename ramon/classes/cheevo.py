@@ -123,7 +123,7 @@ class Cheevo(Model):
             Ramon.redraw()
 
     def parse( game, payload ):
-        name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'")
+        name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'").split('&lt')[0].rstrip()
         picture     = payload.split('img src=')[1].split('.png')[0].replace('\\\'', '') + ".png"
         cheevo_id   = int(payload.split('achievement/')[1].split('"')[0])
         locked      = picture.find('lock')>-1

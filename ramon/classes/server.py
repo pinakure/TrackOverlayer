@@ -42,6 +42,7 @@ class Server:
             elif message.startswith('get-data'          ): await websocket.send( encodeResponse('data'          , Endpoints.getAll()                    ))
             elif message.startswith('get-plugins'       ): await websocket.send( encodeResponse('plugins'       , Endpoints.plugins()                   ))
             elif message.startswith('get-clock'         ): await websocket.send( encodeResponse('clock'         , Endpoints.clock()                     ))
+            elif message.startswith('get-games'         ): await websocket.send( encodeResponse('games'         , Endpoints.games()                     ))
             elif message.startswith('get-game'          ): await websocket.send( encodeResponse('game'          , Endpoints.game()                      ))
             elif message.startswith('get-current-cheevo'): await websocket.send( encodeResponse('current-cheevo', Endpoints.current_cheevo()            ))
             elif message.startswith('get-score'         ): await websocket.send( encodeResponse('score'         , Endpoints.score()                     ))
