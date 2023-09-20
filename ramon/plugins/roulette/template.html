@@ -170,8 +170,8 @@
                         console.log("Starting...");
                         if( {% Name %}.running ) return;
                         {% Name %}.running = true;
-                        {% Name %}.dom.output.style.animationPlayState = 'running';
                         {% Name %}.dom.output.className = 'starting';
+                        {% Name %}.dom.output.style.animationPlayState = 'running';
                         setTimeout(function(){
                             console.log("Rolling...");
                             {% Name %}.dom.output.className = 'rolling';
@@ -181,20 +181,7 @@
                         if( {% Name %}.stopping) return;
                         console.log("Stopping...");
                         {% Name %}.running = false;
-                        {% Name %}.dom.output.style.animationPlayState = 'paused';
-                        
-                        return;
-                        {% Name %}.stopping = true;
-                        {% Name %}.dom.output.style.animationTimingFuncion = 'ease-out';
-                        {% Name %}.dom.output.style.animationDuration      = '5s';
-                        //{% Name %}.dom.output.className = 'stopping';
-                        setTimeout(function(){
-                            console.log("Ready");
-                            {% Name %}.dom.output.className = '';
-                            {% Name %}.stopping = false;
-                            {% Name %}.dom.output.style.animationTimingFuncion = '';
-                        {% Name %}.dom.output.style.animationDuration      = '';
-                        }, 5000);
+                        {% Name %}.dom.output.style.animationPlayState = 'paused';                        
                     },
                 },
 

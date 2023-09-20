@@ -82,7 +82,7 @@ class Endpoints:
     def recent():
         from classes.ramon import Ramon
         return response([ 
-            [ r.name.replace('\'', ""), r.description.replace('\'', ""), r.picture] for r in Ramon.data.recent
+            [ r.name.replace('\'', ""), r.description.replace('\'', ""), r.picture.split('_')[0].split('.png')[0]+'.png'] for r in Ramon.data.recent
         ])
     
     def resize(args):
