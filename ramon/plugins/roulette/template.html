@@ -128,19 +128,130 @@
                 width: 64px;
                 height: 32px;
                 z-index: 1000;
+                transform-origin: 100% 50%;                
                 background-color: #f00;
                 clip-path: polygon(0% 50%, 100% 0%, 100% 100%, 0% 50%);
-                box-shadow: 4px 4px 0px #000;
+                filter: drop-shadow(4px 4px 0px #000);
+                background-image: linear-gradient(180deg, #df0000, #ff2222, #ff8080 50%, #500000 51%, #802020);
             }
 
+            .attract {
+                animation-name: blink;
+                animation-duration: 2000ms;
+                animation-timing-function: ease-in-out;
+                animation-delay: 0s;
+                animation-iteration-count: infinite; 
+                animation-direction: normal;
+                animation-play-state: running;
+                animation-fill-mode: forwards;
+            }
+
+            .attract:nth-child(1){  animation-delay:      0ms;  }
+            .attract:nth-child(2){  animation-delay:    250ms;  }
+            .attract:nth-child(3){  animation-delay:    500ms;  }
+            .attract:nth-child(4){  animation-delay:    750ms;  }
+            .attract:nth-child(5){  animation-delay:   1000ms;  }
+            .attract:nth-child(6){  animation-delay:   1250ms;  }
+            .attract:nth-child(7){  animation-delay:   1500ms;  }
+            .attract:nth-child(8){  animation-delay:   1750ms;  }
+
+            #result {
+                width                   : 100%;
+                height                  : 100%;
+                text-align              : center;
+                vertical-align          : middle;
+                align                   : center;
+                position                : absolute;
+                top                     : 0px;
+                left                    : 0px;
+                transform               : rotateX(-45deg);
+                filter                  : drop-shadow( 4px 4px 1px #000);
+                pointer-events          : none;
+            }
+
+            #result span {
+                font-size               : 48px;
+                font-family             : 'arcade';
+                font-weight             : 800;
+                color                   : transparent;
+                background-image        : linear-gradient(0deg, #af0, #080);
+                -webkit-background-clip : text;
+                position                : relative;
+                display                 : inline-block;
+                width                   : 46px;
+
+                animation-name: bounce;
+                animation-duration: 2000ms;
+                animation-timing-function: ease-in-out;
+                animation-delay: 0s;
+                animation-iteration-count: infinite; 
+                animation-direction: alternate;
+                animation-play-state: running;
+                animation-fill-mode: forwards;
+            }
+
+            #result span:nth-child( 1){ animation-delay:      0ms; }
+            #result span:nth-child( 2){ animation-delay:   -500ms; }
+            #result span:nth-child( 3){ animation-delay:  -1000ms; }
+            #result span:nth-child( 4){ animation-delay:  -1500ms; }
+            #result span:nth-child( 5){ animation-delay:  -2000ms; }
+            #result span:nth-child( 6){ animation-delay:  -2500ms; }
+            #result span:nth-child( 7){ animation-delay:  -3000ms; }
+            #result span:nth-child( 8){ animation-delay:  -3500ms; }
+            #result span:nth-child( 9){ animation-delay:  -4000ms; }
+            #result span:nth-child(10){ animation-delay:  -4500ms; }
+            #result span:nth-child(11){ animation-delay:  -5000ms; }
+            #result span:nth-child(12){ animation-delay:  -5500ms; }
+            #result span:nth-child(13){ animation-delay:  -6000ms; }
+            #result span:nth-child(14){ animation-delay:  -6500ms; }
+            #result span:nth-child(15){ animation-delay:  -7000ms; }
+            #result span:nth-child(16){ animation-delay:  -7500ms; }
+            #result span:nth-child(17){ animation-delay:  -8000ms; }
+            #result span:nth-child(18){ animation-delay:  -8500ms; }
+            #result span:nth-child(19){ animation-delay:  -9000ms; }
+            #result span:nth-child(20){ animation-delay:  -9500ms; }
+            #result span:nth-child(21){ animation-delay:      0ms; }
+            #result span:nth-child(22){ animation-delay:   -500ms; }
+            #result span:nth-child(23){ animation-delay:  -1000ms; }
+            #result span:nth-child(24){ animation-delay:  -1500ms; }
+            #result span:nth-child(25){ animation-delay:  -2000ms; }
+            #result span:nth-child(26){ animation-delay:  -2500ms; }
+            #result span:nth-child(27){ animation-delay:  -3000ms; }
+            #result span:nth-child(28){ animation-delay:  -3500ms; }
+            #result span:nth-child(29){ animation-delay:  -4000ms; }
+            #result span:nth-child(30){ animation-delay:  -4500ms; }
+            #result span:nth-child(31){ animation-delay:  -5000ms; }
+            #result span:nth-child(32){ animation-delay:  -5500ms; }
+            #result span:nth-child(33){ animation-delay:  -6000ms; }
+            #result span:nth-child(34){ animation-delay:  -6500ms; }
+            #result span:nth-child(35){ animation-delay:  -7000ms; }
+            #result span:nth-child(36){ animation-delay:  -7500ms; }
+            #result span:nth-child(37){ animation-delay:  -8000ms; }
+            #result span:nth-child(38){ animation-delay:  -8500ms; }
+            #result span:nth-child(39){ animation-delay:  -9000ms; }
+            #result span:nth-child(40){ animation-delay:  -9500ms; }
+            
+
+            @keyframes bounce {
+                  0% { transform: translateZ(-100px); top:  64px; }
+                100% { transform: translateZ( 100px); top:   0px; }
+            }
+            
             @keyframes rolling {
-                  0% { transform: rotateZ(  0deg); }
-                100% { transform: rotateZ(360deg); }
+                  0% { transform        : rotateZ(  0deg); }
+                100% { transform        : rotateZ(360deg); }
             }
             
             @keyframes glow {
+                  0% { filter: brightness(200%); color: #000;}
+                100% { filter: brightness(100%); color: #fff;}
+            }
+            
+            @keyframes blink {
                   0% { filter: brightness(200%); }
-                100% { filter: brightness(100%); }
+                 10% { filter: brightness(100%); }
+                 90% { filter: brightness(100%); }
+                100% { filter: brightness(200%); }
             }
             
             @keyframes stopping {
@@ -155,18 +266,21 @@
         <div id="{% name %}">
             <div id="output-shadow" class="">
             </div>
-            <div id="output" class="" onclick="{% Name %}.action.handle(this)">
-                <div id="slot[0]" class="slice"><span></span></div>
-                <div id="slot[1]" class="slice"><span></span></div>
-                <div id="slot[2]" class="slice"><span></span></div>
-                <div id="slot[3]" class="slice"><span></span></div>
-                <div id="slot[4]" class="slice"><span></span></div>
-                <div id="slot[5]" class="slice"><span></span></div>
-                <div id="slot[6]" class="slice"><span></span></div>
-                <div id="slot[7]" class="slice"><span></span></div>
+            <div id="output" onclick="{% Name %}.action.handle(this)">
+                <div id="slot[0]" class="slice attract"><span></span></div>
+                <div id="slot[1]" class="slice attract"><span></span></div>
+                <div id="slot[2]" class="slice attract"><span></span></div>
+                <div id="slot[3]" class="slice attract"><span></span></div>
+                <div id="slot[4]" class="slice attract"><span></span></div>
+                <div id="slot[5]" class="slice attract"><span></span></div>
+                <div id="slot[6]" class="slice attract"><span></span></div>
+                <div id="slot[7]" class="slice attract"><span></span></div>
             </div>
-            <div id="needle" class=""></div>            
+            <div id="needle"></div>            
         </div>        
+        <div id="result">
+            <span>R</span><span>A</span><span>N</span><span>D</span><span>O</span><span>M</span><span> </span><span>G</span><span>A</span><span>M</span><span>E</span>
+        </div>
         
         <script>
             {% plugin %}
@@ -188,6 +302,8 @@
                 dom : {
                     {% name %}      : document.getElementById('{% name %}'),
                     output          : document.getElementById('output'),
+                    needle          : document.getElementById('needle'),
+                    result          : document.getElementById('result'),
                     slot            : [
                         document.getElementById('slot[0]').getElementsByTagName('span')[0],
                         document.getElementById('slot[1]').getElementsByTagName('span')[0],
@@ -201,7 +317,6 @@
                 },
 
                 {% framework %}
-                
        
                 update : function(){
                     {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);       
@@ -224,6 +339,7 @@
                             case 'ready'    : 
                                 {% Name %}.action.deselect();
                                 {% Name %}.status = 'starting';
+                                {% Name %}.dom.result.innerHTML = '';
                                 return {% Name %}.action.handle();
                             
                             case 'starting' : 
@@ -253,34 +369,14 @@
                         return;                        
                     },
 
-                    start : function(){
-                        console.log("Starting...");
-                        if( {% Name %}.running ) return;
-                        {% Name %}.action.deselect();
-                        {% Name %}.dom.output.className = '';
-                        {% Name %}.dom.output.style.animationPlayState = 'running';
-                        {% Name %}.running = true;
-                        {% Name %}.dom.output.className = 'starting';
-                        setTimeout(function(){
-                            console.log("Rolling...");
-                            {% Name %}.dom.output.className = 'rolling';
-                        }, 2000);
-                    },
-                    stop : function(){
-                        if( {% Name %}.stopping) return;
-                        console.log("Stopping...");
-                        {% Name %}.running = false;
-                        {% Name %}.stopping = true;
-                        {% Name %}.dom.output.className = 'stopping';
-                        setTimeout(function(){
-                            console.log("Stopped...");
-                            //{% Name %}.dom.output.style.animationPlayState = 'paused';                        
-                            {% Name %}.action.select(parseInt(Math.random()*8));
-                            {% Name %}.stopping = false;
-                        }, 4000);
-                    },
                     select : function( slice ){
                         document.getElementById(`slot[${slice}]`).className = 'slice blinking';
+                        payload = ``;
+                        text    = document.getElementById(`slot[${slice}]`).getElementsByTagName('span')[0].innerHTML;
+                        for(i in text){
+                            payload += `<span>${ text[i] }</span>`;
+                        }
+                        document.getElementById('result').innerHTML = payload;
                     },
                     deselect : function(){
                         for(i=0; i<8; i++){
@@ -298,23 +394,24 @@
                         {% Name %}.data = JSON.parse(payload.data);
                         {% Name %}.render();
                         
-                        setTimeout( {% Name %}.update, 5000 );
+                        setTimeout( {% Name %}.update, 60000 );
                     }
                 },
 
                 updateRotation : function(){
                     {% Name %}.dom.output.style.transform = `rotateZ(${{% Name %}.rotation}deg)`;
+                    r =  -((({% Name %}.rotation % parseInt(360/8)) / parseInt(360/8)) * 40)-5;
+                    {% Name %}.dom.needle.style.transform = `rotateZ(${r}deg)`;
                     if({% Name %}.rotation_delta < 0){
                         {% Name %}.rotation_delta = 0;
                         {% Name %}.rotation_delta_change = 0.0;
-                        {% Name %}.status         = 'stopped';
+                        {% Name %}.status = 'stopped';
                         {% Name %}.action.select(parseInt(((360-{% Name %}.rotation) / 360)*8));
-                                    
                     }  else {
-                        {% Name %}.rotation += {% Name %}.rotation_delta;
-                        {% Name %}.rotation_delta += {% Name %}.rotation_delta_change;
-                        if({% Name %}.rotation_delta > {% Name %}.rotation_speed){% Name %}.rotation_delta = {% Name %}.rotation_speed;
-                        if({% Name %}.rotation_delta < -{% Name %}.rotation_speed){% Name %}.rotation_delta = -{% Name %}.rotation_speed;
+                        {% Name %}.rotation         += {% Name %}.rotation_delta;
+                        {% Name %}.rotation_delta   += {% Name %}.rotation_delta_change;
+                        if(         {% Name %}.rotation_delta >  {% Name %}.rotation_speed){% Name %}.rotation_delta =  {% Name %}.rotation_speed;
+                        else if(    {% Name %}.rotation_delta < -{% Name %}.rotation_speed){% Name %}.rotation_delta = -{% Name %}.rotation_speed;
                         {% Name %}.rotation %= 360;
                     }
                 },
