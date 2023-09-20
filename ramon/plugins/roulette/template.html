@@ -22,7 +22,10 @@
                 transform: translateZ(-500px) translateY( calc( var(--size-x) / 2 ) ) rotateX(56deg);
             }
 
-            #output {
+            #output, #output-shadow {
+                box-shadow: 5px 5px 8px #000c;
+                border  : 1px solid #000;
+                border-radius: 50%;
                 overflow: hidden;
                 z-index : 1000;
                 position: absolute;
@@ -31,8 +34,9 @@
                 height  : var(--size-x);
                 top     : calc( 50% - calc( var(--size-x) / 2 ) );
                 left    : calc( 50% - calc( var(--size-x) / 2 ) );
-                border-radius: 50%;
-                border: 1px solid #000;
+            }
+
+            #output {
                 box-shadow: 0px 0px 8px #000c;
             }
             .slice {
@@ -62,8 +66,10 @@
                 top                     : 0.5%; 
                 left                    : 8%; 
                 text-align              : center;
-                transform               : rotateZ( 29deg ); 
+                transform               : rotateZ( 20deg ); 
                 font-size               : 17px; 
+                color                   : #fff8;
+                text-shadow             : 0px 0px 4px #fffd;
                 font-family             : 'noir-caps'; 
                 text-overflow           : hidden;
                 height                  : 28px;/*line-height*/
@@ -87,15 +93,15 @@
                 animation-duration: 2s;
                 animation-timing-function: ease-in;
                 animation-delay: 0s;
-                animation-iteration-count: 1; 
+                animation-iteration-count: infinite; 
                 animation-direction: normal;
                 animation-play-state: running;
                 animation-fill-mode: forwards;
             }
             
             .stopping {
-                animation-name: rolling;
-                animation-duration: 5s;
+                animation-name: stopping;
+                animation-duration: 4s;
                 animation-timing-function: ease-out;
                 animation-delay: 0s;
                 animation-iteration-count: 1; 
@@ -103,31 +109,63 @@
                 animation-play-state: running;
                 animation-fill-mode: forwards;
             }
+            
+            .blinking {
+                animation-name: glow;
+                animation-duration: 125ms;
+                animation-timing-function: ease-in-out;
+                animation-delay: 0s;
+                animation-iteration-count: 8; 
+                animation-direction: alternate;
+                animation-play-state: running;
+                animation-fill-mode: forwards;
+            }
+
+            #needle{
+                position: absolute;
+                top: calc( 50% - 16px );
+                right: calc( -32px + calc( 50% - calc( var(--size-x) / 2 ) ) );
+                width: 64px;
+                height: 32px;
+                z-index: 1000;
+                background-color: #f00;
+                clip-path: polygon(0% 50%, 100% 0%, 100% 100%, 0% 50%);
+                box-shadow: 4px 4px 0px #000;
+            }
 
             @keyframes rolling {
                   0% { transform: rotateZ(  0deg); }
                 100% { transform: rotateZ(360deg); }
             }
             
+            @keyframes glow {
+                  0% { filter: brightness(200%); }
+                100% { filter: brightness(100%); }
+            }
+            
             @keyframes stopping {
                   0% {                             }
-                100% { transform: rotateZ(360deg); }
+                 25% { transform: rotateZ(360deg); }
+                100% { transform: rotateZ(489deg); }
             }
 
         </style>
     </head>
     <body>
         <div id="{% name %}">
-            <div id="output" class="" onclick="{% Name %}.action.handle(this)">
-                <div id="slot[0]" class="slice"><span>SLOT 1 LONG ENOUGH TO REACH THE END OF THE WHEEL</span></div>
-                <div id="slot[1]" class="slice"><span>SLOT 2</span></div>
-                <div id="slot[2]" class="slice"><span>SLOT 3</span></div>
-                <div id="slot[3]" class="slice"><span>SLOT 4</span></div>
-                <div id="slot[4]" class="slice"><span>SLOT 5</span></div>
-                <div id="slot[5]" class="slice"><span>SLOT 6</span></div>
-                <div id="slot[6]" class="slice"><span>SLOT 7</span></div>
-                <div id="slot[7]" class="slice"><span>SLOT 8</span></div>
+            <div id="output-shadow" class="">
             </div>
+            <div id="output" class="" onclick="{% Name %}.action.handle(this)">
+                <div id="slot[0]" class="slice"><span></span></div>
+                <div id="slot[1]" class="slice"><span></span></div>
+                <div id="slot[2]" class="slice"><span></span></div>
+                <div id="slot[3]" class="slice"><span></span></div>
+                <div id="slot[4]" class="slice"><span></span></div>
+                <div id="slot[5]" class="slice"><span></span></div>
+                <div id="slot[6]" class="slice"><span></span></div>
+                <div id="slot[7]" class="slice"><span></span></div>
+            </div>
+            <div id="needle" class=""></div>            
         </div>        
         
         <script>
@@ -137,6 +175,11 @@
                 
                 running  : false,
                 stopping : false,
+                rotation : 0,
+                rotation_delta : 0.0,
+                rotation_speed : 8.0,
+                rotation_delta_change : 0.0,
+                status   : 'ready',
 
                 data : {
                     
@@ -145,6 +188,16 @@
                 dom : {
                     {% name %}      : document.getElementById('{% name %}'),
                     output          : document.getElementById('output'),
+                    slot            : [
+                        document.getElementById('slot[0]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[1]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[2]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[3]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[4]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[5]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[6]').getElementsByTagName('span')[0],
+                        document.getElementById('slot[7]').getElementsByTagName('span')[0],
+                    ],
                 },
 
                 {% framework %}
@@ -155,23 +208,59 @@
                 },
 
                 render : function(){
-
+                    i = 0;
+                    for( game in {% Name %}.data.games ){
+                        if(i>=8)return;
+                        {% Name %}.dom.slot[i].innerHTML = {% Name %}.data.games[game];
+                        i++;
+                    }
                 },
 
                 action : {
                     handle : function(){
-                        if ((  {% Name %}.dom.output.className=="" )||({% Name %}.dom.output.className=="rolling")){
-                            if( {% Name %}.running ) {% Name %}.action.stop();
-                            else {% Name %}.action.start();
+                        console.log('->', {% Name %}.status);
+                        switch( {% Name %}.status){
+                            
+                            case 'ready'    : 
+                                {% Name %}.action.deselect();
+                                {% Name %}.status = 'starting';
+                                return {% Name %}.action.handle();
+                            
+                            case 'starting' : 
+                                {% Name %}.rotation_delta_change = 0.5; 
+                                setTimeout(function(){
+                                    {% Name %}.rotation_delta_change = 0.0;
+                                    {% Name %}.status = 'rolling';
+                                },2000);
+                                break;
+
+                            case 'rolling'  : 
+                                {% Name %}.status = 'stoping';
+                                return {% Name %}.action.handle();
+                                break;
+
+                            case 'stoping'  : 
+                                {% Name %}.rotation_delta_change = -0.1;                                 
+                                break;
+                            
+                            case 'stopped'  : 
+                                // Reset the roulette
+                                {% Name %}.status = 'ready';
+                                return {% Name %}.action.handle();
+                                break;
                         }
+                        console.log({% Name %}.status, '->');
+                        return;                        
                     },
 
                     start : function(){
                         console.log("Starting...");
                         if( {% Name %}.running ) return;
+                        {% Name %}.action.deselect();
+                        {% Name %}.dom.output.className = '';
+                        {% Name %}.dom.output.style.animationPlayState = 'running';
                         {% Name %}.running = true;
                         {% Name %}.dom.output.className = 'starting';
-                        {% Name %}.dom.output.style.animationPlayState = 'running';
                         setTimeout(function(){
                             console.log("Rolling...");
                             {% Name %}.dom.output.className = 'rolling';
@@ -181,7 +270,22 @@
                         if( {% Name %}.stopping) return;
                         console.log("Stopping...");
                         {% Name %}.running = false;
-                        {% Name %}.dom.output.style.animationPlayState = 'paused';                        
+                        {% Name %}.stopping = true;
+                        {% Name %}.dom.output.className = 'stopping';
+                        setTimeout(function(){
+                            console.log("Stopped...");
+                            //{% Name %}.dom.output.style.animationPlayState = 'paused';                        
+                            {% Name %}.action.select(parseInt(Math.random()*8));
+                            {% Name %}.stopping = false;
+                        }, 4000);
+                    },
+                    select : function( slice ){
+                        document.getElementById(`slot[${slice}]`).className = 'slice blinking';
+                    },
+                    deselect : function(){
+                        for(i=0; i<8; i++){
+                            document.getElementById(`slot[${i}]`).className = 'slice';
+                        }
                     },
                 },
 
@@ -193,7 +297,25 @@
                         console.log("WS ({% Name %}) : Got new roulette data : ", payload.data)
                         {% Name %}.data = JSON.parse(payload.data);
                         {% Name %}.render();
+                        
                         setTimeout( {% Name %}.update, 5000 );
+                    }
+                },
+
+                updateRotation : function(){
+                    {% Name %}.dom.output.style.transform = `rotateZ(${{% Name %}.rotation}deg)`;
+                    if({% Name %}.rotation_delta < 0){
+                        {% Name %}.rotation_delta = 0;
+                        {% Name %}.rotation_delta_change = 0.0;
+                        {% Name %}.status         = 'stopped';
+                        {% Name %}.action.select(parseInt(((360-{% Name %}.rotation) / 360)*8));
+                                    
+                    }  else {
+                        {% Name %}.rotation += {% Name %}.rotation_delta;
+                        {% Name %}.rotation_delta += {% Name %}.rotation_delta_change;
+                        if({% Name %}.rotation_delta > {% Name %}.rotation_speed){% Name %}.rotation_delta = {% Name %}.rotation_speed;
+                        if({% Name %}.rotation_delta < -{% Name %}.rotation_speed){% Name %}.rotation_delta = -{% Name %}.rotation_speed;
+                        {% Name %}.rotation %= 360;
                     }
                 },
                 
@@ -202,6 +324,7 @@
                     {% Name %}.messageHandler();
                     {% Name %}.connect();
                     /*{% Name %}.action.start();*/
+                    setInterval({% Name %}.updateRotation, 16);
                 }
             }
             // Dont forget to start the plugin after defining its class!
