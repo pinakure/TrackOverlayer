@@ -405,7 +405,7 @@ class Ramon:
 
 
         left = 0
-        items = int(Ramon.inner_width/80)
+        items = int(Ramon.inner_width / (64+(Ramon.padding*2)))
         group_index = 0        
         
         Ramon.getRecent()
@@ -416,7 +416,7 @@ class Ramon:
                 try:dpg.delete_item(f'simple-group[{group_index}]')
                 except: pass
                 dpg.add_group(tag=f"simple-group[{group_index}]", horizontal=True, parent='main-content')
-                left = items+1
+                left = items
             if d.locked: 
                 tag = f"cheebox[{d.picture}]"
                 try:dpg.delete_item(tag)
@@ -435,7 +435,7 @@ class Ramon:
                         dpg.add_text(d.name+"\n"+d.description)  
                 except Exception as E:
                     Log.warning(str(E))
-            left -= 1
+                left -= 1
         
     def getRecent():
         Ramon.data.recent = []
