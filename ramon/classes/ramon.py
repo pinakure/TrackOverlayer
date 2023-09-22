@@ -424,6 +424,7 @@ class Ramon:
 
     def txtRedraw():
         Ramon.clear()        
+        payload, unlocked = Ramon.getRecent()
         return
 
     def redraw():
