@@ -126,7 +126,8 @@ class Ramon:
         Ramon.data.retrieveSession()
 
         HotKeys.install()
-        mkdir('data')
+        mkdir('plugins')
+        mkdir('data/files')
         mkdir('data/cache')
         mkdir('data/css')
         try: os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
