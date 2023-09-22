@@ -115,21 +115,25 @@ except ImportError as E:
     os.system(f'pause')
     exit()
 
-if Ramon.start():
+
+text_only = True if (len(sys.argv) > 1 and sys.argv[1]=='--nogui') else False
+
+if Ramon.start(text_only):
     # load plugins
     Path('plugins.cfg').touch() # avoid error messages if file does not exist...
     for plugin in Ramon.plugins:
         Plugin.load( plugin )
-    Preferences.populatePluginsTab()
-    Preferences.updatePluginLists()
-    # build plugin overlay, if any loaded
-    if Preferences.settings['debug']:
-        from dearpygui import dearpygui as D
-        Preferences.show()
-        D.set_value('preferences-tabs', 'tab_database')
-        Plugin.debug = Preferences.settings['debug']    
+    if not text_only:
+        Preferences.populatePluginsTab()
+        Preferences.updatePluginLists()
+        # build plugin overlay, if any loaded
+        if Preferences.settings['debug']:
+            from dearpygui import dearpygui as D
+            Preferences.show()
+            D.set_value('preferences-tabs', 'tab_database')
+            Plugin.debug = Preferences.settings['debug']    
     # enter main loop
-    Ramon.render()
+    Ramon.render( text_only )
 if Ramon.restart:
     import sys
     cmdline = " ".join(sys.argv)

@@ -336,6 +336,7 @@ class Plugin:
                 plugin.run()
             except Exception as E:
                 Log.error(f"Cannot run plugin {name}", E)    
+        return
         
     def cssRule(self):
         return f'#{self.name}, #{self.name}-border'+'{'+f"""

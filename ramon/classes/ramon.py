@@ -1,4 +1,5 @@
 import os
+from time                   import sleep
 from dearpygui              import dearpygui as dpg
 from datetime               import datetime
 from classes.data           import Data
@@ -9,9 +10,11 @@ from classes.plugin         import Plugin
 from classes.ui             import UI , row as ROW, column as COLUMN
 from classes.tools          import mkdir, copy, elegant
 from classes.hotkeys        import HotKeys
+from classes.tdu            import Tdu
 from threading              import Timer
-
+            
 class Ramon:
+    CLS                 = 'cls' # set this to 'clear' on UNIX!!!
     width               = 1440
     height              = 900
     inner_width         = 0
@@ -34,7 +37,10 @@ class Ramon:
     run                 = True
     requesting          = False
     queue               = []
-    
+    folders             = ['plugins', 'data/files', 'data/cache', 'data/css']
+    tdu                 = None
+    text_only           = False
+        
     def updateCheevoManually(sender=None, args=None, user_data=None):
         with open(f'{Ramon.data.root}/data/current_cheevo.txt', "w") as file:
             file.write(dpg.get_value('cheevo'))
@@ -51,7 +57,7 @@ class Ramon:
             dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
         Ramon.data.writeCheevo()
         Plugin.runLoaded()
-        Ramon.redraw()
+        (Ramon.txtRedraw if Ramon.text_only else Ramon.redraw)()
     
     def trigger_exit(sender=None, user_data=None):
         Ramon.run = False         
@@ -113,7 +119,10 @@ class Ramon:
         #UI.resize()
         Preferences.writecfg()
 
-    def start():
+    def start(text_only=False):
+        Ramon.text_only = text_only
+        if text_only:
+            Ramon.tdu = Tdu(width=80, height=25)
         from classes.database   import DDBB
         from classes.server     import Server # private import needed here to avoid import loop
         Log.open()
@@ -126,10 +135,11 @@ class Ramon:
         Ramon.data.retrieveSession()
 
         HotKeys.install()
-        mkdir('plugins')
-        mkdir('data/files')
-        mkdir('data/cache')
-        mkdir('data/css')
+        
+        # Make required folders
+        for folder in Ramon.folders:
+            mkdir(folder)
+
         try: os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
         except: pass
         copy(
@@ -145,12 +155,11 @@ class Ramon:
             Ramon.height = w
             Ramon.width  = h
         Ramon.plugins = Plugin.discover()
-        Ramon.createViewport()
-        Ramon.createInterface()        
-        Ramon.setPosition( Preferences.settings['x-pos'], Preferences.settings['y-pos'] )
-        if not Preferences.settings['username'] or len(Ramon.data.cheevos) == 0:
-            Ramon.setProgress(1.0)
-        Ramon.loadPictures()
+        if not text_only:
+            Ramon.createViewport()
+            Ramon.createInterface()        
+            Ramon.setPosition( Preferences.settings['x-pos'], Preferences.settings['y-pos'] )
+            Ramon.loadPictures()
         Server.start()
         return True
     
@@ -330,25 +339,49 @@ class Ramon:
         dpg.set_value('stdout', text)
         dpg.render_dearpygui_frame()        
 
-    def render():
-        if Preferences.settings['fullscreen'] : 
-            dpg.toggle_viewport_fullscreen()
-        dpg.show_viewport()
-        Ramon.msg("Fetching Cheevo data...")
+    def render( text_only=False ):
+        if not text_only:
+            if Preferences.settings['fullscreen'] : 
+                dpg.toggle_viewport_fullscreen()
+            dpg.show_viewport()
+            Ramon.msg("Fetching Cheevo data...")
         Ramon.refresh()        
         # ---------------------------------------- LOOP START ---------------------------------------
-        while dpg.is_dearpygui_running() and Ramon.run and not Ramon.restart:
-            dpg.render_dearpygui_frame()
-            if Preferences.settings['auto_update'] and not Ramon.timer:
-                Ramon.timer = Timer( Preferences.settings['auto_update_rate']*60, Cheevo.checkAll )
-                Ramon.timer.start()           
-            Ramon.data.dispatchQueue()
-            Cheevo.dispatchQueue()
+        if text_only:
+            log_tdu = Tdu(width=80, height=24)
+            log_tdu.y = 1
+            Ramon.tdu.addChild(log_tdu)
+            while Ramon.run:
+                if Preferences.settings['auto_update'] and not Ramon.timer:
+                    Ramon.timer = Timer( Preferences.settings['auto_update_rate']*60, Cheevo.checkAll )
+                    Ramon.timer.start()           
+                Ramon.data.dispatchQueue()
+                Cheevo.dispatchQueue()
+                if Ramon.restart: break
+                
+                Log.dump(log_tdu)
+                Ramon.tdu.render()
+                sleep(1)
+        else:
+            while dpg.is_dearpygui_running() and Ramon.run:
+                dpg.render_dearpygui_frame()
+                if Preferences.settings['auto_update'] and not Ramon.timer:
+                    Ramon.timer = Timer( Preferences.settings['auto_update_rate']*60, Cheevo.checkAll )
+                    Ramon.timer.start()           
+                Ramon.data.dispatchQueue()
+                Cheevo.dispatchQueue()
+                if Ramon.restart: break
         # ----------------------------------------- LOOP END ----------------------------------------
         # ---------------------------------------- DEINIT START -------------------------------------
         # First of all Remove any timer left so it wont try to run on missing ui elements
         return Ramon.exit()
-        
+    
+    def title(text):
+        if not Ramon.text_only:
+            dpg.set_viewport_title(text)
+        else:
+            os.system(f'title {text}')
+
     def exit():
         from classes.server   import Server
         from classes.database import DDBB
@@ -387,6 +420,10 @@ class Ramon:
         except Exception as E:
             Log.error("Error during deinitialization", E)
             return False
+
+    def txtRedraw():
+        Ramon.clear()        
+        return
 
     def redraw():
         if not Preferences.settings['simple_ui']: return Ramon.olredraw()
@@ -470,11 +507,14 @@ class Ramon:
             dpg.set_item_pos('unlocked', (31,(26*Cheevo.global_index)))
     
     def clear():
-        dpg.set_value('stdout', '')
-        if Preferences.settings['simple_ui']: return
-        for i in range(0,Cheevo.max):
-            dpg.hide_item(f'cheevo[{i+1}]')
-        dpg.set_value('unlocked', '')
+        if Ramon.text_only:
+            os.system(Ramon.CLS)
+        else:
+            dpg.set_value('stdout', '')
+            if Preferences.settings['simple_ui']: return
+            for i in range(0,Cheevo.max):
+                dpg.hide_item(f'cheevo[{i+1}]')
+            dpg.set_value('unlocked', '')
     
     def refresh(sender=None, user_data=None, args=None):
         Ramon.requesting = True
@@ -489,14 +529,13 @@ class Ramon:
         Log.info("Scraping data...")
         if Ramon.data.query():
             Log.info("Scraping done.")
-            Ramon.clear()
-            Ramon.redraw()
+            (Ramon.txtRedraw if Ramon.text_only else Ramon.redraw)()
             Ramon.data.writeCheevo()
             Plugin.runLoaded()
-            dpg.set_viewport_title('tRAckOverlayer - '+("Offline Mode" if Preferences.settings["offline"] else "Ready"))
+            Ramon.title('tRAckOverlayer - '+("Offline Mode" if Preferences.settings["offline"] else "Ready"))
         else:
             Log.warning("Scraping failed.")
-            dpg.set_value('stdout','Wrong Username Specified / RetroAchievements is Down')        
+            Ramon.msg('Wrong Username Specified / RetroAchievements is Down')        
             Ramon.requesting = False
             return False
         Ramon.requesting = False

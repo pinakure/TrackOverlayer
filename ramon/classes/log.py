@@ -46,20 +46,23 @@ class Log:
 
     
     def print(text):
-        if Log.stdout:
-            print(text, end=Log.BR)
-        else:
-            dpg.set_value(
-                'log', 
-                "\n".join(
-                    (
-                        dpg.get_value('log')+text+'\n'
-                    ).split('\n')[-(Log.parent.log_line_count+3):]
-                ),
-            )
-            print(text, end=Log.BR)
-        
-        Log.buffer.append(text)            
+        from classes.ramon import Ramon
+        # Skip printing on text only mode 
+        if not Ramon.text_only:
+            if Log.stdout:
+                print(text, end=Log.BR)
+            else:
+                dpg.set_value(
+                    'log', 
+                    "\n".join(
+                        (
+                            dpg.get_value('log')+text+'\n'
+                        ).split('\n')[-(Log.parent.log_line_count+3):]
+                    ),
+                )
+                print(text, end=Log.BR)
+            
+        Log.buffer.append(text+"\n")            
         if len(Log.buffer) > 256:
             with open('trackoverlayer.log', 'a') as file:
                   file.write( Log.BR.join( Log.buffer ) )
@@ -90,6 +93,18 @@ class Log:
             pass
             #Log.info(f"\tFinished in { int((time.time_ns() - Log.when)/10000) } msec")
 
+    def dump(tdu):
+        from classes.tdu import Tdu
+        tdu.restore()
+        try: Log.buffer.remove('\n')
+        except: pass
+        try: Log.buffer.remove(' ')
+        except: pass
+        try: Log.buffer.remove('')
+        except: pass
+        for line in Log.buffer[-tdu.height:]:
+            tdu.print(line, wrap=False)
+                
     
     def error(text, exception=None):
         # if not Log.stdout:

@@ -88,7 +88,7 @@ class Data(Scraper):
                 Plugin.compose()
                 Log.info("Ready")
                 # Set flag stating its safe to scan cheevos now
-            self.parent.redraw()
+            (self.parent.txtRedraw if self.parent.text_only else self.parent.redraw)()
 
     def parseCheevos(self, game):
         self.parent.queue = []
@@ -157,14 +157,19 @@ class Data(Scraper):
             self.getGame(usersummary_raw)
         except Exception as E:
             Log.error("Cannot parse payload getting User Summary", E)
+
     
     def setActiveCheevo(self, index):
+        from classes.ramon import Ramon
         Cheevo.active_index = index
-        Preferences.settings['current_cheevo'] = Cheevo.active_index                
+        Preferences.settings['current_cheevo'] = Cheevo.active_index
+        if Ramon.text_only: 
+            # do text only stuff
+            return
         if not Preferences.settings['simple_ui']:
             for i in range(0,Cheevo.max):
                 dpg.set_value(f'cheevo[{i+1}]', False)
-                dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
+            dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
      
     def getCheevos(self):
         import random
@@ -224,7 +229,7 @@ class Data(Scraper):
         Log.info("Performing real request")
         return self.get()
     
-    def updatePictures(self):
+    def updatePictures(self):        
         try:   
             width, height, depth, data = dpg.load_image(f'{Preferences.root}/data/current_cheevo.png')                
         except Exception as E:
@@ -292,6 +297,7 @@ class Data(Scraper):
         return notifications
     
     def writeCheevo(self):
+        from classes.ramon import Ramon
         for d in self.cheevos:
             if d.index == Cheevo.active_index:
                 self.the_cheevo = d
@@ -303,7 +309,8 @@ class Data(Scraper):
                         picture.write(data[0] )
                     with open(f"{Preferences.root}/data/current_cheevo_lock.png", 'wb') as picture:
                         picture.write(data[1] )
-                    self.updatePictures()
+                    if not Ramon.text_only:
+                        self.updatePictures()
     
     def write(self):
         if Preferences.settings['username'] == '': return

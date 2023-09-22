@@ -193,6 +193,10 @@ class Tags:
         """
     
     def twitch_password(self):
+        from classes.ramon import Ramon
+        if Ramon.text_only: 
+            from classes.preferences import Preferences
+            return Preferences.settings['twitch-password']            
         from dearpygui import dearpygui as dpg        
         return dpg.get_value('twitch-password')
 

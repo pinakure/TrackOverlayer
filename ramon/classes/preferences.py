@@ -192,7 +192,7 @@ class Preferences:
                             with dpg.tooltip('enabled-plugins'):
                                 dpg.add_text("Click a plugin to disable it")
 
-    def populatePluginsTab():
+    def populatePluginsTab( ):
         global _item_details
         UI.columns = [ 8, 450 ]
         UI.setColumnWidth(445)
