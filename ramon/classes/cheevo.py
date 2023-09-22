@@ -120,7 +120,7 @@ class Cheevo(Model):
         if last:
             Cheevo.checking = False
             Log.info("Finished checking cheevos")                
-            (Ramon.txtRedraw if Ramon.text_only else redraw)()
+            (Ramon.txtRedraw if Ramon.text_only else Ramon.redraw)()
 
     def parse( game, payload ):
         name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'").split('&lt')[0].rstrip()

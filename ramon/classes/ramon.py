@@ -326,8 +326,9 @@ class Ramon:
         with open("./compile.bat", "w") as file:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
             file.write(f'''@title Compiling tRAckOverlayer v.{Ramon.version}...'''+'\n')                       
-            file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
-            file.write(f'''@python3 -m PyInstaller --onefile --noconsole -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
+            file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico --noconsole {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
+            #file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
+            file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico {plugins} main_nogui.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer-noGUI.exe'''+"\n")
             file.write(f'''@rmdir /q /s build'''+"\n")
             file.write(f'''@rmdir /q /s dist''' +"\n")
             file.write(f'''@erase main.spec'''+"\n")

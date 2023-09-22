@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "main.py",
-            "args": ["--nogui"],
+            /*"args": ["--nogui"],*/
             "console": "externalTerminal",
             "justMyCode": true
         }
