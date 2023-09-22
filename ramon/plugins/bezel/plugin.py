@@ -14,6 +14,8 @@ class plugin(Plugin):
         self.width       = 1440
         self.height      = 810
         self.scale       = 1
+
+        self.interactive = False
         
         #@ Settings
         self.setup({

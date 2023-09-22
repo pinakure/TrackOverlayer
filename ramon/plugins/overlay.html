@@ -370,6 +370,7 @@ Special thanks:
                         iframe.id       = `${plugin_name}`;
                         iframe.origin   = `http://localhost`;
                         iframe.sandbox  = 'allow-same-origin allow-scripts allow-top-navigation';
+                        iframe.style.pointerEvents = 'none';
                         iframe.style.overflow = 'hidden';
                         iframe.src      = `${ plugin_name }.html`;                        
                         TO.dom.to.appendChild(iframe);
@@ -560,9 +561,9 @@ Special thanks:
                                     case 'plugins':
                                         for(p in data){
                                             data[p].settings = JSON.parse(data[p].settings);
-                                            if(!data[p].settings.interactive){
+                                            if(data[p].settings.interactive){
                                                 try{
-                                                    TO.dom.plugins[p].style.pointerEvents = 'none';
+                                                    TO.dom.plugins[p].style.pointerEvents = 'all';
                                                 } catch(e){
                                                     console.log(e);
                                                     continue;
