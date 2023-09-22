@@ -340,3 +340,5 @@ ramon/plugins/cartridge/files/cartridge/mvs/Zupapa.png
 ramon/trackoverlayer.log
 ramon/trackoverlayer.log
 ramon/build/main_nogui/base_library.zip
+ramon/build/main_nogui/warn-main_nogui.txt
+ramon/build/main_nogui/xref-main_nogui.html
