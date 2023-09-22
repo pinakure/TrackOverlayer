@@ -40,6 +40,11 @@ class Endpoints:
     
     def games():
         #TODO: retrieve selection of games with locked cheevos from ddbb
+        from classes.game import Game
+        games = {x.id : x.name for x in Game.select().where(Game.current>0)}
+        return response({
+            'games' : games,
+        })
         return response({
             'games' : {
                 'mgs'       : "Metal Gear Solid",

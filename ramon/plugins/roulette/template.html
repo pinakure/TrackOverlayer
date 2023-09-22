@@ -322,12 +322,31 @@
                     {% Name %}.socket.send(`get-${ {% Name %}.endpoint }`);       
                 },
 
+                shuffle : function(){
+                    data = {% Name %}.data.games;
+                    new_data = {}
+                    while(Object.keys(data).length){
+                        keys = []
+                        for(d in data){
+                            keys[keys.length]=d;
+                        }
+                        key             = keys[parseInt(Math.random()*keys.length)];
+                        new_data[key]   = data[key];
+                        delete data[key];
+                    }
+                    {% Name %}.data.games = new_data;
+                },
+
                 render : function(){
+                    {% Name %}.shuffle();
                     i = 0;
-                    for( game in {% Name %}.data.games ){
-                        if(i>=8)return;
-                        {% Name %}.dom.slot[i].innerHTML = {% Name %}.data.games[game];
-                        i++;
+                    if ( Object.keys({% Name %}.data.games).length == 0)return;
+                    while(i<8){
+                        for( game in {% Name %}.data.games ){
+                            if(i>=8)return;
+                            {% Name %}.dom.slot[i].innerHTML = {% Name %}.data.games[game];
+                            i++;
+                        }          
                     }
                 },
 
