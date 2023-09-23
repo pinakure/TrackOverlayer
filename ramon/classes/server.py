@@ -30,14 +30,14 @@ class Server:
                 #insertdata(a) #function to write values to mysql
                 await websocket.send("exit")
             except Exception as e:
-                print(e)
+                Log.error("Websocket server stablishment failed", e)
 
     async def handleRequest(websocket):
         from classes.superchat import Superchat
         Server.ws = websocket
         async for message in websocket:
             if Server.ramon.requesting: return
-            if Preferences.settings['debug']: print(f"WS : {message}")
+            if Preferences.settings['debug']: Log.info(f"WS : {message}")
             if message.startswith('exit'                ): os._exit(0)
             elif message.startswith('get-data'          ): await websocket.send( encodeResponse('data'          , Endpoints.getAll()                    ))
             elif message.startswith('get-plugins'       ): await websocket.send( encodeResponse('plugins'       , Endpoints.plugins()                   ))
@@ -60,9 +60,9 @@ class Server:
     def thread(main_class):
         asyncio.run(Server.main(main_class))
 
-    def start():
-        from classes.ramon import Ramon # private import needed here to avoid import loop
-        Server._thread = Thread(target=Server.thread,args=(Ramon,))
+    def start(parent):
+        Endpoints.setParent(parent)        
+        Server._thread = Thread(target=Server.thread,args=(parent,))
         Server._thread.start()
 
     async def main(main_class):
@@ -70,5 +70,5 @@ class Server:
         Log.info("Starting Live Data Service, listening port 8765")
         async with serve(Server.handleRequest, 'localhost', 8765):
             #while 1:
-                print("Websocket Server is Running...")
+                Log.info("Websocket Server is Running...")
                 await asyncio.Future()

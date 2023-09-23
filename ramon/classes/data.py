@@ -88,7 +88,13 @@ class Data(Scraper):
                 Plugin.compose()
                 Log.info("Ready")
                 # Set flag stating its safe to scan cheevos now
-            (self.parent.txtRedraw if self.parent.text_only else self.parent.redraw)()
+            self.parent.redraw()
+        if self.parent.text_only:
+            self.parent.cheevo_list.redraw=True
+            self.parent.cheevo_list.selection=Cheevo.active_index-1
+            self.parent.cheevo_list.render()
+            self.parent.redraw()
+            self.parent.activity = True
 
     def parseCheevos(self, game):
         self.parent.queue = []
@@ -114,6 +120,19 @@ class Data(Scraper):
         except Exception as E:
             Log.error("Cannot extract User Timestamp", E)
     
+    def getRecent(self):
+        self.recent = []
+        unlocked = ''
+        payload  = ''
+        for d in self.cheevos:
+            if d.locked: 
+                payload += d.menu() + "\n"                
+            else:
+                if len(self.recent) < int(Plugin.loaded['recentunlocks'].settings['row-count']): 
+                    self.recent.append(d)
+                unlocked += '* '+ d.menu() + "\n"
+        return payload, unlocked
+    
     def getScore( self, usersummary ):
         try:
             Log.info("SCRAPER : Extracting User Score...")
@@ -125,8 +144,8 @@ class Data(Scraper):
         try:
             Log.info("SCRAPER : Extracting Game Data...")
             self.subset       = ''
-            userdata            = usersummary_raw.contents[43].contents[1].contents[0].contents
-            self.game_id        = int(usersummary_raw.contents[43].contents[1].contents[0].attrs['href'].split('/')[-1])
+            userdata            = usersummary_raw.contents[-1].contents[1].contents[0].contents
+            self.game_id        = int(usersummary_raw.contents[-1].contents[1].contents[0].attrs['href'].split('/')[-1])
             self.game_picture   = userdata[0].attrs['src'].split('/')[-1].split('.png')[0]
             self.last_seen_full = userdata[1].lstrip(' ').rstrip(' ')
             self.last_seen      = self.last_seen_full.split('(')[0].split('[')[0].lstrip(' ').rstrip(' ')
@@ -142,7 +161,8 @@ class Data(Scraper):
                 subset      = self.subset, 
                 platform    = self.platform,
             )
-            Preferences.table_game.update()
+            if Preferences.table_game is not None:
+                Preferences.table_game.update()
         except Exception as E:
             Log.error("Cannot parse Game Data", E)
     
@@ -160,10 +180,9 @@ class Data(Scraper):
 
     
     def setActiveCheevo(self, index):
-        from classes.ramon import Ramon
         Cheevo.active_index = index
         Preferences.settings['current_cheevo'] = Cheevo.active_index
-        if Ramon.text_only: 
+        if self.parent.text_only: 
             # do text only stuff
             return
         if not Preferences.settings['simple_ui']:
@@ -297,7 +316,6 @@ class Data(Scraper):
         return notifications
     
     def writeCheevo(self):
-        from classes.ramon import Ramon
         for d in self.cheevos:
             if d.index == Cheevo.active_index:
                 self.the_cheevo = d
@@ -309,7 +327,7 @@ class Data(Scraper):
                         picture.write(data[0] )
                     with open(f"{Preferences.root}/data/current_cheevo_lock.png", 'wb') as picture:
                         picture.write(data[1] )
-                    if not Ramon.text_only:
+                    if not self.parent.text_only:
                         self.updatePictures()
     
     def write(self):

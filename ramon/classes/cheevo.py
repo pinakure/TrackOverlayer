@@ -5,7 +5,7 @@ from classes.database    import DDBB
 from peewee              import *
 from classes.scraper     import Scraper
 from classes.preferences import Preferences
-from classes.tools       import extract
+from classes.tools       import extract, copy
 
 class Cheevo(Model):
     root            = '.'
@@ -13,6 +13,7 @@ class Cheevo(Model):
     min_width       = 0
     global_index    = 0
     active_index    = 1
+    parent          = None
 
     id          = CharField(unique=True, primary_key=True)
     name        = CharField(default="")
@@ -31,14 +32,13 @@ class Cheevo(Model):
         return f'{self.name.ljust(Cheevo.min_width, " ")}'+"\n"+(" "*9)+f'{self.description}'
     
     def setupScraper(self):
-        from classes.ramon import Ramon
         self.scraper = Scraper()
-        self.scraper.protocol         = Ramon.data.protocol
-        self.scraper.host             = Ramon.data.host
-        self.scraper.port             = Ramon.data.port
-        self.scraper.session          = Ramon.data.session
-        self.scraper.cookies          = Ramon.data.cookies
-        self.scraper.login_tokens     = Ramon.data.login_tokens
+        self.scraper.protocol         = Cheevo.parent.data.protocol
+        self.scraper.host             = Cheevo.parent.data.host
+        self.scraper.port             = Cheevo.parent.data.port
+        self.scraper.session          = Cheevo.parent.data.session
+        self.scraper.cookies          = Cheevo.parent.data.cookies
+        self.scraper.login_tokens     = Cheevo.parent.data.login_tokens
         self.scraper.needs_login      = False
         self.scraper.logged_in        = True
         self.scraper.parsed           = None
@@ -79,14 +79,12 @@ class Cheevo(Model):
     queue    = []
 
     def checkAll():
-        from classes.ramon import Ramon
         Cheevo.queue = []
-        for cheevo in Ramon.data.locked:
+        for cheevo in Cheevo.parent.data.locked:
             Cheevo.queue.append( cheevo )
             #cheevo.check()
 
     def check(self):
-        from classes.ramon import Ramon
         if Preferences.settings['offline']: 
             Log.info(f"Skipping cheevo '{ self.name }' checking due to offline mode")
             return
@@ -103,13 +101,12 @@ class Cheevo(Model):
                 Log.info(f"    Cheevo { self.id } has just been unlocked!")
                 self.notified = False
                 self.locked = False
-                Ramon.data.locked.remove(self)
+                Cheevo.parent.data.locked.remove(self)
                 self.save()
                 return
             Log.info(f"    Cheevo is still locked.")
 
     def dispatchQueue():
-        from classes.ramon import Ramon
         last   = False
         if not len(Cheevo.queue): return
         head = Cheevo.queue[0]
@@ -120,7 +117,7 @@ class Cheevo(Model):
         if last:
             Cheevo.checking = False
             Log.info("Finished checking cheevos")                
-            (Ramon.txtRedraw if Ramon.text_only else Ramon.redraw)()
+            Cheevo.parent.redraw()
 
     def parse( game, payload ):
         name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'").split('&lt')[0].rstrip()
@@ -168,4 +165,16 @@ class Cheevo(Model):
             cheevo.setupScraper()
             return cheevo
 
-
+    def default(parent):
+        Cheevo.parent = parent
+        try: os.truncate(f'{Preferences.root}/data/current_cheevo.png', 0)
+        except: pass
+        copy(
+            f'{Preferences.settings["root"]}/plugins/default.png',
+            f'{Preferences.settings["root"]}/data/current_cheevo.png',
+        )
+        copy(
+            f'{Preferences.settings["root"]}/plugins/default.png',
+            f'{Preferences.settings["root"]}/data/current_cheevo_lock.png',
+        )
+        

@@ -1,5 +1,7 @@
 class Config:
-    
+
+    version = 180
+
     width   = 1024#640
     height  = 600#480
 
@@ -37,6 +39,8 @@ class Config:
         'current_cheevo'            : 1,
         'plugin-rate'               : 5,
     }
+
+    folders             = ['plugins', 'data/files', 'data/cache', 'data/css']
     
     class range:
         pos_x   = [-1440, 1440]

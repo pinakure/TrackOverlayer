@@ -11,10 +11,13 @@ def response( raw ):
 class Endpoints:
 
     debug = False
+    parent = False
+
+    def setParent(parent):
+        Endpoints.parent = parent
     
     def notifications():
-        from classes.ramon import Ramon
-        return response(Ramon.data.getNotifications())
+        return response(Endpoints.parent.data.getNotifications())
     
     def username():
         return Preferences.settings['username'] 
@@ -23,19 +26,17 @@ class Endpoints:
         return Preferences.settings['twitch-username']
         
     def current_cheevo():
-        from classes.ramon import Ramon
         from classes.plugin import Plugin        
-        return response( Ramon.data.cheevo if not Plugin.debug else "Test cheevo\nTest description")
+        return response( Endpoints.parent.data.cheevo if not Plugin.debug else "Test cheevo\nTest description")
     
     def progress():
-        from classes.ramon import Ramon
         from classes.plugin import Plugin
         if Plugin.debug: 
             import random
-            Ramon.data.progress = f'{str(int(random.random()*100))}%'
-        Ramon.data.progress = '0%' if Ramon.data.progress == '' else Ramon.data.progress
+            Endpoints.parent.data.progress = f'{str(int(random.random()*100))}%'
+        Endpoints.parent.data.progress = '0%' if Endpoints.parent.data.progress == '' else Endpoints.parent.data.progress
         return response({
-            'progress'      : int(Ramon.data.progress.replace('%', '')),
+            'progress'      : int(Endpoints.parent.data.progress.replace('%', '')),
         })
     
     def games():
@@ -45,53 +46,35 @@ class Endpoints:
         return response({
             'games' : games,
         })
-        return response({
-            'games' : {
-                'mgs'       : "Metal Gear Solid",
-                'pacman'    : "Pacman",
-                'snow'      : "Snow Bros",
-                'donkey'    : "Donkey Kong",
-                'spaceinv'  : "Space Invaders",
-                'mslug'     : "Metal Slug",
-                'mslugx'    : "Metal Slug X",
-                'xybots'    : "Xybots",
-                'gauntlet'  : "Gauntlet",
-            }
-        })
-
+        
     def game():
-        from classes.ramon import Ramon
         return response({ 
-            'name'          : Ramon.data.game.name      if Ramon.data.game else 'no game',
-            'id'            : Ramon.data.game.id        if Ramon.data.game else 0,
-            'platform'      : Ramon.data.game.platform  if Ramon.data.game else 'unknown',
-            'picture'       : Ramon.data.game.picture   if Ramon.data.game else '',
+            'name'          : Endpoints.parent.data.game.name      if Endpoints.parent.data.game else 'no game',
+            'id'            : Endpoints.parent.data.game.id        if Endpoints.parent.data.game else 0,
+            'platform'      : Endpoints.parent.data.game.platform  if Endpoints.parent.data.game else 'unknown',
+            'picture'       : Endpoints.parent.data.game.picture   if Endpoints.parent.data.game else '',
         })
     
     def current_cheevo():
-        from classes.ramon import Ramon
         return response({ 
-            'name'          : Ramon.data.the_cheevo.name                        if Ramon.data.the_cheevo else 'No Cheevo Active',
-            'description'   : Ramon.data.the_cheevo.description                 if Ramon.data.the_cheevo else '---',
-            'picture'       : Ramon.data.the_cheevo.picture.split('_lock')[0]   if Ramon.data.the_cheevo else 'default',
+            'name'          : sane(Endpoints.parent.data.the_cheevo.name)                        if Endpoints.parent.data.the_cheevo else 'No Cheevo Active',
+            'description'   : sane(Endpoints.parent.data.the_cheevo.description)                 if Endpoints.parent.data.the_cheevo else '---',
+            'picture'       : Endpoints.parent.data.the_cheevo.picture.split('_lock')[0]   if Endpoints.parent.data.the_cheevo else 'default',
         })
     
     def score():
-        from classes.ramon import Ramon
         return response({ 
-            'site_rank'     : Ramon.data.site_rank,
-            'site_rank'     : Ramon.data.site_rank,
-            'score'         : Ramon.data.score,            
+            'site_rank'     : Endpoints.parent.data.site_rank,
+            'site_rank'     : Endpoints.parent.data.site_rank,
+            'score'         : Endpoints.parent.data.score,            
         })
     
     def recent():
-        from classes.ramon import Ramon
         return response([ 
-            [ r.name.replace('\'', ""), r.description.replace('\'', ""), r.picture.split('_')[0].split('.png')[0]+'.png'] for r in Ramon.data.recent
+            [ r.name.replace('\'', ""), r.description.replace('\'', ""), r.picture.split('_')[0].split('.png')[0]+'.png'] for r in Endpoints.parent.data.recent
         ])
     
     def resize(args):
-        from classes.ramon  import Ramon
         from classes.plugin import Plugin
         target = args.split('|')[1]
         anchor = args.split('|')[2]
@@ -123,7 +106,6 @@ class Endpoints:
         })
 
     def move(args):
-        from classes.ramon  import Ramon
         from classes.plugin import Plugin
         print("Move", args)
         target = args.split('|')[1]

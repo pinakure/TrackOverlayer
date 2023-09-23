@@ -7,6 +7,7 @@ from classes.tools          import tag, templatetag
 from classes.log            import Log
 from classes.icons          import Icons
 from classes.tags           import Tags
+from pathlib                import Path
 import importlib, json, os
 
 class Plugin:
@@ -538,3 +539,10 @@ class Plugin:
             Log.time(True)  
         except Exception as E:
             Log.error(f'Cannot load Plugin {name}', E)
+
+    def loadThese( these_plugins : list )->None:
+        Path('plugins.cfg').touch() # avoid error messages if file does not exist...
+        for plugin in these_plugins:
+            Plugin.load( plugin )
+        Preferences.populatePluginsTab()
+        Preferences.updatePluginLists()

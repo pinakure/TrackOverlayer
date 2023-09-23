@@ -10,8 +10,8 @@
             "request": "launch",
             "program": "main.py",
             /*"args": ["--nogui"],*/
-            "console": "integratedTerminal",
-            "justMyCode": true
+            "console": "externalTerminal",
+            "justMyCode": true            
         }
     ]
 }

@@ -1,5 +1,5 @@
-from dearpygui import dearpygui as dpg
-from peewee import *
+from dearpygui      import dearpygui as dpg
+from peewee         import *
 from classes.tools  import elegant, Color
 from classes.log    import Log
 

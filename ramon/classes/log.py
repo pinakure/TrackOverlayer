@@ -1,4 +1,5 @@
 from dearpygui import dearpygui as dpg
+from colorama  import Fore
 import traceback, time
 
 class Log:
@@ -46,9 +47,10 @@ class Log:
 
     
     def print(text):
-        from classes.ramon import Ramon
-        # Skip printing on text only mode 
-        if not Ramon.text_only:
+        if Log.parent.text_only:
+            Log.parent.log.print(text)
+            Log.parent.activity = True
+        else:
             if Log.stdout:
                 print(text, end=Log.BR)
             else:
@@ -60,7 +62,6 @@ class Log:
                         ).split('\n')[-(Log.parent.log_line_count+3):]
                     ),
                 )
-                print(text, end=Log.BR)
             
         Log.buffer.append(text+"\n")            
         if len(Log.buffer) > 256:
@@ -68,7 +69,8 @@ class Log:
                   file.write( Log.BR.join( Log.buffer ) )
             Log.buffer = []
     
-    def open():
+    def open(parent=None):
+        Log.parent = parent
         with open('trackoverlayer.log', 'w') as file:
             pass
 
@@ -107,8 +109,10 @@ class Log:
                 
     
     def error(text, exception=None):
-        # if not Log.stdout:
-        #     dpg.show_item('log_window')
+        if Log.parent.text_only:
+            Log.print(f'{Fore.RED}{text}')
+            Log.print("\t"+Fore.RED+(traceback.format_exc() if exception else 'Sorry!')+"\n"+Fore.BLUE)
+            return
         Log.print("\t"+('-'*80)+"\n")
         Log.print("\t"+f'ERROR: {text}'+(('\n\t'+str(exception)) if exception else '')+"\n")
         if Log.verbose: 

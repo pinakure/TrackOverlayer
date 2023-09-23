@@ -193,6 +193,7 @@ class Preferences:
                                 dpg.add_text("Click a plugin to disable it")
 
     def populatePluginsTab( ):
+        if Preferences.parent.text_only: return
         global _item_details
         UI.columns = [ 8, 450 ]
         UI.setColumnWidth(445)
@@ -283,7 +284,8 @@ class Preferences:
                 file.write(f'{key}={value}'+"\n")
         Preferences.parent.restart = restart
     
-    def loadcfg():
+    def loadcfg(parent):
+        Preferences.parent = parent
         from classes.cheevo import Cheevo
         Preferences.settings = Preferences.defaults
         Preferences.settings.update({'version' : Preferences.parent.version})
@@ -344,6 +346,7 @@ class Preferences:
             return 
 
     def updatePluginLists():
+        if Preferences.parent.text_only: return
         from classes.plugin import Plugin
         items = [ plugin.name for name,plugin in Plugin.loaded.items() if plugin.settings['enabled']]
         dpg.configure_item( 'enabled-plugins', items=items )        

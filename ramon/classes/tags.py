@@ -5,6 +5,11 @@ from classes.tools          import tag, templatetag
 
 class Tags:
     
+    parent = None
+
+    def setParent(parent):
+        Tags.parent = parent
+
     def getTags():
         return {
             'debug'             : Tags.debug,
@@ -122,8 +127,7 @@ class Tags:
                 """+self.dumpDicts()
 
     def game(self):
-        from classes.ramon import Ramon
-        return Ramon.data.game.id
+        return Tags.parent.data.game.id
 
     def plugins(self):
         '@OBJECT'
@@ -193,8 +197,7 @@ class Tags:
         """
     
     def twitch_password(self):
-        from classes.ramon import Ramon
-        if Ramon.text_only: 
+        if Tags.parent.text_only: 
             from classes.preferences import Preferences
             return Preferences.settings['twitch-password']            
         from dearpygui import dearpygui as dpg        
