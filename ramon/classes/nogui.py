@@ -385,6 +385,8 @@ class App(KeyLogger):
             return 
         
     def start(self):
+        for folder in Config.folders:
+            mkdir(folder)
         from classes.server import Server # private import needed here to avoid import loop
         Log.open(self)
         Preferences.loadcfg(self)
@@ -393,8 +395,7 @@ class App(KeyLogger):
         self.data.retrieveSession()
         
         # Make required folders
-        for folder in Config.folders:
-            mkdir(folder)
+        
         
         # Reset cheevo picture file to default TO file
         Cheevo.default(self)

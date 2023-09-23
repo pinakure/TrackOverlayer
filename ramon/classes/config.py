@@ -40,7 +40,7 @@ class Config:
         'plugin-rate'               : 5,
     }
 
-    folders             = ['plugins', 'data/files', 'data/cache', 'data/css']
+    folders             = ['plugins', 'data', 'data/files', 'data/cache', 'data/css']
     
     class range:
         pos_x   = [-1440, 1440]
