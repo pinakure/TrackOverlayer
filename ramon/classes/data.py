@@ -74,6 +74,8 @@ class Data(Scraper):
             last   = True
         self.parent.queue = self.parent.queue[1:] if len( self.parent.queue)>1 else []
         cheevo = Cheevo.parse(self.game, head)
+        if self.parent.text_only:
+            self.parent.log.print(f"Parsed {'un' if not cheevo.locked else ''}locked cheevo {cheevo.name}")
         if cheevo.locked:
             self.locked.append(cheevo)
         self.cheevos.append( cheevo )

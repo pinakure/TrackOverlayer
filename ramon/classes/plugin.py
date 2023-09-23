@@ -375,8 +375,10 @@ class Plugin:
         try:
             with open(f'{Preferences.settings["root"]}/data/overlay.html', "w") as file:
                 file.write( data )
+            return True
         except Exception as E:
             Log.error("Cannot write Plugin Overlay template file", E)
+            return False
         
     def compose(sender=None, user_data=None):
         # Generates overlay.html file:
@@ -413,9 +415,13 @@ class Plugin:
         data = Icons.replaceTags(data)
         #
         # Dump data into rendered template
-        if not Plugin.writeOverlayTemplate( data ): return
+        if not Plugin.writeOverlayTemplate( data ): 
+            Log.error("Failed to update overlay.html")
+            return
+        Log.info("Updated overlay.html sucessfully")
         #
         # Create plugin data feeder js script 
+        
         Log.time(True)  
     
     def getOverlayCSS():

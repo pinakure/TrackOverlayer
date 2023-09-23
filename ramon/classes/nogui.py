@@ -125,8 +125,6 @@ class CheevoBox(ListBox):
         # Update plugins 
         Plugin.runLoaded()
         self.redraw = True
-    
-
         
 class PluginBox(ListBox):
     def __init__(self, parent):
@@ -137,6 +135,10 @@ class PluginBox(ListBox):
         self.height     = 40
         ListBox.__init__(self, parent=parent, x=self.x, y=self.y, width=self.width, height=self.height, multiple=True, items=Plugin.discover(), selection=[])
 
+    def updateSelection(self):
+        self.selection  = ([ name for name, plugin in Plugin.loaded.items() if plugin.settings['enabled']])
+        self.redraw     = True
+
     def render(self):
         if not self.redraw: return
         self.redraw = False
@@ -144,11 +146,19 @@ class PluginBox(ListBox):
         BG = Back.YELLOW if self.parent.focus == self else Back.WHITE
         for row, item in enumerate(self.items):
             self.tdu.setCursor(0 , row)
-            self.tdu.print(f'{Fore.BLACK}[{BG if self.cursor==row else Back.WHITE}{"x" if row in self.selection else " "}{Back.WHITE}] {Fore.BLUE}{item}')
+            self.tdu.print(f'{Fore.BLACK}[{BG if self.cursor==row else Back.WHITE}{"x" if item in self.selection else " "}{Back.WHITE}] {Fore.BLUE if item in self.selection else Fore.BLACK}{item}')
         
     def activate(self):
         ListBox.activate(self)
-
+        value = self.items[self.cursor]
+        Plugin.loaded[value].settings['enabled'] ^= 1
+        self.parent.log.print(f'{"En" if Plugin.loaded[value].settings["enabled"] else "Dis"}abled plugin "{value}"')
+        Plugin.writeConfig()
+        if Plugin.loaded[value].settings['enabled']:
+            Plugin.loaded[value].run()
+        Plugin.compose()
+        self.updateSelection()
+        
 class LogBox(ListBox):
     def __init__(self, parent):
         self.x          = 0
@@ -193,7 +203,9 @@ class MenuBar:
         self.selection = 2 if self.selection < 0 else self.selection
 
     def activate(self):
-        pass
+        if   self.selection == 0: self.parent.refresh()
+        elif self.selection == 1: Cheevo.checkAll()
+        elif self.selection == 2: Plugin.compose()
 
     def render(self):
         self.tdu.restore()
@@ -260,7 +272,7 @@ class App(KeyLogger):
     def render(self):
         self.preRender()
         self.frame()
-        self.refresh()        
+        self.refresh()
         while self.run:
             # Draw elements 
             self.frame()
@@ -271,12 +283,16 @@ class App(KeyLogger):
                     self.timer.start()           
                 self.data.dispatchQueue()
                 Cheevo.dispatchQueue()
-                sleep(0.1)
-        self.exit()
+                #if len(self.queue)==0: 
+                #    sleep(0.1)
+        os._exit(0)
 
-    def exit():
-        Log.close()            
-        exit()
+    def exit(self):
+        try:
+            Log.close()            
+        except Exception as E:
+            print(str(E))
+        self.run = False
 
     def redraw(self):
         self.data.getRecent()
@@ -330,6 +346,8 @@ class App(KeyLogger):
         if key == keyboard.Key.right or key == keyboard.Key.down:
             self.activity = True
             return self.focus.next()        
+        if key == keyboard.Key.esc:
+            return self.exit()
         if key == keyboard.Key.enter:
             self.activity = True
             return self.focus.activate()
@@ -347,6 +365,8 @@ class App(KeyLogger):
             last_focus.redraw = True
             
             return
+        if key == keyboard.Key.f4 and self.alt:
+            return self.exit()
         if key == keyboard.Key.f5 and self.ctrl:
             if self.timer:
                 self.timer.cancel()
@@ -387,6 +407,7 @@ class App(KeyLogger):
 
         # load plugins
         Plugin.loadThese( Plugin.discover() )
+        self.plugin_list.updateSelection()
 
         # Enable keyboard listener (dont panic about its name, its not logging any password, its just listening arrows, enter and tab keys)
         KeyLogger.start(self)
