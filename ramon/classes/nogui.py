@@ -1,11 +1,11 @@
 import os, time
+import pywintypes
 from datetime               import datetime
-from time                   import sleep
 from classes.tdu            import Tdu
 from colorama               import Fore, Back, Style, init
 from pynput                 import keyboard
 from threading              import Thread, Timer
-from win32gui               import GetWindowText, GetForegroundWindow
+#from win32gui               import GetWindowText, GetForegroundWindow
 from classes.database       import DDBB
 from classes.log            import Log
 from classes.preferences    import Preferences
@@ -24,7 +24,7 @@ class KeyLogger:
         self.is_paused=False  # pause keylog listener
         self.is_closed=False  # stop and close keylog
         self.l=None  # listener
-        self.listened_window=GetWindowText(GetForegroundWindow())  # set listened window name
+        #self.listened_window=GetWindowText(GetForegroundWindow())  # set listened window name
         self.focused_checker=Thread(target=self.check_focused)  # check if out of focused window in a thread
         self.focused_checker.start()
     

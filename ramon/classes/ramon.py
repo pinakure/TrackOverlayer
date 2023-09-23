@@ -324,6 +324,9 @@ class Ramon:
         
         with open("./compile.bat", "w") as file:
             plugins = " ".join([ f'--hidden-import plugins.{x}.plugin' for x in Plugin.discover()])
+            plugins += ' --hidden-import pywintypes '
+            plugins += ' --hidden-import win32gui '
+            plugins += ' --hidden-import pywin32 '
             file.write(f'''@title Compiling tRAckOverlayer v.{Ramon.version}...'''+'\n')                       
             file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico --noconsole {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer.exe'''+"\n")
             #file.write(f'''@python3 -m PyInstaller --onefile -i icon.ico {plugins} main.py '''+'\n'+'''@move dist\main.exe tRAckOverlayer_debug.exe'''+"\n")
