@@ -80,6 +80,7 @@ class App(Keyboard):
             Log.close()            
         except Exception as E:
             print(str(E))
+        self.close()
         self.run = False
 
     def redraw(self):

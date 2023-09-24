@@ -15,6 +15,7 @@ class ListBox:
         self.items      = items
         self.selection  = selection
         self.cursor     = 0
+        self.scroll     = 0
         self.redraw     = True
         self.preRender()
         self.render()
@@ -55,6 +56,7 @@ class CheevoBox(ListBox):
         self.parent.activity = True
         BG = Back.YELLOW if self.parent.focus == self else Back.WHITE
         for row, key in enumerate(self.items.keys()):
+            if row >= (self.height>>1)-2: continue
             item = self.items[key]
             self.tdu.setCursor(0 , row*2)
             self.tdu.print(f'{Fore.BLACK}({BG if self.cursor==row else Back.WHITE}{" " if self.selection != row else "*"}{Back.WHITE}) {Fore.BLUE}{key[0:self.width-6]}')
@@ -93,7 +95,7 @@ class PluginBox(ListBox):
         self.redraw = False
         self.parent.activity = True
         BG = Back.YELLOW if self.parent.focus == self else Back.WHITE
-        for row, item in enumerate(self.items):
+        for row, item in enumerate(self.items[self.scroll:(self.scroll+self.height-2)]):
             self.tdu.setCursor(0 , row)
             self.tdu.print(f'{Fore.BLACK}[{BG if self.cursor==row else Back.WHITE}{"x" if item in self.selection else " "}{Back.WHITE}] {Fore.BLUE if item in self.selection else Fore.BLACK}{item}')
         
