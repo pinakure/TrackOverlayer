@@ -5,11 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "tRAckOverlayer",
             "type": "python",
             "request": "launch",
             "program": "main.py",
-            /*"args": ["--nogui"],*/
+            "console": "integratedTerminal",
+            "justMyCode": true            
+        },
+        {
+            "name": "tRAckOverlayer-NoGUI",
+            "type": "python",
+            "request": "launch",
+            "program": "main_nogui.py",
             "console": "externalTerminal",
             "justMyCode": true            
         }
