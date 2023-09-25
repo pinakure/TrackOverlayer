@@ -37,6 +37,7 @@ class Plugin:
         self.strings        = []
         self.edit           = False
         self.settings       = {
+            'visible'   : True,
             'enabled'   : False,
             'pos-x'     : 0,
             'size-x'    : 128,

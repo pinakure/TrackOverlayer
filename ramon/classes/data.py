@@ -7,7 +7,7 @@ from classes.preferences    import Preferences
 from classes.log            import Log
 from classes.plugin         import Plugin
 from classes.scraper        import Scraper
-from classes.tools          import ascii, readfile
+from classes.tools          import readfile,sane
 
 class Data(Scraper):
 
@@ -296,9 +296,12 @@ class Data(Scraper):
     def markNotification(self, notification_name):
         from classes.cheevo import Cheevo
         Log.info(f"Marking cheevo '{notification_name}' as notified.")
-        cheevo = Cheevo.get(Cheevo.name==notification_name)
-        cheevo.notified = True
-        cheevo.save()
+        try:
+            cheevo = Cheevo.get(Cheevo.name==notification_name.replace('`', "'"))
+            cheevo.notified = True
+            cheevo.save()
+        except Exception as E:
+            Log.error(f"Cannot mark notification '{notification_name}'", E)
     
     #TODO: Move to endpoints
     def getNotifications(self):
@@ -310,7 +313,11 @@ class Data(Scraper):
                 .order_by(Cheevo.index.asc())
             )
         for cheevo in cheevos:
-            notifications.append( [ cheevo.name, cheevo.description, cheevo.picture.rstrip('.png').rstrip('_lock') ] )
+            notifications.append( [ 
+                sane(cheevo.name),
+                sane(cheevo.description).split('.')[0].split('[')[0], 
+                cheevo.picture.rstrip('.png').rstrip('_lock') 
+            ] )
             try:
                 cheevo.save()
             except:

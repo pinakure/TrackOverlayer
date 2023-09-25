@@ -57,9 +57,9 @@ class Endpoints:
     
     def current_cheevo():
         return response({ 
-            'name'          : sane(Endpoints.parent.data.the_cheevo.name)                        if Endpoints.parent.data.the_cheevo else 'No Cheevo Active',
-            'description'   : sane(Endpoints.parent.data.the_cheevo.description)                 if Endpoints.parent.data.the_cheevo else '---',
-            'picture'       : Endpoints.parent.data.the_cheevo.picture.split('_lock')[0]   if Endpoints.parent.data.the_cheevo else 'default',
+            'name'          : Endpoints.parent.data.the_cheevo.name                                    if Endpoints.parent.data.the_cheevo else 'No Cheevo Active',
+            'description'   : Endpoints.parent.data.the_cheevo.description.replace('.',"<br/>").replace('[','<br/>').replace(']', '')     if Endpoints.parent.data.the_cheevo else '---',
+            'picture'       : Endpoints.parent.data.the_cheevo.picture.split('_lock')[0]            if Endpoints.parent.data.the_cheevo else 'default',
         })
     
     def score():

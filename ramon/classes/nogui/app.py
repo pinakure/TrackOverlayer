@@ -14,6 +14,7 @@ from classes.tools              import mkdir
 from classes.plugin             import Plugin
 from classes.nogui.keylogger    import SafeInput as Keyboard
 from classes.nogui.widgets      import CheevoBox,PluginBox,LogBox,MenuBar
+#from classes.apiclient          import APIClient
 
 class App(Keyboard):
 
@@ -96,6 +97,9 @@ class App(Keyboard):
         
 
     def refresh(self):
+        if self.requesting: return
+        self.queue = []
+        Cheevo.queue = []
         self.requesting = True
         self.timer = None
         Cheevo.global_index = 0
@@ -177,6 +181,9 @@ class App(Keyboard):
         # Enable keyboard listener
         Keyboard.start(self)
         
+        #api = APIClient()
+        #api.authorize()
+
         # enter main loop
         self.render()
 

@@ -68,7 +68,10 @@ class Server:
     async def main(main_class):
         Server.ramon = main_class
         Log.info("Starting Live Data Service, listening port 8765")
-        async with serve(Server.handleRequest, 'localhost', 8765):
-            #while 1:
-                Log.info("Websocket Server is Running...")
-                await asyncio.Future()
+        try:
+            async with serve(Server.handleRequest, 'localhost', 8765):
+                #while 1:
+                    Log.info("Websocket Server is Running...")
+                    await asyncio.Future()
+        except Exception as E:
+            Log.error("Websocket address is busy. Please close any other tRAckOverlayer instance", E)

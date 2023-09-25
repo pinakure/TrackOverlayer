@@ -50,14 +50,9 @@ class Cheevo(Model):
         self.scraper.response_content = None
         
     def getPicture( picture_id ):
-        data = requests.get( f'https://media.retroachievements.org/Badge/{picture_id}.png' ).content
-        with open(f'{Cheevo.root}/data/cache/{picture_id}.png', 'wb') as file:
-            file.write(data)
-        data = requests.get( f'https://media.retroachievements.org/Badge/{picture_id}_lock.png' ).content
-        with open(f'{Cheevo.root}/data/cache/{picture_id}_lock.png', 'wb') as file:
-            file.write(data)
-        return data
-    
+        from classes.tools import download
+        download(f'https://media.retroachievements.org/Badge/{picture_id}.png'      ,f'{Cheevo.root}/data/cache/{picture_id}.png'     )
+        download(f'https://media.retroachievements.org/Badge/{picture_id}_lock.png' ,f'{Cheevo.root}/data/cache/{picture_id}_lock.png')
 
     def _build_cache(picture):
         Cheevo.getPicture( picture.split('.png')[0].split('_lock')[0] )
@@ -154,8 +149,8 @@ class Cheevo(Model):
             
             cheevo = Cheevo.create(
                 id          = cheevo_id,
-                name        = name.replace('"', "´"), 
-                description = description.replace('"', "´"), 
+                name        = name.replace('"', ""), 
+                description = description.replace('"', "´").replace('&quot', '').replace('\\\'','' ), 
                 picture     = picture.strip('https://media.retroachievements.org/Badge/')+'.png', 
                 locked      = locked,
                 index       = index,

@@ -58,10 +58,17 @@ class CheevoBox(ListBox):
         for row, key in enumerate(self.items.keys()):
             if row >= (self.height>>1)-2: continue
             item = self.items[key]
+            space   = self.width - 6
+            payload = f'{Fore.BLACK}({BG if self.cursor==row else Back.WHITE}{" " if self.selection != row else "*"}{Back.WHITE}) {Fore.BLUE}{key[0:self.width-6]}'
+            remain  = space - (len(payload)-(len(Fore.BLUE)+len(Back.BLACK)+len(Back.BLACK)))
             self.tdu.setCursor(0 , row*2)
-            self.tdu.print(f'{Fore.BLACK}({BG if self.cursor==row else Back.WHITE}{" " if self.selection != row else "*"}{Back.WHITE}) {Fore.BLUE}{key[0:self.width-6]}')
+            self.tdu.print(payload + (" "*remain))
+
+            space   = self.width - 6
+            payload = f'{Fore.BLACK}{item[0:self.width-6]}'
+            remain  = space - (len(payload)-(len(Fore.BLACK)))
             self.tdu.setCursor(4 , (row*2)+1)
-            self.tdu.print(f'{Fore.BLACK}{item[0:self.width-6]}')
+            self.tdu.print(payload + (" "*remain))
         
     def activate(self):
         ListBox.activate(self)

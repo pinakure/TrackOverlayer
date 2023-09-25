@@ -116,3 +116,18 @@ def extract(mess, begin, end):
     except Exception as E:
         return mess
 
+def download(url, target_file):
+    from classes.log import Log
+    import requests
+    try:
+        data = requests.get( url )
+        if data.status_code==200:        
+            with open(target_file, 'wb') as file:
+                file.write(data.content)
+                return True
+        else:
+            Log.error(f"Failed to download {url} : status code={data.status_code}")
+            return False
+    except Exception as E:
+        Log.error(f"Cannot download {url}", E)
+        return False

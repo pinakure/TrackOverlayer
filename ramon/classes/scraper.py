@@ -15,6 +15,7 @@ class Scraper:
         # Please check if this association is even used on the code or remove it
         Preferences.data            = self     
         self.protocol               = protocol
+        self.targets                = {}
         self.host                   = host
         self.port                   = port
         self.session                = None
@@ -26,6 +27,7 @@ class Scraper:
         self.login_password         = login_password
         self.logged_in              = False
         self.parsed                 = None
+        self.payload                = {}
         self.form_boundary          = form_boundary
         self.login_form_url         = self.url( login_form_url )
         self.login_post_url         = self.url( login_post_url )
@@ -38,6 +40,7 @@ class Scraper:
         self.response_text          = None
         self.response_code          = None
         self.response_content       = None
+        self.session                = requests.Session() if self.session is None else self.session
     
     def url(self, url):
         return f'{ self.protocol }://{ self.host }{ f":{ self.port }/" if self.port else "/"}{url}'
@@ -51,6 +54,14 @@ class Scraper:
         if not self.response_text:
             Log.error("SCRAPER : Cannot get default Payload")
             return False
+        self.payload = {}
+        for key,targets in self.targets.items():
+            try:
+                self.payload.update({
+                    key : self.response_content.decode('utf-8').split(targets[0])[1].split(targets[1])[0],
+                })
+            except Exception as E:
+                Log.error(f"Cannot resolve target {key} while parsing {self.target_url}", E)
         return True
     
     def getCookies(self):
@@ -195,7 +206,8 @@ class Scraper:
     def request( self, url, data=None,  filename="request", post=False):
         self.response = None
         try:
-            self.getCookies()
+            if self.needs_login: 
+                self.getCookies()
             response                = self.session.post( url, data=data ) if post else self.session.get( url, data=data ) 
             self.response           = response
             self.response_text      = response.text
