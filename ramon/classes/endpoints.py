@@ -36,7 +36,7 @@ class Endpoints:
             Endpoints.parent.data.progress = f'{str(int(random.random()*100))}%'
         Endpoints.parent.data.progress = '0%' if Endpoints.parent.data.progress == '' else Endpoints.parent.data.progress
         return response({
-            'progress'      : int(Endpoints.parent.data.progress.replace('%', '')),
+            'progress'      : int(float(Endpoints.parent.data.progress.replace('%', ''))),
         })
     
     def games():

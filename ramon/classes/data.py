@@ -14,6 +14,7 @@ class Data(Scraper):
     def __init__(self, parent):
         username = Preferences.settings[ 'username' ]
         password = Preferences.settings[ 'password' ]
+        api_key  = Preferences.settings[ 'ra-app-key' ]
 
         Scraper.__init__(self, 
             protocol        = "https", 
@@ -25,13 +26,13 @@ class Data(Scraper):
             login_post_url  = 'login', 
             login_username  = username,
             login_password  = password,
-            target_url      = f"user/{ username }",
             login_fields    = {
                 'User'      : username,
                 'password'  : password,
             },
             login_tokens    = [ '_token'    , '_method'                     ],
             cookies         = [ 'XSRF-TOKEN', 'retroachievements_session'   ],
+            api_key         = api_key,
         )
         self.parent         = parent        
         self.echo           = False
@@ -56,7 +57,6 @@ class Data(Scraper):
         self.reload_rate    = 60
         self.game           = None
         self.game_id        = 0
-        
         
         
     # below is un-refactored methods...
@@ -98,27 +98,19 @@ class Data(Scraper):
             self.parent.redraw()
             self.parent.activity = True
 
-    def parseCheevos(self, game):
+    def parseCheevos(self, game, payload):
         self.parent.queue = []
         Log.info(f'SCRAPER : Loading {len(self.cheevos_raw)} cheevo payloads into parsing queue...')
-        for t, c in enumerate(self.cheevos_raw):
+        for t, c in payload['cheevos'].items():
             #if (t%5) == 0: dpg.render_dearpygui_frame()
             self.enqueueCheevoPayload( c )        
         Log.info(f'SCRAPER : Enqueued {len(self.parent.queue)} cheevos.')
         return []
     
-    def getRank( self, usersummary ):
-        try:
-            Log.info("SCRAPER : Extracting User Rank...")
-            self.site_rank      = usersummary.split('Site Rank: #')[1].split(' ranked')[0]
-        except Exception as E:
-            Log.error("Cannot extract User Rank", E)
     
     def getDate( self, usersummary ):
         try:
             Log.info("SCRAPER : Extracting User Timestamp...")
-            self.last_activityr = usersummary.split('Last Activity: ')[1].split('Account')[0]
-            self.last_activity  = (datetime.strptime(self.last_activityr, "%d %b %Y, %H:%M")+timedelta(hours=Preferences.settings['gmt']))
         except Exception as E:
             Log.error("Cannot extract User Timestamp", E)
     
@@ -135,52 +127,6 @@ class Data(Scraper):
                 unlocked += '* '+ d.menu() + "\n"
         return payload, unlocked
     
-    def getScore( self, usersummary ):
-        try:
-            Log.info("SCRAPER : Extracting User Score...")
-            self.score = usersummary.split('Hardcore Points: ')[1].split(' (')[0]
-        except Exception as E:
-            Log.error("Cannot extract User Score", E)
-    
-    def getGame( self, usersummary_raw ):
-        try:
-            Log.info("SCRAPER : Extracting Game Data...")
-            self.subset       = ''
-            userdata            = usersummary_raw.contents[-1].contents[1].contents[0].contents
-            self.game_id        = int(usersummary_raw.contents[-1].contents[1].contents[0].attrs['href'].split('/')[-1])
-            self.game_picture   = userdata[0].attrs['src'].split('/')[-1].split('.png')[0]
-            self.last_seen_full = userdata[1].lstrip(' ').rstrip(' ')
-            self.last_seen      = self.last_seen_full.split('(')[0].split('[')[0].lstrip(' ').rstrip(' ')
-            self.platform       = userdata[1].split('(')[1].split(')')[0].lstrip(' ').rstrip(' ')
-            self.game_name      = self.last_seen.split('|')[0].lstrip(' ').rstrip(' ')
-            if 'Subset' in  usersummary_raw.text.split('Last seen  in  ')[1]:
-                self.subset         = userdata[2].contents[2].text
-            # Create game instances
-            self.game = Game.loadOrCreate(
-                game_id     = self.game_id, 
-                name        = self.game_name, 
-                picture     = self.game_picture, 
-                subset      = self.subset, 
-                platform    = self.platform,
-            )
-            if Preferences.table_game is not None:
-                Preferences.table_game.update()
-        except Exception as E:
-            Log.error("Cannot parse Game Data", E)
-    
-    def getUserSummary(self):
-        try:
-            Log.info("SCRAPER : Parse ok, extracing User Summary")
-            usersummary_raw     = self.parsed.body.find('div', attrs={'class':'usersummary'})
-            usersummary         = usersummary_raw.text
-            self.getScore(usersummary)
-            self.getRank(usersummary)
-            self.getDate(usersummary)
-            self.getGame(usersummary_raw)
-        except Exception as E:
-            Log.error("Cannot parse payload getting User Summary", E)
-
-    
     def setActiveCheevo(self, index):
         Cheevo.active_index = index
         Preferences.settings['current_cheevo'] = Cheevo.active_index
@@ -192,63 +138,48 @@ class Data(Scraper):
                 dpg.set_value(f'cheevo[{i+1}]', False)
             dpg.set_value(f'cheevo[{Cheevo.active_index}]', True)
      
-    def getCheevos(self):
-        import random
-        try:
-            rid = random.random()
-            Log.info("SCRAPER : Extracting Cheevo payload...")
-            stats = str(self.parsed.body.find('div', attrs={'class':'userpage recentlyplayed'}))
-            #self.last_progress = self.progress
-            try:
-                Log.info("SCRAPER : Getting progress payload...")
-                progress_html  = stats.split('<div class="md:flex justify-between mb-3">')[1].split('</div></div></div>')[0].split('<div class="progressbar grow">')[1] 
-                Log.info("SCRAPER : Extracting progress")
-                self.progress  = progress_html.split('width:')[1].split('"')[0] if not Plugin.debug else f'{int(random.random()*100)}%'
-            except:
-                self.progress  = '0%'
-                dpg.set_value('stdout', 'Asuming no achievements, since no progressbar was found.')
-                return True
-            Log.info("SCRAPER : Parsing payload...")
-            self.stats          = stats.split('<div class="mb-5">')[1].split('</div>')[0]
-            self.cheevos_raw    = self.stats.split('<span @mouseleave="hideTooltip" @mousemove="trackMouseMovement($event)" @mouseover="showTooltip($event)" class="inline" x-data="tooltipComponent($el, { staticHtmlContent: useCard(')[1:]
-            self.locked         = []
-            self.cheevos        = self.parseCheevos(self.game)
-            
-        except Exception as E:
-            Log.error("Cannot parse Updated Cheevo information", E)
-
-    def getPayload(self):
-        # Try to get RA user profile HTML
-        Log.info("SCRAPER : Requesting user profile payload")
-        self.request( self.url(f'user/{ self.login_username }'), filename="profile" )
-        if not self.response_text:
-            Log.error("Cannot get RA Payload")
-            return False
-        return True
-    
-    def parse(self):
+    def parse(self, payload):
         # Try to parse profile HTML and extract metadata
         try:
-            Log.info("SCRAPER : Got user profile payload, parsing data...")
-            Scraper.parse(self)
-            self.getUserSummary()
+            Log.info("SCRAPER : Extracing User Summary Data")
+            self.locked         = []
+            self.site_rank      = 1     #TODO: use user summary endpoint to get this data 
+            self.last_activity  = ''    #TODO: use user summary endpoint to get this data 
+            self.score          = payload['meta']['score']
+            self.game_id        = payload['id']
+            self.game_picture   = payload['boxart'].split('.png')[0]
+            self.last_seen_full = payload['name']
+            self.platform       = payload['platform']
+            self.game_name      = payload['name']
+            self.progress       = payload['progress']
+            self.subset         = ''
+            if 'Subset' in  self.game_name:
+                #TODO: get current subset
+                pass            
+            # Create game instances
+            self.game = Game.loadOrCreate(
+                game_id     = self.game_id, 
+                name        = self.game_name, 
+                picture     = self.game_picture, 
+                subset      = self.subset, 
+                platform    = self.platform,
+            )
             self.setActiveCheevo( self.game.current )
-            self.getCheevos()
+            self.cheevos        = self.parseCheevos(self.game, payload)
+            if Preferences.table_game is not None:
+                Preferences.table_game.update()  
+
+            
             Log.info(f'{ f"{self.progress}  -  {len([cheevo for cheevo in self.cheevos if not cheevo.locked])}/{len(self.cheevos)}" if self.game else "No game"}')
             return True
         except Exception as E:
-            Log.error("Cannot parse profile HTML, the structure may have be changed.", E)
+            Log.error("Cannot parse response data; Structure may have be changed.", E)
             return False
     
     def query(self):
-        self.login_username = Preferences.settings['username']
-        self.target_url     = self.url(f"user/{ self.login_username }" )
-        if Preferences.settings['offline']:
-            Log.info("DATA : Faking request to retroachievements")
-            self.response_text = readfile(f'{Preferences.settings["root"]}/data/profile.html')
-            return self.parse()
         Log.info("Performing real request")
-        return self.get()
+        payload = self.get()
+        return self.parse(payload)
     
     def updatePictures(self):        
         try:   
@@ -309,7 +240,7 @@ class Data(Scraper):
         cheevos = (Cheevo
                 .select()
                 .join(Game)
-                .where(Cheevo.game==self.game, Cheevo.locked==False, Cheevo.notified==False)
+                .where(Cheevo.game==self.game, Cheevo.locked==False, Cheevo.notified==0)
                 .order_by(Cheevo.index.asc())
             )
         for cheevo in cheevos:

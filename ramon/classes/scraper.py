@@ -11,9 +11,11 @@ class Scraper:
     class Meta:
         database = DDBB.db
 
-    def __init__(self, protocol="https", host="locahost", port=None, needs_login=False, login_form_url='', login_post_url='', login_username='', login_password='', target_url='', login_fields=[], login_tokens=[], cookies=[], form_boundary=False):
+    def __init__(self, protocol="https", host="locahost", port=None, needs_login=False, login_form_url='', login_post_url='', login_username='', login_password='', login_fields=[], login_tokens=[], cookies=[], form_boundary=False, api_key=''):
         # Please check if this association is even used on the code or remove it
         Preferences.data            = self     
+        self.api_key                = api_key
+        self.use_api                = False if api_key == '' else True
         self.protocol               = protocol
         self.targets                = {}
         self.host                   = host
@@ -31,7 +33,6 @@ class Scraper:
         self.form_boundary          = form_boundary
         self.login_form_url         = self.url( login_form_url )
         self.login_post_url         = self.url( login_post_url )
-        self.target_url             = self.url( target_url )
         #self.user_agent             = '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"'
         self.user_agent             = f'tRAckOverlayer/{ login_username }'
         self.form_data              = None        
@@ -47,21 +48,6 @@ class Scraper:
 
     def parse(self):
         self.parsed = BeautifulSoup( self.response_text, features='html.parser' )            
-        return True
-    
-    def getPayload(self):
-        self.request( self.target_url, filename="target" )
-        if not self.response_text:
-            Log.error("SCRAPER : Cannot get default Payload")
-            return False
-        self.payload = {}
-        for key,targets in self.targets.items():
-            try:
-                self.payload.update({
-                    key : self.response_content.decode('utf-8').split(targets[0])[1].split(targets[1])[0],
-                })
-            except Exception as E:
-                Log.error(f"Cannot resolve target {key} while parsing {self.target_url}", E)
         return True
     
     def getCookies(self):
@@ -112,18 +98,65 @@ class Scraper:
             self.getMultiPartBoundaryFormData()
         
     def get(self):
-        if self.needs_login:
-            Log.info('SCRAPER : Checking login...')
-            if not self.login():
-                Log.error("SCRAPER : Login failed")
-                return False
-        #print("SCRAPER : Getting payload...")
-        if not self.getPayload():
-            Log.error("SCRAPER : Cannot parse get payload HTML")
-            return False
-        #print("SCRAPER : Parsing payload...")
-        return self.parse()
-    
+        import json
+        null = None
+        Log.info("API : Requesting User data...")
+        data = requests.get(f'https://retroachievements.org/API/API_GetUserProfile.php?z={self.login_username}&y={self.api_key}&u={self.login_username}')
+        userdata = json.loads(data.text)
+        metadata = {
+            'user'          : userdata['User'],             #user name
+            'userid'        : userdata['ID'],               #179712,
+            'avatar'        : userdata['UserPic'],          #pic url
+            'regdate'       : userdata['MemberSince'],      #'2021-05-06 23:47:47'
+            'status'        : userdata['RichPresenceMsg'],  #'Playing Street Fighter III: 3rd Strike - Fight for the Future'
+            'score'         : userdata['TotalPoints'],      #4921
+            'active'        : userdata['UserWallActive'],   #1
+            'bio'           : userdata['Motto'],            #"Notice how you're always livin a nice memory"
+            'gameid'        : userdata['LastGameID'],       #11795
+        }
+        # Get last played game data from api
+        Log.info("API : Requesting Game data...")
+        data = requests.get(f'https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z={self.login_username}&y={self.api_key}&g={metadata["gameid"]}&u={self.login_username}')
+        data = json.loads(data.text)
+        gamedata = {
+            'meta'          : metadata,
+            'id'            : data["ID"],                       #11795
+            'name'          : data["Title"],                    #"Street Fighter III: 3rd Strike - Fight for the Future"
+            'icon'          : data["ImageIcon"],                #"\\/Images\\/065554.png"
+            'title'         : data["ImageTitle"],               #"\\/Images\\/016036.png"
+            'snapshot'      : data["ImageIngame"],              #"\\/Images\\/016037.png"
+            'boxart'        : data["ImageBoxArt"],              #"\\/Images\\/016038.png"
+            'publisher'     : data["Publisher"],                #"Capcom"
+            'developer'     : data["Developer"],                #"Capcom"
+            'release'       : data["Released"],                 #"May 1999"
+            'players'       : data["NumDistinctPlayers"],       #3295
+            'points'        : data["points_total"],             #375
+            'platform'      : data["ConsoleName"],              #"Arcade"
+            'chevo_count'   : data["NumAchievements"],          #46
+            'unlock_count'  : data["NumAwardedToUserHardcore"], #45
+            'progress'      : data["UserCompletionHardcore"],   #"97.83%"
+            'cheevos'       : {},
+        }           
+        achievements = data['Achievements']
+        for id,cheevo in achievements.items():
+            id = cheevo['ID']
+            locked = False if 'DateEarnedHardcore' in cheevo.keys() else True
+            gamedata['cheevos'][id]={
+                'id'            : id,                               #58917
+                'badge'         : cheevo["BadgeName"],              #"61483"
+                'title'         : cheevo["Title"],                  #"Welcome to 3rd Strike"
+                'description'   : cheevo["Description"],            #"Perform a Parry"
+                'shared'        : cheevo["NumAwardedHardcore"],     #924,#how many players do share the same achievement
+                'score'         : cheevo["Points"],                 #1
+                'ratio'         : cheevo["TrueRatio"],              #1
+                'author'        : cheevo["Author"],                 #"zxmega"
+                'updated'       : cheevo["DateModified"],           #"2022-05-26 21:29:04"
+                'created'       : cheevo["DateCreated"],            #"2018-03-30 01:30:39"
+                'order'         : cheevo["DisplayOrder"],           #2
+                'locked'        : locked,
+            }
+
+        return gamedata    
     def validateLoginUsername(self):
         return False if (
             ''  in [ self.login_username, self.login_password ] or  
@@ -146,7 +179,6 @@ class Scraper:
             if not self.validateLoginUsername() : return False
         
             Log.info("SCRAPER : Logging in...")
-            
             # Inject headers for future requests
             self.session = requests.Session() if self.session is None else self.session
             self.session.headers.update({

@@ -120,6 +120,13 @@ def download(url, target_file):
     from classes.log import Log
     import requests
     try:
+        with open(target_file, 'rb') as f:
+            Log.info(f"Using cached version for {target_file}. No download was requested.")
+            return True
+    except:
+        Log.info(f"No cache found for {target_file}. Requesting download...")            
+        pass
+    try:
         data = requests.get( url )
         if data.status_code==200:        
             with open(target_file, 'wb') as file:

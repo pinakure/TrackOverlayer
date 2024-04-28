@@ -19,7 +19,6 @@ class GameScraper(Scraper):
             login_post_url  = None, 
             login_username  = None,
             login_password  = None,
-            target_url      = f"game/{ game }",
             login_fields    = {},
             login_tokens    = [],
             cookies         = [],
@@ -50,10 +49,9 @@ class Game(Model):
     
     def loadOrCreate(game_id, name=None, picture=None, subset='', cheevos=1, platform=platform):
         #query db loking for requested game
-        game_scraper = GameScraper(game_id)
-        if game_scraper.query():
-            Log.info("Saving BoxArt...")
-            download(game_scraper.payload['game'],f'{Preferences.settings["root"]}/data/files/logos/{game_id}.png')
+        #game_scraper = GameScraper(game_id)
+        Log.info("Saving BoxArt...")
+        download(f'https://media.retroachievements.org{picture}.png',f'{Preferences.settings["root"]}/data/files/logos/{game_id}.png')
         try:
             return Game.get(Game.id==game_id)
         except Exception as E:

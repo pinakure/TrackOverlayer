@@ -19,7 +19,7 @@ class Cheevo(Model):
     name        = CharField(default="")
     description = CharField(default="")
     locked      = BooleanField(default=True)
-    notified    = BooleanField(default=False)
+    notified    = IntegerField(default=False)
     picture     = CharField()
     index       = IntegerField()
     cached      = BooleanField(default=False)
@@ -42,7 +42,6 @@ class Cheevo(Model):
         self.scraper.needs_login      = False
         self.scraper.logged_in        = True
         self.scraper.parsed           = None
-        self.scraper.target_url       = self.scraper.url( f'achievement/{self.id}' )
         self.scraper.user_agent       = f'tRAckOverlayer/{ Preferences.settings["username"] }'
         self.scraper.response         = None
         self.scraper.response_text    = None
@@ -55,7 +54,7 @@ class Cheevo(Model):
         download(f'https://media.retroachievements.org/Badge/{picture_id}_lock.png' ,f'{Cheevo.root}/data/cache/{picture_id}_lock.png')
 
     def _build_cache(picture):
-        Cheevo.getPicture( picture.split('.png')[0].split('_lock')[0] )
+        Cheevo.getPicture( picture.strip('.png').strip('_lock') )
             
     def build_cache(self):
         try:
@@ -84,22 +83,11 @@ class Cheevo(Model):
             Log.info(f"Skipping cheevo '{ self.name }' checking due to offline mode")
             return
     
-        if self.locked: 
-            Log.info(f"Checking cheevo '{ self.name }'...")
-            self.scraper.get()
-            data = extract(
-                self.scraper.response_text,
-                f'<a href="/achievement/{self.id}">',
-                '</a>'
-            )
-            if not '_lock' in data:
-                Log.info(f"    Cheevo { self.id } has just been unlocked!")
-                self.notified = False
-                self.locked = False
-                Cheevo.parent.data.locked.remove(self)
-                self.save()
-                return
-            Log.info(f"    Cheevo is still locked.")
+        if self.notified==0 and not self.locked: 
+            Log.info(f"    Cheevo { self.id } has just been unlocked!")
+            Cheevo.parent.data.locked.remove(self)
+            return
+        Log.info(f"    Cheevo is still locked.")
 
     def dispatchQueue():
         last   = False
@@ -115,15 +103,15 @@ class Cheevo(Model):
             Cheevo.parent.redraw()
 
     def parse( game, payload ):
-        name        = payload.split('/&gt;&lt;div&gt;&lt;div&gt;&lt;b&gt;')[1].split('&lt;/b&gt;&lt;/div&gt;&lt;div')[0].replace("\\'", "'").split('&lt')[0].rstrip()
-        picture     = payload.split('img src=')[1].split('.png')[0].replace('\\\'', '') + ".png"
-        cheevo_id   = int(payload.split('achievement/')[1].split('"')[0])
-        locked      = picture.find('lock')>-1
-        description = payload.split('mb-1')[1].split('gt')[1].split('&lt;/div')[0].replace(';', '')
-        pic         = picture.strip('https://media.retroachievements.org/Badge/')+'.png'
+        name        = payload['title']
+        picture     = f"https://media.retroachievements.org/Badge/{payload['badge']}.png"
+        cheevo_id   = int(payload['id'])
+        locked      = payload['locked']
+        description = payload['description']
+        pic         = f"{payload['badge']}.png"
         cached      = os.path.exists(f'{Cheevo.root}/data/cache/{pic}') 
         if not cached:
-            Log.info(f"CHEEVO : Picture '{pic.split('.png')[0]}' not found, caching...", True)
+            Log.info(f"CHEEVO : Picture '{payload['badge']}' not found, caching...", True)
             Cheevo._build_cache(pic)
             cached = os.path.exists(f'{Cheevo.root}/data/cache/{pic}')         
         
@@ -137,8 +125,10 @@ class Cheevo(Model):
             # cheevo already exists in DB
             cheevo = Cheevo.get(id=cheevo_id)
             cheevo.setupScraper()
+            
+            #cheevo.notified= cheevo.locked and not locked
             cheevo.locked  = locked
-            cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/')+'.png'
+            cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/').strip('.png')
             cheevo.index   = index
             cheevo.cached  = cached        
             cheevo.save()
@@ -151,7 +141,7 @@ class Cheevo(Model):
                 id          = cheevo_id,
                 name        = name.replace('"', ""), 
                 description = description.replace('"', "´").replace('&quot', '').replace('\\\'','' ), 
-                picture     = picture.strip('https://media.retroachievements.org/Badge/')+'.png', 
+                picture     = picture.strip('https://media.retroachievements.org/Badge/').strip('.png'), 
                 locked      = locked,
                 index       = index,
                 cached      = cached,

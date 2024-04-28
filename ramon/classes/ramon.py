@@ -129,6 +129,7 @@ class Ramon:
         
 
         Ramon.data  = Data(Ramon)
+
         Ramon.data.retrieveSession()
 
         HotKeys.install()
@@ -421,7 +422,7 @@ class Ramon:
         dpg.set_value('game'  , Ramon.data.game.name      )
         dpg.set_value('rank'  , Ramon.data.site_rank      )
         dpg.set_value('score' , Ramon.data.score          )
-        dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
+        #dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
         dpg.set_value('cheevo', Ramon.data.cheevo.split('\n')[0])
 
         left = 0
@@ -462,7 +463,7 @@ class Ramon:
         dpg.set_value('game'  , Ramon.data.last_seen      )
         dpg.set_value('rank'  , Ramon.data.site_rank      )
         dpg.set_value('score' , Ramon.data.score          )
-        dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
+        #dpg.set_value('date'  , Ramon.data.last_activity.strftime("%d %b %Y, %H:%M")  )
         dpg.set_value('cheevo', Ramon.data.cheevo.split('\n')[0])
         payload, unlocked = Ramon.data.getRecent()
         for d in Ramon.data.cheevos:
@@ -493,7 +494,8 @@ class Ramon:
             Ramon.data.site_rank     = Preferences.settings['rank']
             Ramon.data.score         = Preferences.settings['score']
         Log.info("Scraping data...")
-        if Ramon.data.query():
+        metadata = Ramon.data.query()
+        if metadata is not False:
             Log.info("Scraping done.")
             Ramon.redraw()
             Ramon.data.writeCheevo()
