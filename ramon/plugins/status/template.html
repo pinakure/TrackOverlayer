@@ -106,6 +106,12 @@
                         // Update data object
                         {% Name %}.data = JSON.parse(payload.data);
                         {% Name %}.dom.caption.innerHTML = {% Name %}.data;
+                        setTimeout( 
+                            function(){ 
+                                {% Name %}.socket.send( `get-${ {% Name %}.endpoint }` );
+                            }, 
+                            10000
+                        );
                     }
                 },                
             
