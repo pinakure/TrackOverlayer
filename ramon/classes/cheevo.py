@@ -19,6 +19,7 @@ class Cheevo(Model):
     name        = CharField(default="")
     description = CharField(default="")
     locked      = BooleanField(default=True)
+    date        = DateField(default=None)
     notified    = IntegerField(default=False)
     picture     = CharField()
     index       = IntegerField()
@@ -103,9 +104,12 @@ class Cheevo(Model):
             Cheevo.parent.redraw()
 
     def parse( game, payload ):
+        from datetime import datetime
         name        = payload['title']
         picture     = f"https://media.retroachievements.org/Badge/{payload['badge']}.png"
         cheevo_id   = int(payload['id'])
+        date        = payload['date']
+        date        = None if date is None else datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
         locked      = payload['locked']
         description = payload['description']
         pic         = f"{payload['badge']}.png"
@@ -130,6 +134,7 @@ class Cheevo(Model):
             cheevo.locked  = locked
             cheevo.picture = picture.strip('https://media.retroachievements.org/Badge/').strip('.png')
             cheevo.index   = index
+            cheevo.date    = date
             cheevo.cached  = cached        
             cheevo.save()
             return cheevo
@@ -143,6 +148,7 @@ class Cheevo(Model):
                 description = description.replace('"', "´").replace('&quot', '').replace('\\\'','' ), 
                 picture     = picture.strip('https://media.retroachievements.org/Badge/').strip('.png'), 
                 locked      = locked,
+                date        = date,
                 index       = index,
                 cached      = cached,
                 game        = game,

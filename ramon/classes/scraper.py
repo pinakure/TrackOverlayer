@@ -143,6 +143,7 @@ class Scraper:
             locked = False if 'DateEarnedHardcore' in cheevo.keys() else True
             gamedata['cheevos'][id]={
                 'id'            : id,                               #58917
+                'date'          : None if locked else cheevo['DateEarnedHardcore'],                
                 'badge'         : cheevo["BadgeName"],              #"61483"
                 'title'         : cheevo["Title"],                  #"Welcome to 3rd Strike"
                 'description'   : cheevo["Description"],            #"Perform a Parry"

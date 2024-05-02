@@ -115,11 +115,18 @@ class Data(Scraper):
         except Exception as E:
             Log.error("Cannot extract User Timestamp", E)
     
+    def sortByDate(self, data):
+        def byDate(e):
+            return e.date if e.date is not None else datetime.fromtimestamp(0)
+        data.sort(key=byDate, reverse=True)
+        return data
+    
     def getRecent(self):
         self.recent = []
         unlocked = ''
         payload  = ''
-        for d in self.cheevos:
+        sorted = self.sortByDate(self.cheevos)
+        for d in sorted:
             if d.locked: 
                 payload += d.menu() + "\n"                
             else:
