@@ -45,6 +45,7 @@ class Data(Scraper):
         self.progress       = ''
         self.last_progress  = ''
         self.stats          = ''
+        self.status         = ''
         self.the_cheevo     = None
         self.cheevo         = ''
         self.cheevos_raw    = []
@@ -146,6 +147,7 @@ class Data(Scraper):
             self.site_rank      = 1     #TODO: use user summary endpoint to get this data 
             self.last_activity  = ''    #TODO: use user summary endpoint to get this data 
             self.score          = payload['meta']['score']
+            self.status         = payload['meta']['status']
             self.game_id        = payload['id']
             self.game_picture   = payload['boxart'].split('.png')[0]
             self.last_seen_full = payload['name']
@@ -234,8 +236,17 @@ class Data(Scraper):
         except Exception as E:
             Log.error(f"Cannot mark notification '{notification_name}'", E)
     
-    #TODO: Move to endpoints
+    
+    def getStatus(self):
+        try:
+            return self.status.split("⚖️")[1]
+        except:
+            pass
+        return self.status
+
+    #TODO: Move to endpoints    
     def getNotifications(self):
+        #TODO: Move to endpoints    
         notifications = []
         cheevos = (Cheevo
                 .select()

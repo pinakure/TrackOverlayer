@@ -136,7 +136,7 @@ class UI:
     
     def updateCursor(x,y, varname):
         if UI.layout:
-            print(f"Adding field { varname } to layout")
+            #print(f"Adding field { varname } to layout")
             UI.layout.add(varname, UI.last_label)
         column.input += 1 if x is None else 0
         row.input    += 1 if y is None and x is not None else 0

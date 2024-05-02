@@ -200,6 +200,7 @@ class Preferences:
         from classes.plugin     import Plugin        
         # Make a tab for every plugin' settings
         for name, plugin in Plugin.loaded.items():
+            print(f"Creating tab for plugin {name}", end="                 \r")
             clearVariableBuffer()
             with dpg.tab(label=name, tag=f"tab_plugins-{name}", parent='plugin-tabs'):
                 Attribute.parent = f'tab-window-{name}'
@@ -270,6 +271,7 @@ class Preferences:
                                     # if name.replace('color', 'border-color') in bcolors.keys():
                                     #     Attribute.label         ( 442,  54 , "Border Color", parent=window)
                                     Attribute.border_color  ( 442,  75 , callback=Plugin.updateColor)
+        print("")
     def show():
         dpg.hide_item('preferences_main')
         dpg.show_item('preferences_main')

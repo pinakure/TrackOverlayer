@@ -16,6 +16,10 @@ class Endpoints:
     def setParent(parent):
         Endpoints.parent = parent
     
+    def status():
+        print("ZZZ Sending Status to frontend ")
+        return response(Endpoints.parent.data.getStatus())
+    
     def notifications():
         return response(Endpoints.parent.data.getNotifications())
     
@@ -171,6 +175,7 @@ class Endpoints:
     
     def getAll():
         return {
+            'status'            : Endpoints.status(),
             'notifications'     : Endpoints.notifications(),
             'username'          : Endpoints.username(),
             'twitch-username'   : Endpoints.twitch_username(),
@@ -187,6 +192,7 @@ class Endpoints:
         }
 
     byName = {
+        'status'            : status,
         'notifications'     : notifications,
         'username'          : username,
         'twitch-username'   : twitch_username,

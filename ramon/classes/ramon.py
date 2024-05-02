@@ -120,14 +120,19 @@ class Ramon:
         #UI.resize()
         Preferences.writecfg()
 
+    __stage = 0
+    def stage():
+        print(f'{"-"*60}[ STAGE {Ramon.__stage} ]{"-"*4}')
+        Ramon.__stage+=1
+        
     def start():
+        Ramon.stage()
         from classes.database   import DDBB
         from classes.server     import Server # private import needed here to avoid import loop
         Log.open(Ramon)
         Preferences.loadcfg(Ramon)
         DDBB.init()
         
-
         Ramon.data  = Data(Ramon)
 
         Ramon.data.retrieveSession()
@@ -145,15 +150,23 @@ class Ramon:
         Tags.setParent(Ramon)
 
         # Load plugin list
+        Ramon.stage()
         Ramon.plugins = Plugin.discover()
+        
+        Ramon.stage()
         Ramon.createViewport()
         Ramon.createInterface()        
+        
+        Ramon.stage()
         Ramon.setPosition( Preferences.settings['x-pos'], Preferences.settings['y-pos'] )
         Ramon.loadPictures()
         
+        Ramon.stage()
         Server.start(Ramon)
+        print("Started Ramon server")
     
         # load plugins
+        Ramon.stage()
         Plugin.loadThese( Ramon.plugins )
 
         # debug mode (GUI only)
@@ -176,13 +189,18 @@ class Ramon:
         dpg.set_viewport_small_icon     (f"{Preferences.settings['root']}/icon.ico")
         dpg.set_viewport_large_icon     (f"{Preferences.settings['root']}/icon.ico")
         dpg.setup_dearpygui()
+        print("Viewport created")
         
     def loadPictures():
+        #TODO: load only set for current game, this is actually loading in vram all the cache folder, which is nonsense.
+        #      also, remember to release and reload the images when the game is changed...
         dirname = Preferences.settings['root']+'/data/cache'
        
         pictures = {}
         with dpg.texture_registry(show=False):
-            for file in [ x  for x in os.listdir( dirname ) if os.path.isfile(f'{dirname}/{x}') and x[0] != '.']:
+            files = [ x  for x in os.listdir( dirname ) if os.path.isfile(f'{dirname}/{x}') and x[0] != '.']
+            count = 1
+            for file in files:
                 try:   
                     width, height, depth, data = dpg.load_image(f'{dirname}/{file}')                
                     pictures.update({
@@ -194,8 +212,12 @@ class Ramon:
                         default_value   = data, 
                         tag             = f"texture[{file}]",
                     )
+                    print(f"Processing {count}/{len(files)} images", end="         \r")
+                    count+=1
                 except Exception as E:
+                    print("")
                     Log.error(f"Cannot load '{file}'", E)
+            print("")
 
 
     def createInterface():
@@ -212,6 +234,7 @@ class Ramon:
             no_bring_to_front_on_focus  = True, 
             no_move                     = True,            
         ):
+            print("Setting up interface")
             Ramon.createMenu()
             row = 23
             row_height = 23
@@ -297,9 +320,12 @@ class Ramon:
                 readonly        = True,
             )
             # Create log window
-            Log.create( Ramon )
+            Ramon.stage()
+            Log.create( Ramon )            
             # Create preferences window
+            Ramon.stage()
             Preferences.create( Ramon )
+            print("Plugin preferences window created")
         
     def setPosition(x,y):
         Ramon.x = x

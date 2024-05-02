@@ -36,7 +36,7 @@ class Log:
                         height       = Log.height,
                     )
         Log.stdout = False
-
+        print("Log window created")
 
     def show():
         dpg.show_item('log_window')         

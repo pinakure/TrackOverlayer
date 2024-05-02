@@ -58,59 +58,17 @@
                 font-style                  : var(--caption-font-italic);
                 left                        : var(--caption-pos-x);
                 top                         : var(--caption-pos-y);
-                background-color            : #f3ec78;/*fallback color*/
-                background-image            : linear-gradient(0deg, #af0, #080);
-                background-size             : 100% var(--caption-font-size);
+                color                       : var(--caption-color);
                 -webkit-text-stroke         : var(--caption-border-width);
                 -webkit-text-stroke-color   : var(--caption-border-color);
                 filter                      : drop-shadow( var(--caption-shadow-pos-x) var(--caption-shadow-pos-y) var(--caption-shadow-blur) var(--caption-shadow-color) );
             }
-            
-            #{% name %}-hiscore {
-                text-align                  : right;
-                font-family                 : var(--hiscore-font-type);
-                font-size                   : var(--hiscore-font-size);
-                line-height                 : calc( var(--hiscore-font-size) + 4px ); 
-                height                      : calc( var(--hiscore-font-size) + 4px ); 
-                font-weight                 : var(--hiscore-font-bold);
-                font-style                  : var(--hiscore-font-italic);
-                left                        : var(--hiscore-pos-x);
-                top                         : var(--hiscore-pos-y);
-                color                       : transparent;
-                background-color            : #f3ec78;/*fallback color*/
-                background-image            : linear-gradient(0deg, #ff0, #f00);
-                background-size             : 100% var(--hiscore-font-size);
-                -webkit-text-stroke         : var(--hiscore-border-width);
-                -webkit-text-stroke-color   : var(--hiscore-border-color);
-                filter                      : drop-shadow( var(--hiscore-shadow-pos-x) var(--hiscore-shadow-pos-y) var(--hiscore-shadow-blur) var(--hiscore-shadow-color) );
-            }
-            
-            #{% name %}-rank {
-                text-align                  : right;
-                font-family                 : var(--rank-font-type);
-                font-size                   : var(--rank-font-size);
-                line-height                 : calc( var(--rank-font-size) + 4px );
-                height                      : calc( var(--rank-font-size) + 4px );
-                font-weight                 : var(--rank-font-bold);
-                font-style                  : var(--rank-font-italic);
-                left                        : var(--rank-pos-x);
-                top                         : var(--rank-pos-y);
-                background-color            : #f3ec78;/*fallback color*/
-                background-image            : linear-gradient(0deg, #eee, #333);
-                background-size             : 100% var(--rank-font-size);
-                -webkit-text-stroke         : var(--rank-border-width);
-                -webkit-text-stroke-color   : var(--rank-border-color);
-                filter                      : drop-shadow( var(--rank-shadow-pos-x) var(--rank-shadow-pos-y) var(--rank-shadow-blur) var(--rank-shadow-color) );
-            }
-            
 
         </style>
     </head>
     <body id="{% name %}">
         <div id="{% name %}-content">
-            <div id="{% name %}-caption">RA Score</div>
-            <div id="{% name %}-hiscore">0</div>
-            <div id="{% name %}-rank">0 / 0</div>
+            <div id="{% name %}-caption">------</div>
         </div>
 
         <script>
@@ -125,9 +83,7 @@
                 dom : {
                     root       : document.getElementById('{% name %}'),
                     content    : document.getElementById('{% name %}-content'),
-                    caption    : document.getElementById('{% name %}-caption'),
-                    hiscore    : document.getElementById('{% name %}-hiscore'),
-                    rank       : document.getElementById('{% name %}-rank'),
+                    caption    : document.getElementById('{% name %}-caption'),                    
                 },
 
                 {% framework %}
@@ -145,17 +101,15 @@
 
                 socketHandle : function( event ){
                     payload = JSON.parse(event.data);
-                    debugger
                     if( payload.response == {% Name %}.endpoint ){
                         console.log("{% Name %} : WSDATA =", payload.data)
                         // Update data object
                         {% Name %}.data = JSON.parse(payload.data);
-                        {% Name %}.dom.hiscore.innerHTML = {% Name %}.data.score;
-                        {% Name %}.dom.rank.innerHTML    = {% Name %}.data.site_rank;
+                        {% Name %}.dom.caption.innerHTML = {% Name %}.data;
                     }
                 },                
             
-                start : function(){
+                start : function(){                    
                     {% Name %}.loadSettings();
                     {% Name %}.messageHandler();
                     {% Name %}.connect();                    

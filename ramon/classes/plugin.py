@@ -433,7 +433,9 @@ class Plugin:
     
     def discover():
         path = f'{Preferences.root}/plugins'        
-        return [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f)) and not f[0]=='_']
+        plugins = [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f)) and not f[0]=='_']
+        print(f'Found {len(plugins)} plugin directories at "{path}"')        
+        return plugins
     
     def readConfig( ):
         with open(f'{Preferences.settings["root"]}/plugins.cfg', "r") as file: 
@@ -553,3 +555,4 @@ class Plugin:
             Plugin.load( plugin )
         Preferences.populatePluginsTab()
         Preferences.updatePluginLists()
+        print(f"Loaded {len(these_plugins)} plugins")
